@@ -1,0 +1,48 @@
+.ov-bar {
+  position: fixed;
+  z-index: var(--z-overlay-bar);
+  top: var(--space-0);
+  right: var(--space-0);
+  left: var(--space-0);
+  display: grid;
+  height: var(--devbar-height);
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-0) var(--space-3);
+  color: var(--devbar-text);
+  background: var(--devbar-bg);
+  font-size: var(--font-size-xs);
+  pointer-events: auto;
+}
+
+.ov-bar-modes,
+.ov-bar-actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.ov-bar-state {
+  overflow: hidden;
+  color: var(--devbar-text-muted);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-bar-pill {
+  padding: var(--space-1) var(--space-3);
+  color: var(--devbar-text);
+  background: var(--devbar-pill-bg);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.ov-bar-pill.is-on {
+  color: var(--color-white);
+  background: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}

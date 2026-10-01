@@ -1,0 +1,54 @@
+.ov-dbg {
+  position: fixed;
+  top: var(--devbar-height);
+  right: var(--space-0);
+  bottom: var(--space-0);
+  width: min(var(--size-full), var(--space-48));
+  overflow-y: auto;
+  padding: var(--space-4);
+  color: var(--island-text);
+  background: var(--island-bg);
+  font-size: var(--font-size-xs);
+}
+
+.ov-dbg-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-md);
+}
+
+.ov-dbg-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-0);
+  border-top: var(--border-width-thin) solid var(--island-divider);
+  align-items: center;
+}
+
+.ov-dbg-group > span {
+  width: var(--size-full);
+  color: var(--island-text-muted);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-dbg-btn {
+  padding: var(--space-1) var(--space-2);
+  color: var(--island-text);
+  background: var(--island-chip-bg);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.ov-dbg-btn.is-on {
+  color: var(--color-white);
+  background: var(--color-primary);
+}
+
+.ov-dbg-note {
+  margin: var(--space-3) var(--space-0) var(--space-0);
+  color: var(--island-text-muted);
+}

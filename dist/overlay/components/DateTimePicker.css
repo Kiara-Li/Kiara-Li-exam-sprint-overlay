@@ -1,0 +1,162 @@
+.ov-when-card {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--space-2);
+}
+
+.ov-when-field {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+}
+
+.ov-when-field.is-open {
+  border-color: var(--color-primary);
+  background: var(--color-surface-blue);
+}
+
+.ov-when-field span {
+  color: var(--color-text-soft);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  text-transform: uppercase;
+}
+
+.ov-when-field strong {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-picker-panel {
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  animation: ov-fade-in var(--sprint-spring) both;
+}
+
+/* Calendar ------------------------------------------------------------- */
+
+.ov-cal-head {
+  display: grid;
+  grid-template-columns: var(--space-10) 1fr var(--space-10);
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.ov-cal-head strong {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
+
+.ov-cal-nav {
+  display: grid;
+  width: var(--space-10);
+  height: var(--space-10);
+  place-items: center;
+  color: var(--color-primary);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.ov-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-half);
+}
+
+.ov-cal-weekdays {
+  margin-bottom: var(--space-1);
+}
+
+.ov-cal-weekdays span {
+  padding: var(--space-1) var(--space-0);
+  color: var(--color-text-soft);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
+
+.ov-cal-cell {
+  display: grid;
+  min-height: var(--space-10);
+  place-items: center;
+  color: var(--color-text);
+  background: var(--color-transparent);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.ov-cal-cell.is-empty {
+  cursor: default;
+}
+
+.ov-cal-cell:disabled {
+  color: var(--color-border-strong);
+  cursor: default;
+}
+
+.ov-cal-cell.is-selected {
+  color: var(--color-white);
+  background: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Time ----------------------------------------------------------------- */
+
+.ov-picker-label {
+  margin: var(--space-3) var(--space-0) var(--space-2);
+  color: var(--color-text-soft);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  text-transform: uppercase;
+}
+
+.ov-picker-panel .ov-picker-label:first-child {
+  margin-top: var(--space-0);
+}
+
+.ov-time-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ov-time-grid.is-hours {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.ov-time-chip {
+  min-width: var(--space-12);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text);
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  text-align: center;
+}
+
+.ov-time-chip.is-selected {
+  color: var(--color-white);
+  background: var(--color-primary);
+}
