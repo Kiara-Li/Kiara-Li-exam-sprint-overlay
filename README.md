@@ -119,7 +119,7 @@ Then open `http://127.0.0.1:4178`.
 
 ## Icon treatment
 
-Core interface icons are cropped directly from the user-supplied screenshots and used as local PNG assets. Their surrounding HTML buttons remain interactive and accessible. The recording-time pill and the phone signal, Wi-Fi, and battery bar are intentionally removed.
+Core interface icons are cropped directly from the user-supplied screenshots and used as local PNG assets. Every crop arrived fully opaque on the screenshot's white field, so each one has had its background knocked out: a flood fill from the border removes only background that is connected to the edge, which leaves whites that belong to the artwork intact, and the anti-aliased rim keeps a partial alpha with the background lifted back out so no milky halo remains. `wrong.png` additionally had a grey wedge of the neighbouring card baked into the crop; since the cross is the only chromatic thing in that frame, its coverage was rebuilt from chroma, which drops the grey to zero. Their surrounding HTML buttons remain interactive and accessible. The recording-time pill and the phone signal, Wi-Fi, and battery bar are intentionally removed.
 
 Flashcards can be rated with Repeat, Hard, Okay, or Easy. Repeat and Hard cards are returned to the study queue. Horizontal swipes use the same system: short/long left swipes map to Hard/Repeat, while short/long right swipes map to Okay/Easy.
 
