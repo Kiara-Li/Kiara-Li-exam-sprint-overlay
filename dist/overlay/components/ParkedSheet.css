@@ -56,7 +56,7 @@
   display: grid;
   width: var(--size-full);
   min-height: var(--space-18);
-  grid-template-columns: var(--space-14) minmax(var(--space-0), 1fr);
+  grid-template-columns: var(--space-14) minmax(var(--space-0), 1fr) auto;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-0);
@@ -100,6 +100,24 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
+}
+
+.ov-sheet-row-action {
+  padding: var(--space-1) var(--space-3);
+  color: var(--color-primary);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.ov-sheet-note {
+  margin: var(--space-4) var(--space-0) var(--space-0);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
 }
 
 .ov-sheet-empty {

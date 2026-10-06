@@ -332,8 +332,22 @@ export const base = {
     }
     render();
   },
-  appendLearnQuestions(questions) {
-    state.learn.questions = [...state.learn.questions, ...questions];
+  /**
+   * Put questions back into the round. `next: true` places them at the front
+   * of what is left, so "do this one now" really does come up now.
+   */
+  appendLearnQuestions(questions, { next = false } = {}) {
+    if (!questions.length) return;
+    if (next) {
+      // Mid-question, slot them in behind the one on screen rather than
+      // swapping it out from under the user.
+      const at = state.learn.answer === null ? state.learn.pos : state.learn.pos + 1;
+      const head = state.learn.questions.slice(0, at);
+      const tail = state.learn.questions.slice(at);
+      state.learn.questions = [...head, ...questions, ...tail];
+    } else {
+      state.learn.questions = [...state.learn.questions, ...questions];
+    }
     if (state.route !== 'quiz') state.route = 'quiz';
     render();
   },

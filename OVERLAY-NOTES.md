@@ -219,3 +219,32 @@ overlay's own full screens — exam setup, plan, chapter done, sprint done —
 which already own the whole canvas. Its left edge lines up with the body text
 of the screen beneath it. No CJK characters anywhere in the source or in the
 rendered text of any screen.
+
+---
+
+# Round 4 — "save for later" could not be undone
+
+Two bugs made saved questions a one-way trip, which broke the third thing the
+prototype exists to test.
+
+- **Tapping a saved question deleted it.** The row handler removed the term from
+  `chapter.parked` and stopped there. Parking had already taken the question out
+  of the Learn queue, so the tap left it in neither place, and `missedAndParked`
+  no longer saw it either — it was gone from the final review too. The row is
+  now a real `Do now`: it unparks the term, rebuilds its question and slots it
+  in at the front of what is left, so it comes up immediately.
+- **"Work on these now" only looked at the current chapter.** The sheet lists
+  saves from every chapter, but the footer read `activeChapter().parked`. Saving
+  something in Chapter 1 and pressing the button in Chapter 2 silently did
+  nothing. It now collects every chapter's saves, and says how many it will
+  work: `Work on all 3 now · 5 min`.
+
+Two things had to follow from that:
+
+- A saved question can now be answered inside a later chapter's round, so
+  questions carry `chapterOrder`. Misses and the stuck alert are recorded
+  against the chapter the term came from, while the pace counter stays with the
+  chapter whose budget is actually running.
+- During the final review the saves are already in the test queue, so the sheet
+  drops the footer button for a line that says so, and the rows read `Remove`
+  rather than `Do now`.

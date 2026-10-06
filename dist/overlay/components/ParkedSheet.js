@@ -12,7 +12,7 @@ export function sheet({ title = '', body = '', footer = '', name = '' }) {
     </section>`;
 }
 
-export function parkedSheet(plan) {
+export function parkedSheet(plan, { inReview = false } = {}) {
   const rows = plan.chapters
     .flatMap((chapter) =>
       chapter.parked.map((termIndex) => {
@@ -24,6 +24,7 @@ export function parkedSheet(plan) {
               <strong>${definition}</strong>
               <small>${chapter.short} · ${term}</small>
             </span>
+            <span class="ov-sheet-row-action">${inReview ? 'Remove' : 'Do now'}</span>
           </button>`;
       }),
     )
@@ -34,13 +35,17 @@ export function parkedSheet(plan) {
 
   const count = plan.chapters.reduce((sum, chapter) => sum + chapter.parked.length, 0);
 
+  const footer = !count
+    ? ''
+    : inReview
+      ? '<p class="ov-sheet-note">These are already in your final review.</p>'
+      : `<button class="primary-button ov-full" data-ov="work-parked">Work on all ${count} now · 5 min</button>`;
+
   return sheet({
     name: 'parked',
     title: `Saved for later (${count})`,
     body: `<div class="ov-sheet-rows">${rows || empty}</div>`,
-    footer: count
-      ? '<button class="primary-button ov-full" data-ov="work-parked">Work on these now · 5 min</button>'
-      : '',
+    footer,
   });
 }
 

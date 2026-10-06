@@ -220,7 +220,9 @@ function render() {
 
   let sheetMarkup = '';
   if (ov.mode === 'sprint' && ov.sheet === 'chooser') sheetMarkup = studyChooser();
-  if (ov.mode === 'sprint' && ov.sheet === 'parked') sheetMarkup = parkedSheet(ov.plan);
+  if (ov.mode === 'sprint' && ov.sheet === 'parked') {
+    sheetMarkup = parkedSheet(ov.plan, { inReview: ov.stage === 'review' });
+  }
   if (ov.mode === 'sprint' && ov.sheet === 'adjust') sheetMarkup = adjustSheet(ov.plan);
   if (ov.mode === 'sprint' && ov.sheet === 'severe' && ov.severe) sheetMarkup = severeSheet(ov.severe);
   if (ov.mode === 'sprint' && ov.sheet === 'review' && ov.reviewTerm) sheetMarkup = reviewSheet();
@@ -477,7 +479,7 @@ function resolveAlertAction(index) {
   if (action.kind === 'park-current') {
     ov.island = { state: 'compact', alert: null, message: '' };
     const question = window.__base.state.learn.questions[window.__base.state.learn.pos];
-    if (question) parkQuestion(question.termIndex, 'stuck-alert');
+    if (question) parkQuestion(question.termIndex, 'stuck-alert', question.chapterOrder);
     return;
   }
 
@@ -498,27 +500,71 @@ function resolveAlertAction(index) {
   render();
 }
 
-function workParkedNow() {
-  const chapter = activeChapter();
-  const parked = [...chapter.parked];
-  if (!parked.length) {
-    ov.sheet = null;
-    ov.island = { state: 'compact', alert: null, message: '' };
+/**
+ * Questions for parked terms, tagged with the chapter they came from. A saved
+ * question can be answered inside a later chapter's round, so it has to carry
+ * its own set and its own owner with it.
+ */
+function parkedQuestions(chapter, termIndices) {
+  return window.__base
+    .buildQuestions(course.sets[chapter.setIndex], termIndices)
+    .map((question) => ({ ...question, chapterOrder: chapter.order, setIndex: chapter.setIndex }));
+}
+
+/** The term's own chapter, not whichever one happens to be active. */
+function ownerChapter(question) {
+  if (!ov.plan) return null;
+  if (question && question.chapterOrder !== undefined) return ov.plan.chapters[question.chapterOrder];
+  return activeChapter();
+}
+
+/** One saved question, brought back to the front of the round. */
+function doParkedNow(chapterOrder, termIndex) {
+  const chapter = ov.plan.chapters[chapterOrder];
+  if (!chapter || !chapter.parked.includes(termIndex)) return;
+  chapter.parked = chapter.parked.filter((value) => value !== termIndex);
+  ov.sheet = null;
+  logEvent('parked-resumed', { chapter: chapter.short, termIndex, count: 1 });
+
+  if (ov.stage === 'review') {
+    // It is already in the test queue; taking it out of the saved list is all
+    // that is needed, and yanking the user into Learn would be worse.
     render();
     return;
   }
-  Plan.addTime(ov.plan, ov.chapterIndex, 5, 'final');
-  chapter.parked = [];
-  const questions = window.__base.buildQuestions(course.sets[chapter.setIndex], parked);
-  ov.sheet = null;
-  ov.island = { state: 'compact', alert: null, message: '' };
-  logEvent('parked-worked', { count: parked.length });
-  window.__base.appendLearnQuestions(questions);
+  window.__base.appendLearnQuestions(parkedQuestions(chapter, [termIndex]), { next: true });
   render();
 }
 
-function parkQuestion(termIndex, via) {
-  const chapter = activeChapter();
+/** Every saved question, from every chapter, worked as one block. */
+function workParkedNow() {
+  const pending = ov.plan.chapters
+    .map((chapter) => ({ chapter, termIndices: [...chapter.parked] }))
+    .filter((entry) => entry.termIndices.length);
+
+  const count = pending.reduce((sum, entry) => sum + entry.termIndices.length, 0);
+  ov.sheet = null;
+  ov.island = { state: 'compact', alert: null, message: '' };
+
+  if (!count || ov.stage === 'review') {
+    render();
+    return;
+  }
+
+  const questions = pending.flatMap(({ chapter, termIndices }) => {
+    chapter.parked = [];
+    return parkedQuestions(chapter, termIndices);
+  });
+
+  Plan.addTime(ov.plan, ov.chapterIndex, 5, 'final');
+  logEvent('parked-worked', { count, chapters: pending.map((entry) => entry.chapter.short) });
+  window.__base.appendLearnQuestions(questions, { next: true });
+  render();
+}
+
+function parkQuestion(termIndex, via, chapterOrder) {
+  const chapter =
+    chapterOrder === undefined ? activeChapter() : ov.plan?.chapters[chapterOrder];
   if (!chapter || chapter.parked.includes(termIndex)) return;
   chapter.parked.push(termIndex);
   Plan.log(ov.plan, 'park', { chapter: chapter.short, termIndex, via });
@@ -748,14 +794,7 @@ function onOverlayClick(event) {
     'add-time': () => {
       showIslandAlert(addTimeAlert(ov.plan, ov.chapterIndex));
     },
-    unpark: () => {
-      const chapterOrder = Number(target.dataset.chapter);
-      const termIndex = Number(target.dataset.term);
-      const chapter = ov.plan.chapters[chapterOrder];
-      chapter.parked = chapter.parked.filter((value) => value !== termIndex);
-      logEvent('unpark', { termIndex });
-      render();
-    },
+    unpark: () => doParkedNow(Number(target.dataset.chapter), Number(target.dataset.term)),
     'work-parked': () => workParkedNow(),
     'severe-accept': () => {
       Plan.applySevere(ov.plan, ov.severe);
@@ -779,8 +818,8 @@ function onOverlayClick(event) {
       render();
     },
     'park-button': () => {
-      const termIndex = Number(target.dataset.term);
-      parkQuestion(termIndex, 'button');
+      const owner = target.dataset.chapter === undefined ? undefined : Number(target.dataset.chapter);
+      parkQuestion(Number(target.dataset.term), 'button', owner);
     },
     'review-card': () => {
       ov.reviewTerm = { setIndex: Number(target.dataset.set), termIndex: Number(target.dataset.term) };
@@ -875,7 +914,9 @@ const PARK_SLOP = 8;
 function parkTarget(node) {
   if (ov.stage === 'learn' && node.matches('[data-question-card]')) {
     const question = window.__base.state.learn.questions[window.__base.state.learn.pos];
-    return question ? { termIndex: question.termIndex, kind: 'learn' } : null;
+    return question
+      ? { termIndex: question.termIndex, kind: 'learn', chapterOrder: question.chapterOrder }
+      : null;
   }
   if (ov.stage === 'flashcards' && node.matches('[data-swipe-stage]')) {
     return { termIndex: window.__base.state.cardIndex, kind: 'flashcard' };
@@ -1225,11 +1266,12 @@ const sprintHooks = {
     if (!sprintRunning()) return '';
     const chapter = activeChapter();
     if (!chapter) return '';
-    const misses = chapter.missed[question.termIndex] || 0;
+    const owner = ownerChapter(question) || chapter;
+    const misses = owner.missed[question.termIndex] || 0;
 
     if (!answered) {
       return `<div class="ov-learn-extras">
-        <button class="ov-text-button ov-save-later" data-ov="park-button" data-term="${question.termIndex}">
+        <button class="ov-text-button ov-save-later" data-ov="park-button" data-term="${question.termIndex}" data-chapter="${owner.order}">
           ${saveGlyph('ov-glyph-sm')}Save for later
         </button>
       </div>`;
@@ -1238,12 +1280,12 @@ const sprintHooks = {
     // After a miss the prompt gets louder: this is the moment parking is for.
     const urgent = misses >= 1;
     return `<div class="ov-learn-extras">
-      <button class="ov-text-button ov-save-later${urgent ? ' is-urgent' : ''}" data-ov="park-button" data-term="${question.termIndex}">
+      <button class="ov-text-button ov-save-later${urgent ? ' is-urgent' : ''}" data-ov="park-button" data-term="${question.termIndex}" data-chapter="${owner.order}">
         ${saveGlyph('ov-glyph-sm')}${urgent ? 'Save it for later' : 'Save for later'}
       </button>
       ${
         misses >= 2
-          ? `<button class="ov-text-button ov-review-link" data-ov="review-card" data-set="${chapter.setIndex}" data-term="${question.termIndex}">Review this card</button>`
+          ? `<button class="ov-text-button ov-review-link" data-ov="review-card" data-set="${owner.setIndex}" data-term="${question.termIndex}">Review this card</button>`
           : ''
       }
     </div>`;
@@ -1251,17 +1293,25 @@ const sprintHooks = {
 
   onLearnAnswer({ question, correct }) {
     if (ov.mode !== 'sprint') return;
-    const chapter = activeChapter();
-    if (!chapter) return;
+    const active = activeChapter();
+    if (!active) return;
+    // Pace is about the chapter whose budget is running; mastery belongs to
+    // the chapter the term came from, which can differ for a resumed save.
+    const owner = ownerChapter(question) || active;
     ov.coachShown = true;
-    chapter.answered += 1;
-    if (!correct) chapter.missed[question.termIndex] = (chapter.missed[question.termIndex] || 0) + 1;
-    logEvent('learn-answer', { termIndex: question.termIndex, correct, hard: Boolean(question.hard) });
+    active.answered += 1;
+    if (!correct) owner.missed[question.termIndex] = (owner.missed[question.termIndex] || 0) + 1;
+    logEvent('learn-answer', {
+      termIndex: question.termIndex,
+      correct,
+      hard: Boolean(question.hard),
+      from: owner.short,
+    });
 
     // Two misses on one term: the island steps in and names the cost.
-    const misses = chapter.missed[question.termIndex] || 0;
-    if (!correct && misses >= 2 && !chapter.stuckShown.includes(question.termIndex)) {
-      chapter.stuckShown.push(question.termIndex);
+    const misses = owner.missed[question.termIndex] || 0;
+    if (!correct && misses >= 2 && !owner.stuckShown.includes(question.termIndex)) {
+      owner.stuckShown.push(question.termIndex);
       showIslandAlert(stuckAlert(question.term));
     }
   },
