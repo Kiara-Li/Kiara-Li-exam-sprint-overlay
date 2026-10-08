@@ -5,12 +5,12 @@
 // is inert.
 
 import { course } from '../base/data.js';
+import { isDemo } from '../base/demo-data.js';
 import { clearHooks, setHooks } from '../base/extensions.js';
 import { clock, formatClockTime, formatDuration } from './state/clock.js';
 import * as Plan from './state/sprintPlan.js';
 import { islandContent, islandShell } from './components/Island.js';
 import { adjustSheet, parkedSheet, sheet } from './components/ParkedSheet.js';
-import { spotlight } from './components/Spotlight.js';
 import { saveGlyph } from './components/glyphs.js';
 import { paceMarkup, sortStrip, sortDestination, bindSortGesture, flyIntoPace, animateSegmentMove } from './components/PaceStudy.js';
 import {
@@ -21,7 +21,6 @@ import {
   severeSheet,
   stuckAlert,
 } from './components/SprintAlert.js';
-import { studyChooser } from './screens/StudyChooser.js';
 import { defaultDraft, examSetup, resolveChip } from './screens/ExamSetup.js';
 import {
   shiftMonth,
@@ -57,6 +56,7 @@ function freshPace() {
 }
 
 const ov = {
+  demo: isDemo,
   mode: params.get('mode') === 'original' ? 'original' : 'sprint',
   phase: 'idle',
   plan: null,
@@ -80,6 +80,8 @@ const ov = {
   },
   coachShown: false,
   spotlightDone: false,
+  entryTapped: false,
+  suspended: null,
   reviewTerm: null,
   stats: { parkedSolved: 0 },
   debugOpen: params.get('debug') === '1',
@@ -211,17 +213,32 @@ function currentStage() {
 }
 
 function spotlightVisible() {
-  return (
-    ov.mode === 'sprint' &&
-    !ov.spotlightDone &&
-    !ov.sheet &&
-    ov.phase === 'idle' &&
-    window.__base.state.route === 'folder'
-  );
+  return false;
+}
+
+function enhanceEntry() {
+  if (ov.mode !== 'sprint') return;
+  const app = document.querySelector('#app');
+  if (window.__base.state.route === 'folder') {
+    const button = app.querySelector('.sticky-action button');
+    if (button) {
+      button.textContent = 'Prepare for exam';
+      button.parentElement.querySelector('.sprint-entry-tag')?.remove();
+      if (!ov.entryTapped) button.insertAdjacentHTML('beforebegin', '<span class="sprint-entry-tag">Start here ↓</span>');
+    }
+    app.querySelectorAll('[data-open-set]').forEach(button => {
+      if (Number(button.dataset.openSet) > 0) button.disabled = true;
+    });
+    const description = app.querySelector('.set-list [data-open-set="0"] small');
+    if (description) description.textContent = `${Plan.CHAPTER_TERM_COUNT} cards · Exam sprint`;
+  }
+  app.querySelectorAll('[data-nav="test-setup"], [data-nav="test"]').forEach(button => { button.disabled = true; });
 }
 
 function render() {
   if (!root) return;
+  document.documentElement.dataset.finalSprint = ov.mode === 'sprint' ? 'true' : 'false';
+  enhanceEntry();
   root.dataset.mode = ov.mode;
   window.requestAnimationFrame(measureIsland);
   window.setTimeout(measureIsland, 420);
@@ -234,7 +251,7 @@ function render() {
   let screen = '';
   if (ov.mode === 'sprint') {
     if (ov.phase === 'setup') screen = examSetup(ov.setup, clock.now());
-    if (ov.phase === 'building') screen = planBuilding(course.sets.map((set) => Plan.shortTitle(set.chapter)));
+    if (ov.phase === 'building') screen = planBuilding(ov.setup.selected.map(index => Plan.shortTitle(course.sets[index].chapter)));
     if (ov.phase === 'plan-error') screen = planError();
     if (ov.phase === 'plan') screen = planReady(ov.plan);
     if (ov.phase === 'chapter-done') screen = chapterDone(ov.plan, ov.chapterIndex);
@@ -249,18 +266,23 @@ function render() {
   }
 
   let sheetMarkup = '';
-  if (ov.mode === 'sprint' && ov.sheet === 'chooser') sheetMarkup = studyChooser();
+  if (ov.mode === 'sprint' && ov.sheet === 'leave') sheetMarkup = sheet({
+    name: 'leave', title: 'Leave this session?', body: '<p>Your progress will be saved.</p>',
+    footer: '<button class="primary-button ov-full" data-ov="keep-session">Keep studying</button><button class="soft-button ov-full" data-ov="leave-session">Leave</button>',
+  });
+  if (ov.mode === 'sprint' && ov.sheet === 'resume') sheetMarkup = sheet({
+    name: 'resume', title: 'Pick up where you left off?',
+    footer: '<button class="primary-button ov-full" data-ov="continue-session">Continue</button><button class="soft-button ov-full" data-ov="restart-session">Start over</button>',
+  });
   if (ov.mode === 'sprint' && ov.sheet === 'parked') {
     sheetMarkup = parkedSheet(ov.plan, { inReview: ov.stage === 'review' });
   }
   if (ov.mode === 'sprint' && ov.sheet === 'adjust') sheetMarkup = adjustSheet(ov.plan);
   if (ov.mode === 'sprint' && ov.sheet === 'severe' && ov.severe) sheetMarkup = severeSheet(ov.severe);
   if (ov.mode === 'sprint' && ov.sheet === 'review' && ov.reviewTerm) sheetMarkup = reviewSheet();
-  const showSpotlight = !sheetMarkup && spotlightVisible();
-  if (showSpotlight) sheetMarkup = spotlight();
   sheetLayer.innerHTML = sheetMarkup;
   sheetLayer.classList.toggle('is-visible', Boolean(sheetMarkup));
-  document.documentElement.dataset.spotlight = showSpotlight ? 'true' : 'false';
+  document.documentElement.dataset.spotlight = 'false';
 
   debugLayer.innerHTML = ov.debugOpen ? debugPanel(ov) : '';
   debugLayer.classList.toggle('is-visible', ov.debugOpen);
@@ -323,7 +345,7 @@ function paceQueue() {
 }
 
 function paceFraction() {
-  const planned = Math.max(1, Plan.stageMinutes(activeChapter(), ov.stage)) * 60000;
+  const planned = ov.demo ? (ov.stage === 'flashcards' ? 45000 : 60000) : Math.max(1, Plan.stageMinutes(activeChapter(), ov.stage)) * 60000;
   return Math.max(0, Math.min(1, (clock.now() - ov.pace.stageAt) / planned));
 }
 
@@ -518,11 +540,35 @@ async function sortPaceItem(level, via, card, { bypassPrompt = false, auto = fal
 
 /* -------------------------------------------------------------------- flow */
 
-function openChooser() {
-  ov.sheet = 'chooser';
-  ov.spotlightDone = true;
-  logEvent('chooser-open');
+function enterExam() {
+  logEvent('entry', { firstTap: !ov.entryTapped });
+  ov.entryTapped = true;
+  if (ov.suspended) { ov.sheet = 'resume'; render(); }
+  else if (ov.demo) prepareDemo();
+  else openSetup();
+}
+
+function prepareDemo() {
+  const now = clock.now();
+  ov.sheet = null;
+  ov.setup = { examAt: now + 4 * 60 * 60000, draftAt: now + 4 * 60 * 60000,
+    monthAnchor: now, picker: null, chipKey: null,
+    selected: course.sets.map((_, index) => index), shaky: [0], error: null };
+  ov.plan = Plan.createPlan({ examAt: ov.setup.examAt, startedAt: now, sets: course.sets, selected: ov.setup.selected, shaky: ov.setup.shaky });
+  setPhase('plan');
   render();
+}
+
+function resumeCorrectAnswer() {
+  const learn = window.__base.state.learn;
+  const question = learn.questions[learn.pos];
+  if (!chapterOnePace() || ov.stage !== 'learn' || !question || learn.answer !== question.correct) return;
+  clearTimeout(correctAdvanceTimer);
+  correctAdvanceTimer = setTimeout(() => {
+    if (chapterOnePace() && !ov.sheet && window.__base.state.learn.questions[learn.pos] === question) {
+      sortPaceItem('done', 'button', document.querySelector('#app [data-question-card]'), { auto: true, bypassPrompt: true });
+    }
+  }, 800);
 }
 
 function openSetup() {
@@ -617,6 +663,9 @@ function goToLearn() {
   if (chapter.setIndex === 0) {
     ov.pace.stageAt = clock.now();
     ov.pace.decision = null;
+    ov.pace.toast = null;
+    ov.pace.toastUntil = 0;
+    ov.pace.lastMessage = '';
   }
   ov.island = { state: 'compact', alert: null, message: '' };
   const scope = learnScope(chapter);
@@ -940,24 +989,50 @@ function onOverlayClick(event) {
   if (sprintRunning() && ov.stage === 'learn') ov.coachShown = true;
 
   const handlers = {
-    spotlight: () => openChooser(),
+    'keep-session': () => { logEvent('leave-prompt', { choice: 'keep' }); ov.sheet = null; render(); resumeCorrectAnswer(); },
+    'leave-session': () => {
+      logEvent('leave-prompt', { choice: 'leave' });
+      ov.suspended = { route: window.__base.state.route, phase: ov.phase, speed: clock.speed };
+      clock.setSpeed(0);
+      clearTimeout(correctAdvanceTimer);
+      ov.sheet = null;
+      setPhase('idle');
+      window.__base.go('folder');
+      render();
+    },
+    'continue-session': () => {
+      logEvent('resume-prompt', { choice: 'continue' });
+      const saved = ov.suspended;
+      if (!saved) return;
+      ov.suspended = null; ov.sheet = null;
+      setPhase(saved.phase);
+      clock.setSpeed(saved.speed);
+      window.__base.go(saved.route);
+      render(); resumeCorrectAnswer();
+    },
+    'restart-session': () => {
+      logEvent('resume-prompt', { choice: 'restart' });
+      ov.suspended = null; ov.plan = null; ov.pace = freshPace();
+      clock.reset();
+      if (ov.demo) prepareDemo();
+      else openSetup();
+    },
     'plan-my-time': () => {
       logEvent('plan-my-time', { from: window.__base.state.route });
-      openSetup();
+      enterExam();
     },
     'study-all': () => {
-      ov.sheet = null;
-      logEvent('chooser-choice', { choice: 'study-all' });
-      window.__base.openSet(0);
-      render();
+      enterExam();
     },
     'prep-exam': () => {
-      logEvent('chooser-choice', { choice: 'prep-exam' });
-      openSetup();
+      enterExam();
     },
     'dismiss-sheet': () => {
+      const wasLeave = ov.sheet === 'leave';
+      if (wasLeave) logEvent('leave-prompt', { choice: 'keep' });
       ov.sheet = null;
       render();
+      if (wasLeave) resumeCorrectAnswer();
     },
     'cancel-setup': () => {
       setPhase('idle');
@@ -994,6 +1069,7 @@ function onOverlayClick(event) {
     'pick-meridiem': () => commitDraft(withMeridiem(currentDraft(), target.dataset.meridiem)),
     'toggle-chapter': () => {
       const index = Number(target.dataset.chapter);
+      if (index === 0) return;
       ov.setup.selected = ov.setup.selected.includes(index)
         ? ov.setup.selected.filter((value) => value !== index)
         : [...ov.setup.selected, index].sort((a, b) => a - b);
@@ -1474,6 +1550,8 @@ function exportLog() {
 }
 
 function resetAll() {
+  ov.suspended = null;
+  ov.entryTapped = false;
   clock.reset();
   ov.plan = null;
   ov.pace = freshPace();
@@ -1486,12 +1564,14 @@ function resetAll() {
   ov.log = [];
   setPhase('idle');
   window.__base.reset();
+  if (ov.demo) { prepareDemo(); return; }
   render();
 }
 
 /* -------------------------------------------------------------------- mode */
 
 const sprintHooks = {
+  stableLearnLayout: () => chapterOnePace() && ov.stage === 'learn',
   interceptSwipe() {
     return chapterOnePace() && ov.stage === 'flashcards';
   },
@@ -1500,24 +1580,31 @@ const sprintHooks = {
 
     const studyAll = event.target.closest('.sticky-action button');
     if (studyAll && window.__base.state.route === 'folder') {
-      openChooser();
+      enterExam();
       return true;
     }
 
     // Closing a study screen steps out of the sprint but keeps the plan, so
     // the island can offer to resume instead of vanishing.
     if (sprintRunning() && event.target.closest('.app-header .icon-button[data-nav]')) {
-      logEvent('sprint-exited', { from: ov.stage });
-      setPhase('idle');
-      ov.spotlightDone = true;
+      if (ov.pace.sorting) return true;
+      clearTimeout(correctAdvanceTimer);
+      ov.sheet = 'leave';
       render();
-      return false;
+      return true;
     }
+    const entry = event.target.closest('[data-open-set], [data-nav="flashcards"], [data-nav="quiz"]');
+    if (entry) {
+      if (entry.dataset.openSet === undefined || Number(entry.dataset.openSet) === 0) enterExam();
+      return true;
+    }
+    if (event.target.closest('[data-nav="test-setup"], [data-nav="test"]')) return true;
     return false;
   },
 
   afterRender() {
     if (ov.mode !== 'sprint') return;
+    enhanceEntry();
     if (chapterOnePace()) {
       enhancePaceScreen();
       document.documentElement.dataset.sprintActive = 'false';
@@ -1581,9 +1668,9 @@ const sprintHooks = {
         window.clearTimeout(correctAdvanceTimer);
         correctAdvanceTimer = window.setTimeout(() => {
           const learn = window.__base.state.learn;
-          if (!chapterOnePace() || ov.stage !== 'learn' || learn.questions[learn.pos] !== question || learn.answer !== question.correct) return;
+          if (!chapterOnePace() || ov.sheet || ov.stage !== 'learn' || learn.questions[learn.pos] !== question || learn.answer !== question.correct) return;
           sortPaceItem('done', 'button', document.querySelector('#app [data-question-card]'), { auto: true, bypassPrompt: true });
-        }, 450);
+        }, 800);
       }
       return;
     }
@@ -1671,6 +1758,9 @@ function setMode(mode) {
   ov.island = { state: 'compact', alert: null, message: '' };
   setPhase('idle');
   logEvent('mode', { mode });
+  ov.suspended = null;
+  ov.entryTapped = false;
+  clock.reset();
   window.__base.reset();
   render();
 }
@@ -1678,6 +1768,7 @@ function setMode(mode) {
 /* -------------------------------------------------------------------- boot */
 
 function boot() {
+  if (ov.demo) document.title = 'Demo · Animal Facts';
   injectStyles();
   buildRoot();
   document.addEventListener('click', onOverlayClick);
@@ -1690,6 +1781,7 @@ function boot() {
   }
   render();
   window.__sprint = { ov, clock, Plan, setMode, exportLog, render };
+  if (ov.demo) prepareDemo();
 }
 
 if (window.__base) boot();

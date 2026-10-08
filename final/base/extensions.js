@@ -5,6 +5,7 @@
 export const hooks = {
   interceptClick: null,
   afterRender: null,
+  stableLearnLayout: null,
   learnExtras: null,
   onLearnAnswer: null,
   onLearnAdvance: null,

@@ -5,6 +5,8 @@
  */
 
 :root {
+  --feedback-wrong: #cf283d;
+  --feedback-wrong-surface: color-mix(in srgb, var(--feedback-wrong) 9%, var(--color-white));
   /* Chapter 1 sorting outcomes. */
   --sort-again: var(--color-warning-dark);
   --sort-later: var(--color-rating-purple);

@@ -29,7 +29,7 @@ export function chapterDone(plan, chapterIndex) {
            </div>`;
 
   const upNext = next
-    ? `<button class="up-next ov-up-next" data-ov="next-chapter" data-token-target>
+    ? `<button class="up-next ov-up-next" disabled data-token-target>
          <span>${icon('cards')}</span>
          <span>
            <small>Up next</small>
@@ -38,7 +38,7 @@ export function chapterDone(plan, chapterIndex) {
          </span>
          <span class="up-next-arrow">›</span>
        </button>`
-    : `<button class="up-next ov-up-next" data-ov="next-chapter" data-token-target>
+    : `<button class="up-next ov-up-next" disabled data-token-target>
          <span>${icon('test')}</span>
          <span>
            <small>Up next</small>
@@ -66,6 +66,7 @@ export function chapterDone(plan, chapterIndex) {
           <div class="ov-stat is-done"><strong>Completed</strong><b>${chapter.total}</b></div>
         </div>
         ${upNext}
+        <button class="primary-button ov-full" data-ov="finish-sprint">Done</button>
       </section>
     </main>`;
 }

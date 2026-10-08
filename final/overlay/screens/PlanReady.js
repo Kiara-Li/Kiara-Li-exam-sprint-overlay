@@ -57,7 +57,7 @@ export function planReady(plan) {
       </header>
       <section class="ov-plan-content">
         <h1>Your plan</h1>
-        <p class="ov-plan-meta">${plan.chapters.length} sets · ${formatDuration(totalAllotted(plan))} · Exam at ${formatClockTime(plan.examAt)}</p>
+        <p class="ov-plan-meta">${plan.chapters.length} ${plan.chapters.length === 1 ? 'set' : 'sets'} · ${formatDuration(totalAllotted(plan))} · Exam at ${formatClockTime(plan.examAt)}</p>
         ${plan.tight ? '<p class="ov-banner">That’s tight for ' + plan.chapters.length + ' sets. Here’s the leanest plan.</p>' : ''}
 
         ${planDonut(plan)}

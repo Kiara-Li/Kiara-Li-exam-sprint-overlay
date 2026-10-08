@@ -19,7 +19,7 @@ export function folderScreen() {
       <section class="folder-heading">
         <div class="folder-mark">${icon('folder')}</div>
         <h1>${course.folder}</h1>
-        <p>Survey Course: 1848–1968</p>
+        <p>${course.subtitle || 'Survey Course: 1848–1968'}</p>
       </section>
       <div class="folder-tabs"><span class="is-active">All</span><span>Semester</span><span>+ New tag</span></div>
       <section class="set-list" aria-label="Study sets">
@@ -123,6 +123,7 @@ export function flashCompleteScreen(setIndex, scope = null) {
 }
 
 export function quizScreen(setIndex, learn) {
+  const stableLayout = callHook('stableLearnLayout') === true;
   const quizQuestion = learn.questions[learn.pos];
   const answeredIndex = learn.answer;
   const answered = answeredIndex !== null;
@@ -130,7 +131,7 @@ export function quizScreen(setIndex, learn) {
   const distractors = quizQuestion.answers
     .map((_, index) => index)
     .filter((index) => index !== quizQuestion.correct && index !== answeredIndex);
-  const order = wrong
+  const order = wrong && !stableLayout
     ? [quizQuestion.correct, distractors[0], answeredIndex]
     : quizQuestion.answers.map((_, index) => index);
   const extras = callHook('learnExtras', { learn, question: quizQuestion, answered }) || '';
@@ -144,11 +145,13 @@ export function quizScreen(setIndex, learn) {
       ${progressBar(learn.pos + 1, learn.questions.length)}
       <section class="question-content ${answered ? 'has-feedback' : ''}" data-question-card>
         <h1>${quizQuestion.prompt}</h1>
-        ${wrong ? '<h2 class="wrong-title">Not quite, you\u2019re still learning!</h2>' : '<h2>Choose the answer</h2>'}
+        ${wrong ? '<h2 class="wrong-title">Not quite, you\u2019re still learning!</h2>' : stableLayout && answered ? '<h2 class="correct-title">Correct!</h2>' : '<h2>Choose the answer</h2>'}
         <div class="answer-list">
           ${order.map((index) => {
             const klass = answered && index === quizQuestion.correct ? 'is-correct' : wrong && index === answeredIndex ? 'is-wrong' : '';
-            const prefix = klass === 'is-correct' ? `<span class="answer-symbol">${icon('check')}</span>` : klass === 'is-wrong' ? `<span class="answer-symbol">${icon('wrong')}</span>` : '';
+            const prefix = stableLayout
+              ? `<span class="answer-symbol" aria-hidden="true">${klass === 'is-correct' ? '✓' : klass === 'is-wrong' ? '×' : ''}</span>`
+              : klass === 'is-correct' ? `<span class="answer-symbol">${icon('check')}</span>` : klass === 'is-wrong' ? `<span class="answer-symbol">${icon('wrong')}</span>` : '';
             return answerButton(prefix + `<span>${quizQuestion.answers[index]}</span>`, index, klass);
           }).join('')}
         </div>

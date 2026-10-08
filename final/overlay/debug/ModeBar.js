@@ -30,7 +30,7 @@ export function modeBar(ov) {
       <div class="ov-bar-modes">
         <a class="ov-bar-pill" href="../index.html?mode=original">Original</a>
         <a class="ov-bar-pill" href="../index.html?mode=sprint">2.1 test</a>
-        <span class="ov-bar-pill is-on" aria-current="page">Final</span>
+        ${ov.demo ? '<a class="ov-bar-pill" href="./index.html">Final</a><span class="ov-bar-pill is-on" aria-current="page">Demo</span>' : '<span class="ov-bar-pill is-on" aria-current="page">Final</span><a class="ov-bar-pill" href="./index.html?mode=demo">Demo</a>'}
       </div>
       <span class="ov-bar-state">${stateLabel(ov)}</span>
       <div class="ov-bar-actions">

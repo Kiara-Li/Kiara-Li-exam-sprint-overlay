@@ -1,3 +1,5 @@
+import { isDemo, animalTerms } from './demo-data.js';
+
 export const course = {
   folder: 'Modern Art History',
   sets: [
@@ -92,3 +94,14 @@ export const course = {
     },
   ],
 };
+
+if (isDemo) {
+  course.folder = 'Animal Facts';
+  course.subtitle = 'A little animal knowledge';
+  const titles = ['Animal Basics', 'Animal Homes', 'Food & Habits', 'Baby Animals'];
+  course.sets = titles.map((title, index) => ({
+    chapter: `Chapter ${index + 1} · ${title}`,
+    subtitle: 'Simple animal facts',
+    terms: animalTerms.map(term => [...term]),
+  }));
+}
