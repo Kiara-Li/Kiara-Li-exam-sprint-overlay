@@ -1,21 +1,26 @@
+@import '../system/tokens.css';
+
 :root {
   --color-page: #ffffff;
-  --color-page-muted: #f5f6fa;
+  /* Twilight / gray values checked against the Assembly case-study swatches.
+     See system/README.md for provenance and prototype-only decisions. */
+  --color-page-muted: #f6f7fb;
   --color-surface: #ffffff;
   --color-surface-soft: #f8f8ff;
-  --color-surface-blue: #eff1ff;
+  --color-surface-blue: #edefff;
   --color-surface-cyan: #edfbff;
   --color-surface-green: #e6faf4;
   --color-surface-orange: #fff5eb;
   --color-surface-pink: #fff0ff;
-  --color-border: #e9eaf1;
-  --color-border-strong: #d9deec;
-  --color-text: #282d3e;
-  --color-text-muted: #5e6988;
-  --color-text-soft: #959db4;
+  --color-border: #edeff3;
+  --color-border-strong: #d9dde8;
+  --color-text: #282e3e;
+  --color-text-muted: #586380;
+  --color-text-soft: #939bb4;
   --color-primary: #4255ff;
+  --color-primary-hover: #423ed8;
   --color-primary-dark: #2e259f;
-  --color-primary-light: #6c7cff;
+  --color-primary-light: #7583ff;
   --color-cyan: #3cc8ee;
   --color-success: #0ca777;
   --color-success-dark: #078968;

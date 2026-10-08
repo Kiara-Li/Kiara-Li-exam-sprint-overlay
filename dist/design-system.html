@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design system</title><link rel="icon" href="data:,">
+<link rel="stylesheet" href="./base/tokens.css"><link rel="stylesheet" href="./base/components/components.css">
+<link rel="stylesheet" href="./base/screens/screens.css"><link rel="stylesheet" href="./overlay/overlay.css">
+<link rel="stylesheet" href="./system/showcase.css">
+</head>
+<body class="system-page"><main class="ds-main">
+<h1 class="ds-page-title">Design system</h1>
+<section id="logotype" class="ds-section">
+<h2 class="ds-heading">Logotype</h2>
+<img class="ds-logotype" src="./system/assets/quizlet-logo.png" width="1536" height="864" alt="Quizlet">
+</section>
+<section id="type" class="ds-section">
+<h2 class="ds-heading">1. Typography</h2>
+<p class="ds-note">Hurme Geometric Sans 2 (fallback: Avenir Next / Century Gothic / Arial)</p>
+<div class="ds-type-row"><div class="ds-meta">Heading<span data-type-value="heading"></span></div><div class="ds-type-heading">Make it stick.</div></div>
+<div class="ds-type-row"><div class="ds-meta">Body<span data-type-value="body"></span></div><div class="ds-type-body">A little practice goes a long way.</div></div>
+<div class="ds-type-row"><div class="ds-meta">Label<span data-type-value="label"></span></div><div class="ds-type-label">Flashcards · Learn · Test</div></div>
+</section>
+<section id="color" class="ds-section">
+<h2 class="ds-heading">2. Color</h2>
+<div class="ds-colors">
+<figure><div class="ds-swatch ds-primary" tabindex="0" aria-label="Primary action color; focus or hover to preview its hover state"></div><figcaption class="ds-meta">Primary<span>Actions · <span data-color-value="--action-primary"></span></span></figcaption></figure>
+<figure><div class="ds-swatch ds-secondary" tabindex="0" aria-label="Secondary action color; focus or hover to preview its hover state"></div><figcaption class="ds-meta">Secondary<span>Soft actions · <span data-color-value="--action-subtle"></span></span></figcaption></figure>
+<figure><div class="ds-swatch ds-body"></div><figcaption class="ds-meta">Body<span>Text · <span data-color-value="--text-primary"></span></span></figcaption></figure>
+</div>
+</section>
+<section id="space" class="ds-section">
+<h2 class="ds-heading">3. Spacing</h2><div class="ds-spacing-list">
+<figure style="--sample-gap:var(--space-related)"><div class="ds-gap-demo" tabindex="0" aria-label="8 pixel spacing"><i></i><span></span><i></i></div><figcaption class="ds-meta">8 px<span>Icon + label</span></figcaption></figure>
+<figure style="--sample-gap:var(--space-control)"><div class="ds-gap-demo" tabindex="0" aria-label="16 pixel spacing"><i></i><span></span><i></i></div><figcaption class="ds-meta">16 px<span>Field padding</span></figcaption></figure>
+<figure style="--sample-gap:var(--space-content)"><div class="ds-gap-demo" tabindex="0" aria-label="24 pixel spacing"><i></i><span></span><i></i></div><figcaption class="ds-meta">24 px<span>Content gutter</span></figcaption></figure>
+<figure style="--sample-gap:var(--space-section)"><div class="ds-gap-demo" tabindex="0" aria-label="32 pixel spacing"><i></i><span></span><i></i></div><figcaption class="ds-meta">32 px<span>Section gap</span></figcaption></figure>
+</div></section>
+<section id="components" class="ds-section">
+<h2 class="ds-heading">4. Components</h2>
+<article class="ds-component"><h3 class="ds-subheading">Buttons</h3><div id="button-variants" class="ds-button-grid"></div><div id="button-states" class="ds-state-grid"></div></article>
+<article class="ds-component"><h3 class="ds-subheading">Date &amp; time</h3><div class="ds-field-stage"><div id="date-demo"></div><button class="ds-demo-toggle" id="field-error-toggle" aria-pressed="false">Error state</button></div></article>
+<article class="ds-component"><h3 class="ds-subheading">Answer cards</h3><div id="answers-demo" class="ds-answer-grid"></div></article>
+</section></main><script type="module" src="./system/showcase.js"></script></body></html>

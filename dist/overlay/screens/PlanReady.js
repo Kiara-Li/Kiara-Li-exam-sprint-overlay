@@ -2,6 +2,7 @@ import { icon } from '../../base/components/icons.js';
 import { formatClockTime, formatDuration } from '../state/clock.js';
 import { totalAllotted } from '../state/sprintPlan.js';
 import { planDonut } from '../components/PlanDonut.js';
+import { actionButton } from '../../system/components.js';
 
 export function planBuilding(titles) {
   const lines = titles
@@ -25,7 +26,7 @@ export function planError() {
     <main class="screen ov-screen ov-building-screen">
       <section class="ov-building">
         <h1 class="ov-error-title">Couldn’t build your plan.</h1>
-        <button class="primary-button" data-ov="retry-plan">Try again</button>
+        ${actionButton({ label: 'Try again', action: 'retry-plan' })}
       </section>
     </main>`;
 }
@@ -73,8 +74,8 @@ export function planReady(plan) {
         <p class="ov-label ov-plan-note">Your plan adjusts as you go.</p>
       </section>
       <div class="sticky-action ov-plan-actions">
-        <button class="primary-button" data-ov="start-sprint">Start</button>
-        <button class="ov-text-button" data-ov="open-adjust">Adjust times</button>
+        ${actionButton({ label: 'Start', action: 'start-sprint' })}
+        ${actionButton({ label: 'Adjust times', variant: 'text', action: 'open-adjust' })}
       </div>
     </main>`;
 }

@@ -6,14 +6,14 @@
 
 :root {
   /* Island */
-  --island-bg: var(--color-text);
+  --island-bg: var(--text-primary);
   --island-text: var(--color-white);
   --island-text-muted: var(--color-border-strong);
   --island-radius: var(--radius-pill);
   --island-radius-expanded: var(--radius-xl);
   --island-height: var(--space-11);
   --island-top: var(--space-3);
-  --island-inset: var(--space-6);
+  --island-inset: var(--space-content);
   --island-dot: var(--space-3);
   --island-badge: var(--space-6);
   --island-shadow: var(--shadow-card);
@@ -38,10 +38,10 @@
   --sprint-playhead: var(--color-text);
 
   /* Outcome tone, borrowed from Learn feedback */
-  --sprint-saved: var(--color-success-dark);
-  --sprint-saved-surface: var(--color-surface-green);
-  --sprint-over: var(--color-warning-dark);
-  --sprint-over-surface: var(--color-surface-orange);
+  --sprint-saved: var(--feedback-success);
+  --sprint-saved-surface: var(--feedback-success-surface);
+  --sprint-over: var(--feedback-warning);
+  --sprint-over-surface: var(--feedback-warning-surface);
 
   /* Sheets */
   --sheet-scrim: color-mix(in srgb, var(--color-text) 45%, transparent);

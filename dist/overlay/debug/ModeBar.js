@@ -33,6 +33,7 @@ export function modeBar(ov) {
       </div>
       <span class="ov-bar-state">${stateLabel(ov)}</span>
       <div class="ov-bar-actions">
+        <a class="ov-bar-pill" href="./design-system.html" target="_blank" rel="noopener">System</a>
         <button class="ov-bar-pill" data-ov="dbg-reset">Reset</button>
         <button class="ov-bar-pill${ov.debugOpen ? ' is-on' : ''}" data-ov="dbg-toggle">Debug</button>
       </div>

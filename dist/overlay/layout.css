@@ -1,0 +1,302 @@
+/* Layers -------------------------------------------------------------- */
+
+body {
+  padding-top: var(--devbar-height);
+}
+
+#ov-root {
+  position: fixed;
+  z-index: var(--z-overlay-root);
+  inset: var(--space-0);
+  pointer-events: none;
+}
+
+.ov-layer {
+  position: fixed;
+  inset: var(--space-0);
+  top: var(--devbar-height);
+  display: none;
+}
+
+.ov-layer.is-visible {
+  display: block;
+}
+
+.ov-screen-layer {
+  z-index: var(--z-overlay-screen);
+  overflow-y: auto;
+  background: var(--color-page-muted);
+  pointer-events: auto;
+}
+
+.ov-sheet-layer {
+  z-index: var(--z-overlay-sheet);
+  pointer-events: auto;
+}
+
+.ov-island-layer {
+  z-index: var(--z-overlay-island);
+  display: block;
+  pointer-events: none;
+}
+
+.ov-debug-layer {
+  z-index: var(--z-overlay-debug);
+  pointer-events: auto;
+}
+
+.ov-bar-layer {
+  position: fixed;
+  z-index: var(--z-overlay-bar);
+  top: var(--space-0);
+  right: var(--space-0);
+  left: var(--space-0);
+  pointer-events: none;
+}
+
+/* Shared pieces, all built from base tokens ---------------------------- */
+
+.ov-screen {
+  min-height: max(var(--viewport-height), var(--screen-min-height));
+}
+
+.ov-full {
+  width: var(--size-full);
+}
+
+.ov-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ov-tag {
+  margin-left: var(--space-2);
+  padding: var(--space-half) var(--space-2);
+  border: var(--border-width-thin) solid var(--color-primary-light);
+  color: var(--color-primary);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-style: normal;
+  font-weight: var(--font-weight-bold);
+  vertical-align: middle;
+}
+
+.ov-label {
+  margin: var(--space-6) var(--space-0) var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+.ov-inline-note {
+  margin: var(--space-3) var(--space-0) var(--space-0);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+.ov-inline-warning {
+  margin: var(--space-3) var(--space-0) var(--space-0);
+  color: var(--color-warning-dark);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-banner {
+  margin: var(--space-4) var(--space-0);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-warning-dark);
+  background: var(--color-surface-orange);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-card {
+  margin-top: var(--space-6);
+  padding: var(--space-0) var(--space-4);
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-lg);
+}
+
+.ov-glyph,
+.ov-glyph-lg,
+.ov-glyph-sm {
+  display: grid;
+  place-items: center;
+}
+
+.ov-glyph svg,
+.ov-glyph-lg svg,
+.ov-glyph-sm svg {
+  display: block;
+  width: var(--size-full);
+  height: var(--size-full);
+}
+
+.ov-glyph {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+}
+
+.ov-glyph-lg {
+  width: var(--icon-size-xl);
+  height: var(--icon-size-xl);
+}
+
+.ov-glyph-sm {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+/* Base-layer shims, only while the island is on screen ------------------ */
+
+html[data-sprint-active='true'] #app .screen {
+  padding-top: calc(
+    var(--island-live-height, var(--island-height)) + var(--island-top) + var(--space-2)
+  );
+  transition: padding-top var(--sprint-spring);
+}
+
+html[data-sprint-active='true'] #app .sticky-action,
+html[data-sprint-active='true'] #app .feedback-action,
+html[data-sprint-active='true'] #app .test-start {
+  z-index: var(--z-sticky);
+}
+
+html[data-sprint-active='true'] [data-question-card],
+html[data-sprint-active='true'] [data-swipe-stage] {
+  touch-action: pan-y;
+  user-select: none;
+}
+
+/* Keeps the base's horizontal drag working while adding the vertical one. */
+html[data-sprint-active='true'] .flashcard-stage {
+  transform: translate(var(--drag-x, var(--space-0)), var(--park-y, var(--space-0)))
+    rotate(var(--drag-rotate, var(--angle-zero)))
+    scale(calc(1 - var(--park-shrink) * var(--park-p, 0)));
+  transform-origin: top center;
+}
+
+[data-question-card] {
+  transform: translateY(var(--park-y, var(--space-0)))
+    scale(calc(1 - var(--park-shrink) * var(--park-p, 0)));
+  transform-origin: top center;
+  transition: transform var(--sprint-quick);
+}
+
+[data-swipe-stage].is-dragging-up {
+  transition: none;
+}
+
+[data-question-card].is-dragging-up {
+  transition: none;
+}
+
+[data-question-card].is-ready-to-park,
+[data-swipe-stage].is-ready-to-park {
+  opacity: var(--sprint-ready-opacity);
+}
+
+[data-question-card].is-parking,
+html[data-sprint-active='true'] [data-swipe-stage].is-parking {
+  opacity: var(--space-0);
+  transform: translateY(calc(var(--space-48) * -1 - var(--park-lift-extra))) scale(0.35);
+  transition:
+    transform var(--sprint-fly-duration) var(--sprint-fly-curve),
+    opacity var(--sprint-fly-duration) var(--sprint-fly-curve);
+}
+
+.ov-learn-extras {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+}
+
+.ov-save-later.is-urgent {
+  animation: ov-nudge var(--sprint-spring) calc(var(--sprint-stagger) * 2) both;
+}
+
+.ov-review-link {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+}
+
+@keyframes ov-nudge {
+  from {
+    opacity: var(--space-0);
+    transform: translateY(var(--sprint-rise));
+  }
+
+  70% {
+    transform: translateY(var(--sprint-lift));
+  }
+}
+
+/* Coach mark ----------------------------------------------------------- */
+
+.ov-coach {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-0) var(--space-0) var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  animation: ov-fade-in var(--sprint-spring) both;
+}
+
+.ov-coach::after {
+  position: absolute;
+  bottom: calc(var(--space-2) * -1);
+  left: var(--size-half);
+  width: var(--space-0);
+  height: var(--space-0);
+  border-top: var(--space-2) solid var(--color-surface);
+  border-right: var(--space-2) solid var(--color-transparent);
+  border-left: var(--space-2) solid var(--color-transparent);
+  content: '';
+  transform: translateX(var(--translate-center));
+}
+
+.ov-coach .ov-glyph-sm {
+  flex: var(--space-0) var(--space-0) var(--icon-size-sm);
+  color: var(--color-primary);
+}
+
+@keyframes ov-fade-in {
+  from {
+    opacity: var(--space-0);
+    transform: translateY(calc(var(--sprint-rise) * -1));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: var(--transition-fast) !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--transition-fast) !important;
+  }
+
+  [data-question-card].is-ready-to-park,
+[data-swipe-stage].is-ready-to-park {
+  opacity: var(--sprint-ready-opacity);
+}
+
+[data-question-card].is-parking {
+    transform: none;
+  }
+}

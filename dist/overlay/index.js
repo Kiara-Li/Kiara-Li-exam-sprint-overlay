@@ -99,6 +99,9 @@ function buildRoot() {
   const wrap = islandShell();
   root.querySelector('[data-layer="island"]').appendChild(wrap);
   islandNode = wrap.querySelector('[data-island]');
+  // Keep the study content below the timer throughout its height transition.
+  // Measuring only on the clock tick leaves the expanding controls overlapping.
+  new ResizeObserver(measureIsland).observe(islandNode);
   attachIslandGestures(wrap);
 }
 

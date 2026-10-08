@@ -6,7 +6,13 @@ Chapter 1 is intentionally an extra-easy testing set with direct artist, artwork
 
 The project now has two layers. The **base** layer is the Quizlet reproduction. The **overlay** layer adds *Exam Sprint*, the time-planning concept for Project 2, "Garden of Forking Paths".
 
-## Modes
+## Design system preview
+
+Open `design-system.html` at the repository root, or use the **System** link in the prototype bar. The separate page presents the supplied Quizlet logotype, typography, three color roles, four spacing values, and component states. Sprint patterns are omitted from this minimal presentation. See `dist/system/README.md` for sources, scope, and maintenance.
+
+The page imports the same CSS and component renderers as the study flow. Updating shared rules updates both. There is no build step, account connection, or publishing requirement.
+
+## Prototype modes
 
 | URL | What renders |
 |---|---|
@@ -64,7 +70,7 @@ modern-art-quizlet-ui/
             └── DebugPanel.*
 ```
 
-All design values are defined as CSS custom properties in `base/tokens.css`. `overlay/tokens.overlay.css` adds semantic aliases only — every overlay value resolves to a base token, or is derived from one with `color-mix`.
+Reference values are defined in `base/tokens.css`; `system/tokens.css` adds shared semantic roles. `overlay/tokens.overlay.css` maps those into Sprint-specific roles. `system/components.css` applies the shared decisions to existing controls and the new features. Documentation-only layout lives in `system/showcase.css`.
 
 ## How the overlay attaches to the base
 

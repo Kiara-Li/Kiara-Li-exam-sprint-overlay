@@ -1,0 +1,40 @@
+/* Semantic decisions shared by the prototype and the system page.
+   Primitive values remain in base/tokens.css. */
+:root {
+  --type-heading-size: var(--font-size-3xl);
+  --type-heading: var(--font-weight-bold) var(--type-heading-size) / var(--line-height-snug) var(--font-family);
+  --type-body-size: var(--font-size-lg);
+  --type-body: var(--font-weight-regular) var(--type-body-size) / var(--line-height-relaxed) var(--font-family);
+  --type-label-size: var(--font-size-sm);
+  --type-label: var(--font-weight-medium) var(--type-label-size) / var(--line-height-normal) var(--font-family);
+
+  --action-primary: var(--color-primary);
+  --text-primary: var(--color-text);
+  --text-muted: var(--color-text-muted);
+  --action-hover: var(--color-primary-hover);
+  --action-subtle: var(--color-surface-blue);
+  --surface-default: var(--color-surface);
+  --surface-grouped: var(--color-surface-soft);
+  --surface-disabled: var(--color-page-muted);
+  --feedback-success: var(--color-success-dark);
+  --feedback-success-surface: var(--color-surface-green);
+  --feedback-warning: var(--color-warning-dark);
+  --feedback-warning-surface: var(--color-surface-orange);
+  --border-default: var(--color-border);
+  --border-selected: var(--color-primary);
+  --focus-ring: var(--border-width-strong) solid var(--color-primary-light);
+
+  /* Four everyday spacing roles: 8 / 16 / 24 / 32 px. */
+  --space-related: var(--space-2);
+  --space-control: var(--space-4);
+  --space-content: var(--space-6);
+  --space-section: var(--space-8);
+
+  --control-radius: var(--radius-pill);
+  --field-radius: var(--radius-md);
+  --card-radius: var(--radius-xl);
+  --control-min-target: var(--space-11);
+  --button-label-size: var(--font-size-xl);
+  --component-title-size: var(--font-size-xl);
+  --motion-feedback: var(--transition-fast) var(--transition-curve);
+}

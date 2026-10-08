@@ -56,7 +56,7 @@ function calendarPanel(draft, monthAnchor, now) {
       if (!date) return '<span class="ov-cal-cell is-empty"></span>';
       const past = date.getTime() < today.getTime();
       const isSelected = dayKey(date.getTime()) === selected;
-      return `<button class="ov-cal-cell${isSelected ? ' is-selected' : ''}" data-ov="pick-day" data-day="${date.getTime()}" ${past ? 'disabled' : ''}>${date.getDate()}</button>`;
+      return `<button class="ov-cal-cell${isSelected ? ' is-selected' : ''}" aria-pressed="${isSelected}" aria-label="${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}" data-ov="pick-day" data-day="${date.getTime()}" ${past ? 'disabled' : ''}>${date.getDate()}</button>`;
     })
     .join('');
 
@@ -85,19 +85,19 @@ function timePanel(draft) {
   const hourChips = Array.from({ length: 12 }, (_, index) => index + 1)
     .map(
       (hour) =>
-        `<button class="ov-time-chip${hour === currentHour ? ' is-selected' : ''}" data-ov="pick-hour" data-hour="${hour}">${hour}</button>`,
+        `<button class="ov-time-chip${hour === currentHour ? ' is-selected' : ''}" aria-pressed="${hour === currentHour}" data-ov="pick-hour" data-hour="${hour}">${hour}</button>`,
     )
     .join('');
 
   const minuteChips = MINUTES.map(
     (minute) =>
-      `<button class="ov-time-chip${minute === currentMinute ? ' is-selected' : ''}" data-ov="pick-minute" data-minute="${minute}">:${String(minute).padStart(2, '0')}</button>`,
+      `<button class="ov-time-chip${minute === currentMinute ? ' is-selected' : ''}" aria-pressed="${minute === currentMinute}" data-ov="pick-minute" data-minute="${minute}">:${String(minute).padStart(2, '0')}</button>`,
   ).join('');
 
   const meridiemChips = ['AM', 'PM']
     .map(
       (value) =>
-        `<button class="ov-time-chip${value === currentMeridiem ? ' is-selected' : ''}" data-ov="pick-meridiem" data-meridiem="${value}">${value}</button>`,
+        `<button class="ov-time-chip${value === currentMeridiem ? ' is-selected' : ''}" aria-pressed="${value === currentMeridiem}" data-ov="pick-meridiem" data-meridiem="${value}">${value}</button>`,
     )
     .join('');
 
@@ -112,15 +112,15 @@ function timePanel(draft) {
     </div>`;
 }
 
-export function dateTimePicker({ draft, open, monthAnchor, now }) {
+export function dateTimePicker({ draft, open, monthAnchor, now, invalid = false }) {
   return `
     <div class="ov-when">
       <div class="ov-when-card">
-        <button class="ov-when-field${open === 'date' ? ' is-open' : ''}" data-ov="open-picker" data-picker="date">
+        <button class="ov-when-field${open === 'date' ? ' is-open' : ''}" aria-expanded="${open === 'date'}"${invalid ? ' aria-invalid="true" aria-describedby="exam-time-error"' : ''} data-ov="open-picker" data-picker="date">
           <span>Date</span>
           <strong>${formatDateLabel(draft)}</strong>
         </button>
-        <button class="ov-when-field${open === 'time' ? ' is-open' : ''}" data-ov="open-picker" data-picker="time">
+        <button class="ov-when-field${open === 'time' ? ' is-open' : ''}" aria-expanded="${open === 'time'}"${invalid ? ' aria-invalid="true" aria-describedby="exam-time-error"' : ''} data-ov="open-picker" data-picker="time">
           <span>Time</span>
           <strong>${formatTimeLabel(draft)}</strong>
         </button>
