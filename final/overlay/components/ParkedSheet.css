@@ -1,0 +1,181 @@
+.ov-scrim {
+  position: fixed;
+  inset: var(--space-0);
+  top: var(--devbar-height);
+  background: var(--sheet-scrim);
+  animation: ov-scrim-in var(--transition-medium) var(--transition-curve) both;
+}
+
+@keyframes ov-scrim-in {
+  from {
+    opacity: var(--space-0);
+  }
+}
+
+.ov-sheet {
+  position: fixed;
+  right: var(--space-0);
+  bottom: var(--space-0);
+  left: var(--space-0);
+  width: min(var(--size-full), var(--screen-width));
+  max-height: var(--sheet-max-height);
+  margin: var(--space-0) auto;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-5) var(--space-8);
+  background: var(--color-surface);
+  border-radius: var(--sheet-radius) var(--sheet-radius) var(--radius-none) var(--radius-none);
+  animation: ov-sheet-in var(--sprint-spring) both;
+}
+
+@keyframes ov-sheet-in {
+  from {
+    transform: translateY(var(--size-full));
+  }
+}
+
+.ov-sheet-grabber {
+  display: block;
+  width: var(--sheet-grabber-width);
+  height: var(--sheet-grabber-height);
+  margin: var(--space-0) auto var(--space-4);
+  background: var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
+
+.ov-sheet-title {
+  margin: var(--space-0) var(--space-0) var(--space-4);
+  font-size: var(--font-size-xl);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.ov-sheet-rows {
+  display: grid;
+}
+
+.ov-sheet-row {
+  display: grid;
+  width: var(--size-full);
+  min-height: var(--space-18);
+  grid-template-columns: var(--space-14) minmax(var(--space-0), 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-0);
+  color: var(--color-text);
+  background: var(--color-transparent);
+  cursor: pointer;
+  text-align: left;
+}
+
+.ov-sheet-row-icon {
+  display: grid;
+  width: var(--space-12);
+  height: var(--space-12);
+  place-items: center;
+  color: var(--color-primary);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-md);
+}
+
+.ov-sheet-row-icon .icon {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+}
+
+.ov-sheet-row-copy {
+  min-width: var(--space-0);
+}
+
+.ov-sheet-row-copy strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-snug);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ov-sheet-row-copy small {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+.ov-sheet-row-action {
+  padding: var(--space-1) var(--space-3);
+  color: var(--color-primary);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.ov-sheet-note {
+  margin: var(--space-4) var(--space-0) var(--space-0);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+}
+
+.ov-sheet-empty {
+  margin: var(--space-4) var(--space-0) var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-normal);
+}
+
+.ov-sheet-footer {
+  margin-top: var(--space-5);
+}
+
+.ov-adjust {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.ov-adjust-row {
+  display: flex;
+  min-height: var(--space-14);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.ov-adjust-row.is-final {
+  border-top: var(--border-width-thin) solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.ov-adjust-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ov-stepper button {
+  display: grid;
+  width: var(--space-10);
+  height: var(--space-10);
+  place-items: center;
+  color: var(--color-primary);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.ov-stepper b {
+  min-width: var(--space-16);
+  font-size: var(--font-size-lg);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

@@ -1,0 +1,31 @@
+/* Final sorting specimen. It shares the study screen's pace and sort controls. */
+.sort-demo { max-width: 390px; margin-inline: auto; }
+.sort-phone {
+  padding: 22px 18px 24px; border: 1px solid var(--border-default);
+  border-radius: var(--card-radius); background: var(--surface-default);
+  font-family: var(--font-family); color: var(--text-primary);
+}
+.sort-head { display: flex; justify-content: space-between; align-items: center; min-height: 38px; }
+.sort-head strong { font-size: 21px; }
+.sort-restart { background: none; color: var(--action-primary); font: var(--type-label); cursor: pointer; }
+.sort-pace { margin: 20px 0 0; }
+.sort-pace .sprint-pace-shell { padding: 0 0 20px; }
+.sort-count { margin: 4px 0 12px; font-weight: 700; font-size: 20px; }
+.sort-stage { position: relative; }
+.sort-stage[hidden], .sort-controls[hidden], .sort-finish[hidden] { display: none; }
+.sort-card {
+  display: grid; place-items: center; width: 100%; min-height: 350px; padding: 28px;
+  border: 1px solid var(--border-default); border-radius: var(--card-radius);
+  background: var(--surface-default); box-shadow: var(--shadow-card);
+  color: var(--text-primary); cursor: grab; touch-action: pan-y; user-select: none;
+}
+.sort-card:active { cursor: grabbing; }
+.sort-term { max-width: 290px; text-align: center; font-size: 25px; line-height: 1.4; }
+.sort-card[data-side='back'] .sort-term { font-size: 19px; }
+.sort-card[data-sort-preview='again'] { outline: 3px solid var(--sort-again); background: var(--sort-again-surface); }
+.sort-card[data-sort-preview='done'] { outline: 3px solid var(--sort-done); background: var(--sort-done-surface); }
+.sort-controls .sprint-sort-controls { padding: 22px 0 0; }
+.sort-finish { min-height: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; }
+.sort-finish strong { font: var(--type-heading); }
+.sort-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 520px) { .sort-phone { padding-inline: 14px; } .sort-card { min-height: 300px; } }

@@ -28,9 +28,9 @@ export function modeBar(ov) {
   return `
     <div class="ov-bar" role="toolbar" aria-label="Prototype controls">
       <div class="ov-bar-modes">
-        <button class="ov-bar-pill${ov.mode === 'original' ? ' is-on' : ''}" data-ov="dbg-mode" data-value="original">Original</button>
-        <button class="ov-bar-pill${ov.mode === 'sprint' ? ' is-on' : ''}" data-ov="dbg-mode" data-value="sprint">2.1 test</button>
-        <a class="ov-bar-pill" href="../final/index.html">Final</a>
+        <a class="ov-bar-pill" href="../index.html?mode=original">Original</a>
+        <a class="ov-bar-pill" href="../index.html?mode=sprint">2.1 test</a>
+        <span class="ov-bar-pill is-on" aria-current="page">Final</span>
       </div>
       <span class="ov-bar-state">${stateLabel(ov)}</span>
       <div class="ov-bar-actions">

@@ -1,0 +1,59 @@
+/* Gallery layout only; specimens retain the actual product styles. */
+.system-page { --annotation-font: "SFMono-Regular", Consolas, "Liberation Mono", monospace; --annotation-color: #8a8a8a; background: #fff; }
+.ds-main { max-width: 1200px; margin: auto; padding: 64px 64px 100px; }
+.ds-page-title, .ds-heading, .ds-subheading, .ds-meta, .ds-note, .ds-demo-toggle { font-family: var(--annotation-font); font-weight: 400; color: var(--annotation-color); }
+.ds-page-title { font-size: 16px; margin: 0 0 80px; }
+.ds-logotype { display: block; width: min(100%, 560px); height: auto; margin-block: -50px; }
+.ds-section { margin-bottom: 88px; scroll-margin-top: 32px; }
+.ds-heading { font-size: 13px; margin: 0 0 32px; }
+.ds-subheading { font-size: 12px; margin: 0 0 28px; }
+.ds-note { font-size: 11px; line-height: 1.8; margin: -12px 0 36px; }
+.ds-type-row { display: grid; grid-template-columns: 200px 1fr; align-items: baseline; gap: 32px; padding: 26px 0; }
+.ds-type-heading { font: var(--type-heading); letter-spacing: var(--letter-spacing-tight); }
+.ds-type-body { font: var(--type-body); }
+.ds-type-label { font: var(--type-label); }
+.ds-meta { font-size: 12px; line-height: 1.6; }
+.ds-meta > span { display: block; font-size: 10px; margin-top: 6px; }
+.ds-meta span span { display: inline; }
+figure { margin: 0; }
+.ds-colors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.ds-swatch { height: 188px; border-radius: var(--field-radius); margin-bottom: 20px; transition: background var(--motion-feedback); }
+.ds-primary { background: var(--action-primary); }
+.ds-primary:is(:hover, :focus-visible) { background: var(--action-hover); }
+.ds-secondary { background: var(--action-subtle); }
+.ds-secondary:is(:hover, :focus-visible) { background: color-mix(in srgb, var(--action-primary) 12%, var(--surface-default)); }
+.ds-body { background: var(--text-primary); }
+.ds-swatch:focus-visible, .ds-gap-demo:focus-visible { outline: var(--focus-ring); outline-offset: 4px; }
+.ds-spacing-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.ds-gap-demo { height: 116px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+.ds-gap-demo i { height: 64px; width: 40px; background: var(--action-subtle); border-radius: 6px; }
+.ds-gap-demo span { width: var(--sample-gap); height: 64px; position: relative; }
+.ds-gap-demo span::after { content: ""; position: absolute; inset: 0; background: var(--action-primary); opacity: .13; transform: scaleY(.08); transition: transform 400ms ease, opacity 400ms ease; }
+.ds-gap-demo:is(:hover, :focus-visible) span::after { transform: scaleY(1); opacity: .3; }
+.ds-component { margin-bottom: 60px; }
+.ds-button-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; margin-bottom: 40px; }
+.ds-state-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.ds-button-grid figure, .ds-state-grid figure { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.ds-button-grid button, .ds-state-grid button { max-width: 100%; }
+.ds-field-stage { max-width: 480px; }
+.ds-demo-toggle { background: transparent; padding: 12px 0; font-size: 11px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.ds-demo-toggle[aria-pressed="true"] { color: #666; }
+.ds-answer-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.ds-answer-grid figcaption { margin-top: 18px; }
+@media (max-width: 800px) {
+.ds-main { padding: 40px 28px 60px; }
+.ds-type-row { grid-template-columns: 140px 1fr; gap: 24px; }
+.ds-state-grid, .ds-spacing-list { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 32px; }
+.ds-answer-grid { grid-template-columns: 1fr; max-width: 480px; }
+}
+@media (max-width: 520px) {
+.ds-page-title { margin-bottom: 56px; }
+.ds-section { margin-bottom: 64px; }
+.ds-type-row { grid-template-columns: 1fr; gap: 16px; padding: 22px 0; }
+.ds-colors { gap: 12px; }
+.ds-swatch { height: 120px; }
+.ds-button-grid { grid-template-columns: 1fr; gap: 24px; }
+.ds-state-grid { gap: 28px 12px; }
+.ds-state-grid .button-compact { padding-inline: var(--space-related); }
+}
+@media (prefers-reduced-motion: reduce) { .ds-swatch, .ds-gap-demo span::after { transition: none; } }

@@ -39,8 +39,4 @@ No new user-test evidence is claimed by this visual-system iteration. Commit and
 
 ## Isolated sorting motion study
 
-The `#sorting` section imports only `sorting-demo.css` and `sorting-demo.js`. It approximates the user's supplied Quizlet screenshots and description; timings and zone geometry are not verified official values. Orange / purple / cyan / green appear only in this study's scoped rating styles. The interval labels follow the user's second screenshot.
-
-Drag displacement selects four destination regions around a neutral center. A small movement threshold preserves taps; pointer capture begins only once a drag is established. Pointer cancellation, lost capture, blur, resizing, and Escape return the card. Bottom buttons trigger the same exit sequence. Reduced-motion settings shorten transitions.
-
-Eight sample cards, undo, restart, and progress are entirely local to the demonstration. Repeat advances to the next demo card; no spaced-repetition scheduler is implemented. It does not read or write the real study session or change the existing flashcard interactions. Integration is pending the user's review of the motion.
+The `#sorting` section imports `sorting-demo.css` and `sorting-demo.js`. It uses the same three-outcome controls, queue positions, pace bar, and card-flight helper as the Final Chapter 1 study flow. Orange / purple / green are semantic Sprint sort colors; there are no spaced-repetition intervals in this round. A swipe selects the left or right outcome; the middle outcome is button-only. The specimen's four sample cards and restart control are local to the design-system page and do not modify the study session.

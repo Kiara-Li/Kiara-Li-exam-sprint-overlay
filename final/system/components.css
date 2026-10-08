@@ -1,0 +1,194 @@
+/* Shared actions. Default = base CTA; compact = study action;
+   inverse = the same action on the dark timer. */
+.primary-button,
+.soft-button,
+.ov-text-button,
+.ov-save-later,
+.ov-island-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-related);
+  min-height: var(--button-height);
+  padding: var(--space-3) var(--space-content);
+  border-radius: var(--control-radius);
+  font-size: var(--button-label-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-normal);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--motion-feedback), color var(--motion-feedback), box-shadow var(--motion-feedback);
+}
+.primary-button,
+.ov-save-later.is-urgent,
+.ov-island-chip.is-primary {
+  color: var(--color-white);
+  background: var(--action-primary);
+}
+.soft-button,
+.ov-save-later {
+  color: var(--action-primary);
+  background: var(--action-subtle);
+}
+.ov-text-button {
+  min-height: var(--control-min-target);
+  padding: var(--space-related);
+  color: var(--action-primary);
+  background: transparent;
+}
+.ov-text-button.is-primary { justify-self: end; }
+.button-compact,
+.ov-save-later {
+  min-height: var(--control-min-target);
+  padding: var(--space-related) var(--space-control);
+  font-size: var(--type-body-size);
+}
+.ov-island-chip {
+  min-height: var(--control-min-target);
+  padding: var(--space-related) var(--space-control);
+  color: var(--island-text);
+  background: var(--island-chip-bg);
+  font-size: var(--type-label-size);
+}
+@media (hover: hover) {
+  .primary-button:hover:not(:disabled),
+  .ov-save-later.is-urgent:hover:not(:disabled),
+  .ov-island-chip.is-primary:hover:not(:disabled) { background: var(--action-hover); }
+  .soft-button:hover:not(:disabled),
+  .ov-save-later:not(.is-urgent):hover:not(:disabled),
+  .ov-text-button:hover:not(:disabled) { background: color-mix(in srgb, var(--action-primary) 12%, var(--surface-default)); }
+  .ov-chip:hover:not(:disabled),
+  .ov-when-field:hover:not(:disabled) { border-color: var(--color-primary-light); }
+  .ov-island-chip:not(.is-primary):hover { background: var(--island-divider); }
+}
+:is(.primary-button, .soft-button, .ov-save-later, .ov-island-chip):active:not(:disabled) {
+  box-shadow: inset 0 0 0 var(--border-width) color-mix(in srgb, currentColor 25%, transparent);
+}
+:is(button, a, input):focus-visible,
+[data-preview-state='focus'] {
+  outline: var(--focus-ring);
+  outline-offset: var(--space-1);
+}
+:is(.primary-button, .soft-button, .ov-text-button, .ov-save-later):disabled,
+.ov-setup-action .primary-button:disabled {
+  color: var(--text-muted);
+  background: var(--surface-disabled);
+  cursor: not-allowed;
+}
+.primary-button[aria-busy='true'] {
+  color: var(--color-white);
+  background: var(--action-primary);
+  cursor: progress;
+}
+.button-spinner {
+  width: var(--icon-size-xs);
+  height: var(--icon-size-xs);
+  border: var(--border-width) solid color-mix(in srgb, currentColor 35%, transparent);
+  border-top-color: currentColor;
+  border-radius: var(--control-radius);
+  animation: system-spin 800ms linear infinite;
+}
+@keyframes system-spin { to { transform: rotate(360deg); } }
+
+/* Choice controls keep the same selected treatment as the base folder tabs. */
+.ov-chip {
+  min-height: var(--control-min-target);
+  padding: var(--space-related) var(--space-control);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--control-radius);
+  color: var(--text-primary);
+  background: var(--surface-grouped);
+  font-size: var(--type-body-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-normal);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--motion-feedback), border-color var(--motion-feedback);
+}
+.ov-chip.is-selected {
+  color: var(--action-primary);
+  background: var(--action-subtle);
+  border-color: var(--border-selected);
+}
+.ov-chip:disabled { color: var(--text-muted); cursor: not-allowed; }
+.ov-chip-row { gap: var(--space-related); }
+.ov-quick-row .ov-chip { font-size: var(--type-label-size); }
+
+/* The same field in setup and the component gallery. */
+.ov-when-field {
+  min-height: var(--button-height);
+  padding: var(--space-control);
+  border-color: var(--border-default);
+  border-radius: var(--field-radius);
+}
+.ov-when-field.is-open,
+.ov-when-field:focus-within { border-color: var(--border-selected); background: var(--action-subtle); }
+.ov-when-field span,
+.ov-picker-label,
+.ov-cal-weekdays span {
+  color: var(--text-muted);
+  font: var(--type-label);
+  letter-spacing: normal;
+  text-transform: none;
+}
+.ov-when-field strong { font-size: var(--component-title-size); }
+.ov-cal-cell,
+.ov-cal-nav,
+.ov-time-chip,
+.ov-stepper button { min-height: var(--control-min-target); }
+.ov-time-grid.is-hours { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.ov-time-grid.is-hours .ov-time-chip { min-width: 0; padding-inline: var(--space-1); }
+.ov-time-chip.is-selected,
+.ov-cal-cell.is-selected { background: var(--action-primary); }
+.ov-when-field:disabled { color: var(--text-muted); background: var(--surface-disabled); cursor: not-allowed; }
+.ov-when-field[aria-invalid='true'] { border-color: var(--feedback-warning); }
+.ov-inline-warning,
+.ov-banner { color: var(--feedback-warning); font: var(--type-body); }
+.ov-banner { background: var(--feedback-warning-surface); }
+
+/* Sprint typography and layout inherit the base's 24px study gutter. */
+.ov-setup-content,
+.ov-plan-content,
+.ov-sheet { padding-inline: var(--space-content); }
+.ov-setup-content h1,
+.ov-plan-content h1,
+.ov-chapter-done .flash-complete-content h1,
+.ov-sprint-done .flash-complete-content h1,
+.ov-error-title { font: var(--type-heading); letter-spacing: var(--letter-spacing-tight); }
+.ov-setup-lede,
+.ov-plan-meta,
+.ov-inline-note,
+.ov-label,
+.ov-sheet-body,
+.ov-sheet-empty { font: var(--type-body); color: var(--text-muted); }
+.ov-section-note,
+.ov-sheet-note,
+.ov-plan-name small,
+.ov-sheet-row-copy small,
+.ov-reallocation-note { font: var(--type-label); color: var(--text-muted); }
+.ov-section-title,
+.ov-sheet-title { font-size: var(--component-title-size); line-height: var(--line-height-snug); }
+.ov-section-title { margin-top: var(--space-section); }
+.ov-card { margin-top: var(--space-related); padding-inline: var(--space-control); border-radius: var(--card-radius); }
+.ov-check-row .set-copy strong { white-space: normal; font-size: var(--type-body-size); }
+.ov-check-row { gap: var(--space-related); grid-template-columns: var(--space-12) minmax(0, 1fr) var(--space-8); }
+.ov-check-row .set-icon,
+.ov-check-row .set-icon .icon { width: var(--space-12); height: var(--space-12); }
+.ov-plan-name small { white-space: normal; }
+.ov-plan-row { column-gap: var(--space-related); }
+.ov-plan-time { white-space: nowrap; }
+.ov-sheet-footer { margin-top: var(--space-content); }
+.ov-reallocation-label { font: var(--type-label); text-transform: none; letter-spacing: normal; }
+.ov-stat.is-left { color: var(--text-muted); background: var(--surface-grouped); }
+.ov-island-head { min-height: var(--island-height); height: auto; }
+.ov-island[data-state='expanded'] {
+  grid-template-rows: var(--island-height) 1fr;
+  border-radius: var(--island-radius-expanded);
+}
+.ov-island-message { white-space: normal; line-height: var(--line-height-normal); padding-block: var(--space-related); }
+.ov-island[data-state='alert'] { grid-template-rows: auto 1fr; border-radius: var(--island-radius-expanded); }
+
+@media (prefers-reduced-motion: reduce) {
+  .button-spinner { animation: none; }
+  :is(.primary-button, .soft-button, .ov-text-button, .ov-save-later, .ov-island-chip, .ov-chip) { transition: none; }
+}

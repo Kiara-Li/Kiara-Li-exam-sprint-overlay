@@ -1,0 +1,184 @@
+.ov-island-wrap {
+  position: fixed;
+  top: calc(var(--devbar-height) + var(--island-top));
+  right: var(--space-0);
+  left: var(--space-0);
+  display: none;
+  width: min(var(--size-full), var(--screen-width));
+  justify-content: center;
+  margin: var(--space-0) auto;
+  padding: var(--space-0) var(--island-inset);
+  pointer-events: none;
+}
+
+.ov-island-wrap.is-visible {
+  display: flex;
+}
+
+.ov-island {
+  position: relative;
+  display: grid;
+  width: var(--size-full);
+  grid-template-rows: var(--island-height) 0fr;
+  padding: var(--space-0) var(--space-4);
+  color: var(--island-text);
+  background: var(--island-bg);
+  border-radius: var(--island-radius);
+  box-shadow: var(--island-shadow);
+  cursor: pointer;
+  pointer-events: auto;
+  text-align: left;
+  transform: scale(calc(1 + var(--catch-grow) * var(--catch, 0)));
+  transform-origin: top center;
+  transition:
+    width var(--sprint-spring),
+    grid-template-rows var(--sprint-spring),
+    border-radius var(--sprint-spring),
+    box-shadow var(--sprint-spring);
+}
+
+.ov-island-head {
+  display: flex;
+  height: var(--island-height);
+  align-items: center;
+  gap: var(--space-2);
+  overflow: hidden;
+}
+
+.ov-island-body {
+  min-height: var(--space-0);
+  overflow: hidden;
+}
+
+.ov-island-inner {
+  padding: var(--space-0) var(--space-0) var(--space-3);
+}
+
+.ov-island-dot {
+  flex: var(--space-0) var(--space-0) var(--island-dot);
+  width: var(--island-dot);
+  height: var(--island-dot);
+  background: var(--dot-color);
+  border-radius: var(--radius-pill);
+}
+
+.ov-island-time {
+  margin-left: auto;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-island-time.is-rolling {
+  animation: ov-roll var(--transition-fast) var(--transition-curve);
+}
+
+@keyframes ov-roll {
+  from {
+    opacity: var(--space-0);
+    transform: translateY(var(--space-2));
+  }
+}
+
+.ov-island-title {
+  flex: 1 1 auto;
+  overflow: hidden;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-island-stage {
+  padding: var(--space-half) var(--space-3);
+  color: var(--island-text);
+  background: var(--island-chip-bg);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-island-message {
+  flex: 1 1 auto;
+  overflow: hidden;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-island-detail {
+  margin: var(--space-0) var(--space-0) var(--space-2);
+  color: var(--island-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.ov-island-badge {
+  display: grid;
+  min-width: var(--island-badge);
+  height: var(--island-badge);
+  place-items: center;
+  padding: var(--space-0) var(--space-1);
+  color: var(--island-bg);
+  background: var(--island-text);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-island-progress {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: var(--space-0) var(--space-0) var(--space-2);
+  color: var(--island-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-island-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.ov-island-chip {
+  padding: var(--space-2) var(--space-4);
+  color: var(--island-text);
+  background: var(--island-chip-bg);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.ov-island-chip.is-primary {
+  color: var(--color-white);
+  background: var(--color-primary);
+}
+
+.ov-island.is-ready {
+  box-shadow: var(--island-shadow), var(--space-0) var(--space-0) var(--space-0)
+    var(--border-width) var(--island-glow);
+}
+
+.ov-island.is-catching {
+  animation: ov-catch var(--sprint-spring-duration) var(--transition-curve);
+}
+
+/* Squash on impact, then settle: the island swallows the card. */
+@keyframes ov-catch {
+  25% {
+    transform: scale(1.1, 0.86) translateY(var(--space-1));
+  }
+
+  55% {
+    transform: scale(0.97, 1.08) translateY(var(--sprint-lift));
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,111 @@
+/*
+ * Semantic aliases only. Every value here resolves to a base token from
+ * base/tokens.css, or is derived from one with color-mix. No raw colors,
+ * sizes or spacing values are introduced by the overlay.
+ */
+
+:root {
+  /* Chapter 1 sorting outcomes. */
+  --sort-again: var(--color-warning-dark);
+  --sort-later: var(--color-rating-purple);
+  --sort-done: var(--action-primary);
+  --sort-again-surface: var(--color-surface-orange);
+  --sort-later-surface: var(--color-surface-pink);
+  --sort-done-surface: var(--color-surface-blue);
+  --pace-again: var(--color-warning);
+  --pace-later: var(--color-rating-purple);
+  --pace-complete: var(--action-primary);
+  --pace-goal: var(--color-cyan);
+  /* Island */
+  --island-bg: var(--text-primary);
+  --island-text: var(--color-white);
+  --island-text-muted: var(--color-border-strong);
+  --island-radius: var(--radius-pill);
+  --island-radius-expanded: var(--radius-xl);
+  --island-height: var(--space-11);
+  --island-top: var(--space-3);
+  --island-inset: var(--space-content);
+  --island-dot: var(--space-3);
+  --island-badge: var(--space-6);
+  --island-shadow: var(--shadow-card);
+  --island-divider: color-mix(in srgb, var(--color-white) 18%, transparent);
+  --island-chip-bg: color-mix(in srgb, var(--color-white) 14%, transparent);
+  --island-glow: var(--color-success-light);
+  /* Swipe-to-save: the island reaches down for the card as it rises. */
+  --catch-reach: var(--space-10);
+  --catch-drip: var(--space-6);
+  --catch-grow: 0.07;
+  --park-shrink: 0.14;
+  --park-lift-extra: var(--space-6);
+
+  /* Chapter identity */
+  --sprint-chapter-1: var(--color-primary);
+  --sprint-chapter-2: var(--color-cyan);
+  --sprint-chapter-3: var(--color-success);
+  --sprint-chapter-4: var(--color-warning);
+  --sprint-final: var(--color-primary-dark);
+  --sprint-track: var(--color-border-strong);
+  --sprint-band: color-mix(in srgb, var(--color-white) 52%, transparent);
+  --sprint-playhead: var(--color-text);
+
+  /* Outcome tone, borrowed from Learn feedback */
+  --sprint-saved: var(--feedback-success);
+  --sprint-saved-surface: var(--feedback-success-surface);
+  --sprint-over: var(--feedback-warning);
+  --sprint-over-surface: var(--feedback-warning-surface);
+
+  /* Sheets */
+  --sheet-scrim: color-mix(in srgb, var(--color-text) 45%, transparent);
+  --sheet-radius: var(--radius-2xl);
+  --sheet-grabber-width: var(--space-10);
+  --sheet-grabber-height: var(--space-1);
+  --sheet-max-height: calc(var(--viewport-height) - var(--space-24));
+
+  /* Timeline */
+  --timeline-height: var(--progress-height);
+  --timeline-gap: var(--space-half);
+  --timeline-mini-height: var(--space-2);
+
+  /* Prototype bar */
+  --devbar-height: var(--space-8);
+  --devbar-bg: var(--color-black);
+  --devbar-text: var(--color-white);
+  --devbar-text-muted: var(--color-text-soft);
+  --devbar-pill-bg: color-mix(in srgb, var(--color-white) 16%, transparent);
+
+  /* Spotlight */
+  --spotlight-scrim: color-mix(in srgb, var(--color-text) 72%, transparent);
+  --spotlight-radius: var(--radius-pill);
+  --spotlight-pad: var(--space-2);
+
+  /* Donut. These are SVG user units inside a 100x100 viewBox, not page
+     sizes: CSS font-size needs a unit, and in SVG 1px is one user unit. */
+  --donut-size: calc(var(--space-48) + var(--space-8));
+  --donut-focus-width: 18;
+  --donut-label-size: 7px;
+  --donut-total-size: 15px;
+  --donut-note-size: 6px;
+  --sprint-dim: 0.34;
+  --sprint-opaque: 1;
+  --sprint-ready-opacity: 0.55;
+
+  /* Layering */
+  --z-overlay-root: calc(var(--z-sticky) + 1);
+  --z-overlay-screen: calc(var(--z-sticky) + 2);
+  --z-overlay-island: calc(var(--z-sticky) + 4);
+  --z-overlay-sheet: calc(var(--z-sticky) + 6);
+  --z-overlay-debug: calc(var(--z-sticky) + 8);
+  --z-overlay-bar: calc(var(--z-sticky) + 10);
+  --z-spotlight-target: calc(var(--z-overlay-root) + 1);
+
+  /* Motion */
+  --sprint-spring: 380ms cubic-bezier(0.22, 0.94, 0.28, 1.12);
+  --sprint-spring-duration: 380ms;
+  --sprint-quick: var(--transition-fast) var(--transition-curve);
+  --sprint-fly-duration: 350ms;
+  --sprint-fly-curve: cubic-bezier(0.42, 0, 0.3, 1);
+  --sprint-stagger: 90ms;
+  --sprint-celebrate-hold: 2000ms;
+  --sprint-lift: calc(var(--space-2) * -1);
+  --sprint-rise: var(--space-4);
+}

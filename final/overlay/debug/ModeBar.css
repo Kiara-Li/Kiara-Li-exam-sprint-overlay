@@ -48,6 +48,8 @@
   font-weight: var(--font-weight-bold);
 }
 
+.ov-bar-pill[aria-current='page'] { cursor: default; }
+
 @media (max-width: 400px) {
   .ov-bar { gap: var(--space-1); padding-inline: var(--space-2); }
   .ov-bar-pill { padding-inline: var(--space-2); }

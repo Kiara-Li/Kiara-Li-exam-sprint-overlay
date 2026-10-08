@@ -6,9 +6,15 @@ Chapter 1 is intentionally an extra-easy testing set with direct artist, artwork
 
 The project now has two layers. The **base** layer is the Quizlet reproduction. The **overlay** layer adds *Exam Sprint*, the time-planning concept for Project 2, "Garden of Forking Paths".
 
-## Design system preview
+## Prototype versions
 
-Open `design-system.html` at the repository root, or use the **System** link in the prototype bar. The separate page presents the supplied Quizlet logotype, typography, three color roles, four spacing values, and component states. Sprint patterns are omitted from this minimal presentation. See `dist/system/README.md` for sources, scope, and maintenance.
+- **2.1 test**: the existing root / `dist/` prototype. Preserve its learning behavior as the user-testing baseline.
+- **Final**: the independent copy in `final/`, opened at `final/index.html`. All new prototype work from this point belongs here, including its own `final/design-system.html`.
+- The toolbar links between both versions. They have independent module paths and in-memory sessions. Neither version writes shared browser storage.
+
+### Design system pages
+
+Open `design-system.html` for the 2.1 test page or `final/design-system.html` for Final. Each page presents the supplied Quizlet logotype, typography, three color roles, four spacing values, component states, and the card sorting motion. See `dist/system/README.md` for sources, scope, and maintenance.
 
 The page imports the same CSS and component renderers as the study flow. Updating shared rules updates both. There is no build step, account connection, or publishing requirement.
 
@@ -21,8 +27,8 @@ The page imports the same CSS and component renderers as the study flow. Updatin
 | `?debug=1` | Opens the full debug panel (also: triple-tap the top strip, or the `Debug` button) |
 
 A slim black **prototype bar** is pinned to the top of every screen. It switches
-between Original and Sprint at any point without a reload, names the state the
-prototype is currently in, and opens the debug panel or resets the session.
+between Original and 2.1 test within the baseline page, links to Final, names
+the current state, and opens the debug panel or resets the session.
 
 ## File tree
 

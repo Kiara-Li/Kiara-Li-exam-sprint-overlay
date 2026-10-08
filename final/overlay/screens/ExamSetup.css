@@ -1,0 +1,135 @@
+.ov-modal-header {
+  grid-template-columns: auto 1fr auto;
+}
+
+.ov-setup-content {
+  padding: var(--space-2) var(--space-5) var(--space-32);
+}
+
+.ov-setup-mark {
+  display: grid;
+  place-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.ov-setup-content h1 {
+  margin: var(--space-0);
+  font-size: var(--font-size-3xl);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-snug);
+  text-align: center;
+}
+
+.ov-setup-lede {
+  margin: var(--space-2) var(--space-0) var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+}
+
+/* When ----------------------------------------------------------------- */
+
+/* Date field / picker styles live in components/DateTimePicker.css and
+   system/components.css. The previous native-input rules were obsolete. */
+
+.ov-countdown {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-4) var(--space-0) var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-md);
+}
+
+.ov-countdown span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+.ov-countdown strong {
+  color: var(--color-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.ov-quick-row {
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+
+.ov-quick-row .ov-chip {
+  font-size: var(--font-size-md);
+}
+
+/* Sets ----------------------------------------------------------------- */
+
+.ov-section-title {
+  margin: var(--space-8) var(--space-0) var(--space-1);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.ov-section-note {
+  margin: var(--space-0) var(--space-0) var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+.ov-card {
+  margin-top: var(--space-2);
+}
+
+.ov-check-row {
+  grid-template-columns: var(--space-16) minmax(var(--space-0), 1fr) var(--space-12);
+}
+
+.ov-checkbox {
+  display: grid;
+  width: var(--space-8);
+  height: var(--space-8);
+  place-items: center;
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
+
+.ov-check-row.is-checked .ov-checkbox {
+  border-color: var(--color-primary);
+  color: var(--color-white);
+  background: var(--color-primary);
+}
+
+.ov-checkbox .ov-glyph-sm {
+  width: var(--space-5);
+  height: var(--space-5);
+}
+
+.ov-setup-action button {
+  width: var(--size-full);
+}
+
+.ov-setup-action .primary-button:disabled {
+  color: var(--color-text-soft);
+  background: var(--color-surface-soft);
+  cursor: default;
+}
+
+.ov-empty {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.ov-empty p {
+  margin: var(--space-0);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+}
