@@ -223,8 +223,6 @@ function enhanceEntry() {
     const button = app.querySelector('.sticky-action button');
     if (button) {
       button.textContent = 'Prepare for exam';
-      button.parentElement.querySelector('.sprint-entry-tag')?.remove();
-      if (!ov.entryTapped) button.insertAdjacentHTML('beforebegin', '<span class="sprint-entry-tag">Start here ↓</span>');
     }
     app.querySelectorAll('[data-open-set]').forEach(button => {
       if (Number(button.dataset.openSet) > 0) button.disabled = true;
@@ -544,19 +542,7 @@ function enterExam() {
   logEvent('entry', { firstTap: !ov.entryTapped });
   ov.entryTapped = true;
   if (ov.suspended) { ov.sheet = 'resume'; render(); }
-  else if (ov.demo) prepareDemo();
   else openSetup();
-}
-
-function prepareDemo() {
-  const now = clock.now();
-  ov.sheet = null;
-  ov.setup = { examAt: now + 4 * 60 * 60000, draftAt: now + 4 * 60 * 60000,
-    monthAnchor: now, picker: null, chipKey: null,
-    selected: course.sets.map((_, index) => index), shaky: [0], error: null };
-  ov.plan = Plan.createPlan({ examAt: ov.setup.examAt, startedAt: now, sets: course.sets, selected: ov.setup.selected, shaky: ov.setup.shaky });
-  setPhase('plan');
-  render();
 }
 
 function resumeCorrectAnswer() {
@@ -1014,8 +1000,7 @@ function onOverlayClick(event) {
       logEvent('resume-prompt', { choice: 'restart' });
       ov.suspended = null; ov.plan = null; ov.pace = freshPace();
       clock.reset();
-      if (ov.demo) prepareDemo();
-      else openSetup();
+      openSetup();
     },
     'plan-my-time': () => {
       logEvent('plan-my-time', { from: window.__base.state.route });
@@ -1564,7 +1549,7 @@ function resetAll() {
   ov.log = [];
   setPhase('idle');
   window.__base.reset();
-  if (ov.demo) { prepareDemo(); return; }
+  if (ov.demo) { openSetup(); return; }
   render();
 }
 
@@ -1781,7 +1766,7 @@ function boot() {
   }
   render();
   window.__sprint = { ov, clock, Plan, setMode, exportLog, render };
-  if (ov.demo) prepareDemo();
+  if (ov.demo) openSetup();
 }
 
 if (window.__base) boot();
