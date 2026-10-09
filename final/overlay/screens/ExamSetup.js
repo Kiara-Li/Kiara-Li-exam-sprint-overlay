@@ -22,6 +22,7 @@ export function defaultDraft(now) {
 }
 
 export function examSetup(setup, now) {
+  const step = setup.step || 0;
   const sets = course.sets;
   const hasSets = sets.length > 0;
   const ready = hasSets && setup.examAt !== null && setup.examAt > now && setup.selected.length > 0;
@@ -52,19 +53,21 @@ export function examSetup(setup, now) {
 
   const shakyChips = sets
     .map(
-      (set, index) => choiceChip({ label: set.chapter.split('·')[0].trim(), action: 'toggle-shaky', chapter: index, selected: setup.shaky.includes(index) }),
+      (set, index) => setup.selected.includes(index) ? choiceChip({ label: set.chapter.split('·')[0].trim(), action: 'toggle-shaky', chapter: index, selected: setup.shaky.includes(index) }) : '',
     )
     .join('');
 
   return `
     <main class="screen ov-screen ov-setup-screen">
       <header class="app-header ov-modal-header">
-        <button class="ov-text-button" data-ov="cancel-setup">Cancel</button>
-        <div class="app-header-title"></div>
+        <button class="ov-text-button" data-ov="${step ? 'setup-back' : 'cancel-setup'}">${step ? 'Back' : 'Cancel'}</button>
+        <div class="ov-step-count">${step + 1} / 3</div>
         <span class="header-spacer"></span>
       </header>
 
-      <section class="ov-setup-content">
+      <nav class="ov-setup-steps" aria-label="Exam setup progress">${['Exam time', 'Study sets', 'Extra practice'].map((label, index) => `<span class="${index === step ? 'is-current' : index < step ? 'is-complete' : ''}" aria-label="Step ${index + 1}: ${label}" ${index === step ? 'aria-current="step"' : ''}><i>${index < step ? '✓' : index + 1}</i></span>`).join('')}</nav>
+      <section class="ov-setup-content ov-step-${step}">
+        ${step === 0 ? `
         <div class="ov-setup-mark">${clockGlyph('ov-glyph-lg')}</div>
         <h1>When’s your exam?</h1>
         <p class="ov-setup-lede">We’ll split the time you have left across your sets.</p>
@@ -73,29 +76,33 @@ export function examSetup(setup, now) {
         ${countdown}
 
         <div class="ov-chip-row ov-quick-row">${chips}</div>
-
+        ` : ''}
+        ${step === 1 ? `
+        <h1>Which sets are you studying?</h1>
+        <p class="ov-setup-lede">All sets are selected. Keep them or choose your own.</p>
         ${
           hasSets
-            ? `<h2 class="ov-section-title">Which sets are you studying?</h2>
-               <div class="ov-card">${chapterRows}</div>`
+            ? `<div class="ov-card">${chapterRows}</div>`
             : `<div class="ov-card ov-empty">
                  <p>Add a set to this folder to make a plan</p>
                  <button class="soft-button ov-full" data-ov="cancel-setup">Add a set</button>
                </div>`
         }
         ${hasSets && !setup.selected.length ? '<p class="ov-inline-warning">Pick at least one set</p>' : ''}
-
+        ` : ''}
+        ${step === 2 ? `
+        <h1>Any sets you feel less ready for?</h1>
+        <p class="ov-setup-lede">We’ll give them more time. You can leave this blank.</p>
         ${
           hasSets
-            ? `<h2 class="ov-section-title">Any you don’t feel ready for?</h2>
-               <p class="ov-section-note">Tap them and we’ll give those sets more time.</p>
-               <div class="ov-chip-row">${shakyChips}</div>`
+            ? `<div class="ov-chip-row ov-shaky-options">${shakyChips}</div>`
             : ''
         }
+        ` : ''}
       </section>
 
       <div class="sticky-action ov-setup-action">
-        ${actionButton({ label: 'Make my plan', action: 'make-plan', disabled: !ready })}
+        ${actionButton({ label: step === 2 ? 'Make my plan' : 'Continue', action: step === 2 ? 'make-plan' : 'setup-next', disabled: !ready })}
       </div>
     </main>`;
 }

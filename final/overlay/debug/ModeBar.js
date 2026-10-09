@@ -9,6 +9,7 @@ const STAGE_LABEL = {
   building: 'Building plan',
   'plan-error': 'Plan failed',
   plan: 'Plan ready',
+  'pace-intro': 'Your pace',
   study: 'Studying',
   'chapter-done': 'Chapter done',
   'sprint-done': 'Sprint done',

@@ -29,7 +29,7 @@ import {
   withMeridiem,
   withMinute,
 } from './components/DateTimePicker.js';
-import { planBuilding, planError, planReady } from './screens/PlanReady.js';
+import { planBuilding, planError, planReady, paceIntro } from './screens/PlanReady.js';
 import { chapterDone, playReallocation } from './screens/ChapterDone.js';
 import { sprintDone } from './screens/SprintDone.js';
 import { debugPanel } from './debug/DebugPanel.js';
@@ -184,6 +184,7 @@ function chapterOnePace() {
 
 // Phases where the overlay draws a full screen of its own over the base.
 const OVERLAY_SCREENS = new Set([
+  'pace-intro',
   'setup',
   'building',
   'plan-error',
@@ -242,6 +243,9 @@ function render() {
   window.setTimeout(measureIsland, 420);
 
   const screenLayer = root.querySelector('[data-layer="screen"]');
+  const screenKey = `${ov.phase}:${ov.phase === 'setup' ? ov.setup.step || 0 : ''}`;
+  const screenChanged = screenLayer.dataset.screenKey !== screenKey;
+  screenLayer.dataset.screenKey = screenKey;
   const sheetLayer = root.querySelector('[data-layer="sheet"]');
   const debugLayer = root.querySelector('[data-layer="debug"]');
   const barLayer = root.querySelector('[data-layer="bar"]');
@@ -252,6 +256,7 @@ function render() {
     if (ov.phase === 'building') screen = planBuilding(ov.setup.selected.map(index => Plan.shortTitle(course.sets[index].chapter)));
     if (ov.phase === 'plan-error') screen = planError();
     if (ov.phase === 'plan') screen = planReady(ov.plan);
+    if (ov.phase === 'pace-intro') screen = paceIntro();
     if (ov.phase === 'chapter-done') screen = chapterDone(ov.plan, ov.chapterIndex);
     if (ov.phase === 'sprint-done') screen = sprintDone(ov.plan, sprintStats());
   }
@@ -259,6 +264,7 @@ function render() {
   const hadChapterDone = Boolean(screenLayer.querySelector('.ov-chapter-done'));
   screenLayer.innerHTML = needsShell ? `<div class="phone-shell">${screen}</div>` : '';
   screenLayer.classList.toggle('is-visible', needsShell);
+  if (screenChanged) screenLayer.scrollTop = 0;
   if (ov.phase === 'chapter-done' && !hadChapterDone) {
     window.requestAnimationFrame(() => playReallocation(screenLayer));
   }
@@ -278,7 +284,9 @@ function render() {
   if (ov.mode === 'sprint' && ov.sheet === 'adjust') sheetMarkup = adjustSheet(ov.plan);
   if (ov.mode === 'sprint' && ov.sheet === 'severe' && ov.severe) sheetMarkup = severeSheet(ov.severe);
   if (ov.mode === 'sprint' && ov.sheet === 'review' && ov.reviewTerm) sheetMarkup = reviewSheet();
-  sheetLayer.innerHTML = sheetMarkup;
+  const keepAdjustSheet = ov.sheet === 'adjust' && sheetLayer.dataset.sheet === 'adjust' && sheetLayer.firstElementChild;
+  if (!keepAdjustSheet) sheetLayer.innerHTML = sheetMarkup;
+  sheetLayer.dataset.sheet = ov.sheet || '';
   sheetLayer.classList.toggle('is-visible', Boolean(sheetMarkup));
   document.documentElement.dataset.spotlight = 'false';
 
@@ -343,7 +351,7 @@ function paceQueue() {
 }
 
 function paceFraction() {
-  const planned = ov.demo ? (ov.stage === 'flashcards' ? 45000 : 60000) : Math.max(1, Plan.stageMinutes(activeChapter(), ov.stage)) * 60000;
+  const planned = ov.demo ? (ov.stage === 'flashcards' ? 120000 : 180000) : Math.max(1, Plan.stageMinutes(activeChapter(), ov.stage)) * 60000;
   return Math.max(0, Math.min(1, (clock.now() - ov.pace.stageAt) / planned));
 }
 
@@ -515,7 +523,7 @@ async function sortPaceItem(level, via, card, { bypassPrompt = false, auto = fal
   if (level !== 'done') await flyIntoPace(
       stage === 'flashcards' ? card.querySelector('.flashcard') : card,
       track, destination, items.length, level,
-      { flip: stage === 'learn', onTravel: () => animateSegmentMove(track, completed, destination, level) },
+      { onTravel: () => animateSegmentMove(track, completed, destination, level) },
     ).catch(() => {});
   if (!chapterOnePace() || ov.stage !== stage || paceQueue().termIndex !== termIndex) {
     ov.pace.sorting = false;
@@ -532,6 +540,10 @@ async function sortPaceItem(level, via, card, { bypassPrompt = false, auto = fal
   else logEvent('sort', { stage, termIndex, level, via });
   if (stage === 'flashcards') window.__base.sortFlashcard(level);
   else window.__base.sortLearnQuestion(level);
+  if (level !== 'done' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const nextCard = document.querySelector(stage === 'flashcards' ? '#app .flashcard' : '#app [data-question-card]');
+    nextCard?.animate([{ opacity: .3 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
+  }
   updatePaceMarker();
   checkPaceMessage();
 }
@@ -561,6 +573,7 @@ function openSetup() {
   ov.sheet = null;
   ov.spotlightDone = true;
   ov.setup = {
+    step: 0,
     examAt: null,
     draftAt: defaultDraft(clock.now()),
     monthAnchor: defaultDraft(clock.now()),
@@ -1068,6 +1081,13 @@ function onOverlayClick(event) {
       logEvent('shaky-toggle', { chapter: index, on: ov.setup.shaky.includes(index) });
       render();
     },
+    'setup-next': () => {
+      if (!ov.setup.examAt || ov.setup.examAt <= clock.now() || !ov.setup.selected.length) return;
+      ov.setup.step = Math.min(2, (ov.setup.step || 0) + 1);
+      ov.setup.picker = null;
+      render();
+    },
+    'setup-back': () => { ov.setup.step = Math.max(0, (ov.setup.step || 0) - 1); render(); },
     'make-plan': () => makePlan(),
     'retry-plan': () => makePlan(),
     'back-to-setup': () => {
@@ -1077,7 +1097,13 @@ function onOverlayClick(event) {
     'donut-slice': () => focusSlice(target.dataset.slice, 'legend'),
     'start-sprint': () => {
       logEvent('plan-accepted', { total: Plan.totalAllotted(ov.plan) });
+      setPhase('pace-intro'); render();
+    },
+    'intro-back': () => { setPhase('plan'); render(); },
+    'begin-study': () => {
       startSprint();
+      ov.pace.hintsSeen.pace = true;
+      document.querySelector('#app .sprint-pace-intro')?.remove();
     },
     'open-adjust': () => {
       ov.sheet = 'adjust';
@@ -1086,7 +1112,12 @@ function onOverlayClick(event) {
     },
     adjust: () => {
       Plan.adjustChapter(ov.plan, Number(target.dataset.chapter), Number(target.dataset.delta));
-      render();
+      ov.plan.chapters.forEach(chapter => {
+        const value = root.querySelector(`[data-adjust-minutes="${chapter.order}"]`);
+        if (value) value.textContent = `${chapter.allotted} min`;
+      });
+      const finalValue = root.querySelector('[data-adjust-final]');
+      if (finalValue) finalValue.textContent = `${ov.plan.finalReview.allotted} min`;
     },
     'island-toggle': () => {
       if (ov.island.state === 'alert') return;
@@ -1757,6 +1788,20 @@ function boot() {
   injectStyles();
   buildRoot();
   document.addEventListener('click', onOverlayClick);
+  root.addEventListener('input', (event) => {
+    const input = event.target.closest('[data-stage-split]');
+    if (!input || !ov.plan) return;
+    const chapter = ov.plan.chapters.find(chapter => chapter.order === Number(input.dataset.stageSplit));
+    if (!chapter) return;
+    const fraction = Number(input.value) / 100;
+    chapter.stages = { flashcards: fraction, learn: 1 - fraction };
+    const minutes = Math.round(chapter.allotted * fraction);
+    input.style.setProperty('--split', `${input.value}%`);
+    input.setAttribute('aria-valuetext', `${minutes} minutes flashcards, ${chapter.allotted - minutes} minutes quiz`);
+    const card = input.closest('[data-split-card]');
+    card.querySelector('[data-flash-minutes]').textContent = `${minutes} min`;
+    card.querySelector('[data-quiz-minutes]').textContent = `${chapter.allotted - minutes} min`;
+  });
   root.addEventListener('pointerover', onOverlayHover);
   attachParkGestures();
   attachDebugTap();

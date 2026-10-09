@@ -7,7 +7,7 @@ import { chapterColor } from './PlanTimeline.js';
 const VIEW = 100;
 const CENTRE = VIEW / 2;
 const RADIUS = 38;
-const THICKNESS = 15;
+const THICKNESS = 12;
 const GAP = 1.4;
 
 /**
@@ -74,17 +74,6 @@ export function planDonut(plan) {
     })
     .join('');
 
-  const legend = slices
-    .map(
-      (slice) => `
-        <button class="ov-donut-key" data-ov="donut-slice" data-slice="${slice.key}">
-          <i style="--key-color:${slice.color}"></i>
-          <span>${slice.name}${slice.shaky ? '<em class="ov-tag">Shaky</em>' : ''}</span>
-          <b>${slice.minutes} min</b>
-        </button>`,
-    )
-    .join('');
-
   const readout = slices
     .map(
       (slice, index) => `
@@ -102,10 +91,9 @@ export function planDonut(plan) {
         <circle class="ov-donut-track" cx="${CENTRE}" cy="${CENTRE}" r="${RADIUS}" stroke-width="${THICKNESS}" />
         <g class="ov-donut-arcs">${arcs}</g>
         <g class="ov-donut-labels">${labels}</g>
-        <text class="ov-donut-total" x="${CENTRE}" y="${CENTRE - 1}" text-anchor="middle">${formatCompact(total)}</text>
+        <text class="ov-donut-total" style="font-size:${Math.min(15, 76 / Math.max(1, formatCompact(total).length))}px" x="${CENTRE}" y="${CENTRE - 1}" text-anchor="middle">${formatCompact(total)}</text>
         <text class="ov-donut-total-note" x="${CENTRE}" y="${CENTRE + 10}" text-anchor="middle">until the exam</text>
       </svg>
       <figcaption class="ov-donut-readouts">${readout}</figcaption>
-      <div class="ov-donut-legend">${legend}</div>
     </figure>`;
 }

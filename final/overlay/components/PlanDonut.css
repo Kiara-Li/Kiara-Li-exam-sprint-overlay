@@ -1,11 +1,11 @@
 .ov-donut {
   display: grid;
   justify-items: center;
-  margin: var(--space-4) var(--space-0) var(--space-2);
+  margin: var(--space-8) var(--space-0) var(--space-6);
 }
 
 .ov-donut svg {
-  width: var(--donut-size);
+  width: min(100%, 340px);
   max-width: var(--size-full);
   height: auto;
   overflow: visible;
@@ -60,7 +60,7 @@
   display: grid;
   min-height: var(--space-16);
   align-content: start;
-  margin: var(--space-4) var(--space-0) var(--space-2);
+  margin: var(--space-6) var(--space-0) var(--space-4);
   text-align: center;
 }
 

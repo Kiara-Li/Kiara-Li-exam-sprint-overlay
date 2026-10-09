@@ -51,31 +51,23 @@ export function paceMarkup({ completed, items, statuses, target, toast = '', dec
   </div>`;
 }
 
-/** Move the existing colored slot; each passed slot fills the space behind it. */
+/** Reorder the existing slots immediately; reveal color only at the destination. */
 export async function animateSegmentMove(track, fromIndex, toIndex, level) {
+  if (!track) return;
   const segments = [...track.querySelectorAll('.sprint-pace-segment')];
   const source = segments[fromIndex];
   const destination = segments[toIndex];
   if (!source || !destination) return;
+  if (source !== destination) destination.after(source);
   source.classList.remove('is-again', 'is-later');
   source.classList.add(level === 'later' ? 'is-later' : 'is-again');
-  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (fromIndex === toIndex || reduced) return;
-  await new Promise(resolve => window.setTimeout(resolve, 180));
-  const positions = segments.map(segment => segment.getBoundingClientRect().left);
-  source.style.zIndex = '3';
-  const animations = [source.animate([
-    { transform: 'translateX(0)' },
-    { transform: `translateX(${positions[toIndex] - positions[fromIndex]}px)` },
-  ], { duration: 460, easing: 'cubic-bezier(.22,.8,.2,1)', fill: 'forwards' })];
-  for (let index = fromIndex + 1; index <= toIndex; index += 1) {
-    animations.push(segments[index].animate([
-      { transform: 'translateX(0)' },
-      { transform: `translateX(${positions[index - 1] - positions[index]}px)` },
-    ], { duration: 460, easing: 'cubic-bezier(.22,.8,.2,1)', fill: 'forwards' }));
-  }
-  await Promise.allSettled(animations.map(animation => animation.finished));
+  if (reduced) return;
+  await source.animate([
+    { opacity: .35, transform: 'scale(.86)' },
+    { opacity: 1, transform: 'scale(1.06)', offset: .65 },
+    { opacity: 1, transform: 'scale(1)' },
+  ], { duration: 180, easing: 'cubic-bezier(.2,.8,.2,1)' }).finished;
 }
 
 /** A reversible horizontal gesture on the current card or answered question. */
@@ -151,7 +143,7 @@ export function bindSortGesture(node, { allowed, onChoose, onInteract, onPreview
 }
 
 /** Visually place the card at its next position on the pace bar. */
-export async function flyIntoPace(card, bar, index, total, level, { flip = false, onTravel = () => {} } = {}) {
+export async function flyIntoPace(card, bar, index, total, level, { onTravel = () => {} } = {}) {
   if (!card || !bar || level === 'done') return;
   const from = card.getBoundingClientRect();
   const to = bar.querySelectorAll('.sprint-pace-segment')[index]?.getBoundingClientRect() || bar.getBoundingClientRect();
@@ -165,38 +157,24 @@ export async function flyIntoPace(card, bar, index, total, level, { flip = false
   clone.style.top = `${from.top}px`;
   clone.style.width = `${from.width}px`;
   clone.style.height = `${from.height}px`;
-  clone.style.border = `3px solid var(--sort-${level})`;
+  clone.style.border = `2px solid var(--sort-${level})`;
   clone.style.background = 'var(--color-white)';
   clone.style.borderRadius = 'var(--card-radius)';
-  if (flip) {
-    clone.replaceChildren();
-    clone.classList.add('is-flipping');
-    const flipper = document.createElement('div');
-    flipper.className = 'sprint-sort-flipper';
-    const front = card.cloneNode(true);
-    front.classList.add('sprint-sort-front');
-    const back = document.createElement('div');
-    back.className = 'sprint-sort-back';
-    back.style.background = `var(--pace-${level})`;
-    back.style.color = level === 'later' ? 'var(--color-white)' : 'var(--text-primary)';
-    back.textContent = LEVELS.find(item => item.key === level).label;
-    flipper.append(front, back);
-    clone.append(flipper);
-  }
   document.body.appendChild(clone);
   card.style.opacity = '0';
   const dx = targetX - (from.left + from.width / 2);
   const dy = targetY - (from.top + from.height / 2);
-  const duration = matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 350;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const duration = reduced ? 1 : 460;
+  const scale = Math.min(to.width / from.width, to.height / from.height);
   try {
-    if (flip) await clone.firstElementChild.animate([
-      { transform: 'rotateY(0deg)' },
-      { transform: 'rotateY(-180deg)' },
-    ], { duration: duration === 1 ? 1 : 320, easing: 'ease-in-out', fill: 'forwards' }).finished;
-    await Promise.all([Promise.resolve(onTravel()), clone.animate([
+    // A single curved gathering motion, without stretching the card into a bar.
+    await clone.animate(reduced ? [{ opacity: 0 }, { opacity: 0 }] : [
       { transform: 'translate3d(0,0,0) scale(1)', opacity: 1 },
-      { transform: `translate3d(${dx}px,${dy}px,0) scale(${to.width / from.width},${to.height / from.height})`, opacity: 1 },
-    ], { duration, easing: 'cubic-bezier(.35,.05,.7,1)', fill: 'forwards' }).finished]);
+      { transform: `translate3d(${dx * .35}px,${dy * .46}px,0) scale(.65) rotate(${dx < 0 ? -3 : 3}deg)`, opacity: .85, offset: .45 },
+      { transform: `translate3d(${dx}px,${dy}px,0) scale(${scale})`, opacity: 0 },
+    ], { duration, easing: 'cubic-bezier(.22,.7,.18,1)', fill: 'forwards' }).finished;
+    await onTravel();
   } finally {
     clone.remove();
     card.style.opacity = '';

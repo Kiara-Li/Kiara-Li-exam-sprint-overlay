@@ -133,3 +133,34 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-medium);
 }
+
+.ov-screen.ov-setup-screen { display: flex; flex-direction: column; min-height: calc(100svh - var(--devbar-height)); }
+.ov-setup-screen .ov-modal-header { grid-template-columns: 1fr auto 1fr; flex-shrink: 0; }
+.ov-setup-screen .ov-modal-header > button { justify-self: start; }
+.ov-step-count { text-align: center; color: var(--color-text-muted); font: var(--type-label); }
+.ov-setup-steps { display: flex; flex-shrink: 0; gap: 10px; padding: 8px 24px 0; }
+.ov-setup-steps > span { display: grid; place-items: center; flex: 1; height: 28px; border-radius: 14px; background: var(--color-surface-soft); color: var(--color-text-muted); }
+.ov-setup-steps i { font: var(--type-label); font-size: 12px; font-style: normal; }
+.ov-setup-steps .is-current { color: white; background: var(--color-primary); box-shadow: 0 3px 10px #4255ff20; }
+.ov-setup-steps .is-complete { color: var(--color-primary); background: var(--color-surface-blue); }
+.ov-setup-screen .ov-setup-content { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: clamp(28px, 5svh, 56px) 24px clamp(32px, 6svh, 64px); animation: ov-step-in .28s ease-out; }
+.ov-setup-screen .ov-setup-mark { margin-bottom: 24px; }
+.ov-setup-screen .ov-setup-lede { margin: 16px 0 32px; }
+.ov-setup-screen .ov-setup-action { position: static; flex-shrink: 0; padding: 16px 24px 28px; box-shadow: none; }
+.ov-setup-screen .ov-countdown { margin-top: 20px; margin-bottom: 20px; }
+.ov-setup-content .ov-quick-row { display: grid; grid-template-columns: 1fr 1fr 1.4fr; width: 100%; gap: 8px; }
+.ov-setup-content .ov-quick-row .ov-chip { width: 100%; min-width: 0; padding-inline: 6px; font-size: 13px; }
+.ov-setup-content .ov-check-row { gap: 16px; grid-template-columns: 40px minmax(0, 1fr) 32px; padding: 20px 16px; }
+.ov-setup-content .set-copy { min-width: 0; }
+.ov-setup-content .set-copy strong { white-space: normal; }
+.ov-shaky-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 32px; }
+.ov-shaky-options .ov-chip { min-height: 88px; border-radius: 20px; }
+.ov-step-2 { padding-top: 24px; }
+@keyframes ov-step-in { from { opacity: 0; transform: translateY(10px); } }
+@media (max-height: 780px) {
+  .ov-setup-screen .ov-setup-content { padding-top: 20px; padding-bottom: 24px; }
+  .ov-setup-screen .ov-setup-mark { margin-bottom: 16px; }
+  .ov-setup-screen .ov-setup-lede { margin: 12px 0 20px; }
+  .ov-setup-screen .ov-countdown { margin: 12px 0; }
+}
+@media (prefers-reduced-motion: reduce) { .ov-setup-content { animation: none; } }
