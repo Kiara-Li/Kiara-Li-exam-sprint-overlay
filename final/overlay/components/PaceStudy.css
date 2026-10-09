@@ -7,13 +7,17 @@ html[data-pace-study='true'] .quiz-screen .feedback-action { display: none; }
 html[data-pace-study='true'] .flashcard-screen .app-header-title { visibility: hidden; }
 
 .sprint-pace-shell { position: relative; padding: 0 var(--space-content) 20px; }
+/*
+ * A fine track rather than a row of blocks: thin capsules, a small clean goal
+ * marker that pings instead of throbbing, and a "you" marker that glides.
+ */
 .sprint-pace-track {
-  position: relative; display: flex; height: 14px; gap: 5px; align-items: stretch;
+  position: relative; display: flex; height: 6px; gap: 3px; align-items: stretch;
   border-radius: var(--radius-pill); background: transparent; overflow: visible;
 }
 .sprint-pace-segment {
-  position: relative; flex: 1 1 0; min-width: 0; border-radius: 4px;
-  background: var(--color-border-strong); transition: background var(--motion-feedback);
+  position: relative; flex: 1 1 0; min-width: 0; border-radius: var(--radius-pill);
+  background: var(--color-border); transition: background 360ms ease;
 }
 .sprint-pace-segment.is-complete { background: var(--pace-complete); }
 .sprint-pace-segment.is-again { background: var(--pace-again); }
@@ -21,41 +25,60 @@ html[data-pace-study='true'] .flashcard-screen .app-header-title { visibility: h
 .sprint-pace-target, .sprint-pace-you, .sprint-pace-pop {
   position: absolute; z-index: 4; top: 50%; border-radius: 50%; pointer-events: none;
 }
+
+/* Goal: a 14px dot with a white ring, and a hairline ring that radiates out. */
 .sprint-pace-target {
-  left: clamp(11px, var(--pace-target, 0%), calc(100% - 11px));
-  width: 22px; height: 22px; border: 2px solid var(--color-white);
-  background: radial-gradient(circle at 32% 25%, var(--color-white) 0 8%, var(--color-surface-cyan) 15%, var(--pace-goal) 58%, var(--color-primary-light) 100%);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--pace-goal) 50%, transparent), 0 0 0 2px color-mix(in srgb, var(--pace-goal) 20%, transparent);
+  left: clamp(7px, var(--pace-target, 0%), calc(100% - 7px));
+  width: 14px; height: 14px; border: 2.5px solid var(--color-white);
+  background: var(--pace-goal);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--pace-goal) 55%, transparent);
   transform: translate(-50%, -50%);
   transition: left 800ms linear;
-  animation: sprint-target-breathe 3.4s ease-in-out infinite;
 }
+.sprint-pace-target::after {
+  content: ''; position: absolute; inset: -2.5px; border-radius: 50%;
+  border: 1.5px solid var(--pace-goal); opacity: 0;
+  animation: sprint-target-ping 2.6s cubic-bezier(.2, .6, .3, 1) infinite;
+}
+@keyframes sprint-target-ping {
+  0% { opacity: .55; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(2.4); }
+}
+
+/* You: a small diamond hung just under the track, gliding as you go. */
 .sprint-pace-you {
   top: calc(100% + 8px);
-  left: clamp(7px, var(--pace-you, 0%), calc(100% - 7px));
-  width: 11px; height: 11px; border-radius: 3px;
-  background: var(--text-primary); box-shadow: 0 0 0 2px var(--color-white);
-  transform: translate(-50%, -50%) rotate(45deg); transition: left 250ms ease-out;
+  left: clamp(5px, var(--pace-you, 0%), calc(100% - 5px));
+  width: 8px; height: 8px; border-radius: 2px;
+  background: var(--text-primary); box-shadow: 0 0 0 1.5px var(--color-white);
+  transform: translate(-50%, -50%) rotate(45deg);
+  transition: left 420ms cubic-bezier(.22, .8, .2, 1);
 }
 .sprint-pace-pop {
-  top: calc(100% + 8px); left: clamp(7px, var(--pace-you, 0%), calc(100% - 7px));
-  width: 12px; height: 12px; border: 2px solid var(--pace-goal);
+  top: calc(100% + 8px); left: clamp(5px, var(--pace-you, 0%), calc(100% - 5px));
+  width: 10px; height: 10px; border: 1.5px solid var(--pace-goal);
   transform: translate(-50%, -50%) scale(.2); opacity: 0;
 }
+
+/* Catching the goal: the dot dips to the diamond and both settle back. */
 .sprint-pace-track.is-caught .sprint-pace-target {
-  animation: sprint-target-catch 680ms ease-in-out both;
+  animation: sprint-target-catch 640ms cubic-bezier(.3, .7, .2, 1) both;
 }
-.sprint-pace-track.is-caught .sprint-pace-you { animation: sprint-you-catch 680ms ease-in-out both; }
-.sprint-pace-track.is-caught .sprint-pace-pop { animation: sprint-pace-pop 680ms ease-out both; }
-@keyframes sprint-target-breathe { 50% { box-shadow: 0 2px 11px color-mix(in srgb, var(--pace-goal) 62%, transparent), 0 0 0 5px color-mix(in srgb, var(--pace-goal) 13%, transparent); } }
+.sprint-pace-track.is-caught .sprint-pace-target::after { animation: none; }
+.sprint-pace-track.is-caught .sprint-pace-you { animation: sprint-you-catch 640ms cubic-bezier(.3, .7, .2, 1) both; }
+.sprint-pace-track.is-caught .sprint-pace-pop { animation: sprint-pace-pop 640ms ease-out both; }
 @keyframes sprint-target-catch {
   0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  43% { transform: translate(calc(-50% + var(--catch-dx, 0px)), calc(-50% + var(--catch-dy, 0px))) scale(1.2); }
+  45% { transform: translate(calc(-50% + var(--catch-dx, 0px)), calc(-50% + var(--catch-dy, 0px))) scale(.75); }
 }
-@keyframes sprint-you-catch { 43% { transform: translate(-50%, -50%) rotate(45deg) scale(1.5); } }
+@keyframes sprint-you-catch { 45% { transform: translate(-50%, -50%) rotate(45deg) scale(1.35); } }
 @keyframes sprint-pace-pop {
-  35% { opacity: .75; transform: translate(-50%, -50%) scale(.4); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(3.8); }
+  40% { opacity: .7; transform: translate(-50%, -50%) scale(.6); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(3.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sprint-pace-target::after { animation: none; }
+  .sprint-pace-target, .sprint-pace-you { transition: none; }
 }
 .sprint-pace-toast {
   position: absolute; z-index: 8; top: 31px; left: 50%; width: max-content;

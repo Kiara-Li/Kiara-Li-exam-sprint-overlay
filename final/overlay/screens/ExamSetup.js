@@ -13,6 +13,10 @@ const CHIPS = [
   { key: 'tomorrow', label: 'Tomorrow 9 AM' },
 ];
 
+// The step the progress bar last showed. Toggling a set re-renders the whole
+// screen, so the fill may only animate when the step itself has changed.
+let renderedStep = null;
+
 /** Tomorrow at 9am: the most common answer, and always in the future. */
 export function defaultDraft(now) {
   const date = new Date(now);
@@ -51,21 +55,40 @@ export function examSetup(setup, now) {
     })
     .join('');
 
-  const shakyChips = sets
-    .map(
-      (set, index) => setup.selected.includes(index) ? choiceChip({ label: set.chapter.split('·')[0].trim(), action: 'toggle-shaky', chapter: index, selected: setup.shaky.includes(index) }) : '',
-    )
+  const shakyCards = sets
+    .map((set, index) => {
+      if (!setup.selected.includes(index)) return '';
+      const on = setup.shaky.includes(index);
+      const [short, ...rest] = set.chapter.split('·');
+      return `
+        <button type="button" class="ov-shaky-card${on ? ' is-selected' : ''}" data-ov="toggle-shaky" data-chapter="${index}" aria-pressed="${on}">
+          <span class="ov-shaky-top">
+            <span class="ov-shaky-number">${index + 1}</span>
+            <span class="ov-shaky-check" aria-hidden="true">${on ? checkGlyph() : ''}</span>
+          </span>
+          <strong>${short.trim()}</strong>
+          <small>${rest.join('·').trim()}</small>
+        </button>`;
+    })
     .join('');
+
+  // A thin bar, not numbered pills. The fill starts where the last step left
+  // it so moving between steps reads as progress rather than a redraw.
+  const fromStep = renderedStep === null ? step : renderedStep;
+  renderedStep = step;
+  const toPercent = ((step + 1) / 3) * 100;
+  const fromPercent = ((fromStep + 1) / 3) * 100;
 
   return `
     <main class="screen ov-screen ov-setup-screen">
-      <header class="app-header ov-modal-header">
-        <button class="ov-text-button" data-ov="${step ? 'setup-back' : 'cancel-setup'}">${step ? 'Back' : 'Cancel'}</button>
-        <div class="ov-step-count">${step + 1} / 3</div>
+      <header class="app-header ov-modal-header ov-setup-header">
+        <button type="button" class="icon-button ov-setup-back" data-ov="${step ? 'setup-back' : 'cancel-setup'}" aria-label="${step ? 'Back' : 'Cancel'}">${icon('back')}</button>
+        <div class="ov-setup-progress" role="progressbar" aria-label="Exam setup progress" aria-valuemin="1" aria-valuemax="3" aria-valuenow="${step + 1}">
+          <span style="--setup-from:${fromPercent}%;--setup-to:${toPercent}%"></span>
+        </div>
         <span class="header-spacer"></span>
       </header>
 
-      <nav class="ov-setup-steps" aria-label="Exam setup progress">${['Exam time', 'Study sets', 'Extra practice'].map((label, index) => `<span class="${index === step ? 'is-current' : index < step ? 'is-complete' : ''}" aria-label="Step ${index + 1}: ${label}" ${index === step ? 'aria-current="step"' : ''}><i>${index < step ? '✓' : ''}</i></span>`).join('')}</nav>
       <section class="ov-setup-content ov-step-${step}">
         ${step === 0 ? `
         <div class="ov-setup-mark">${clockGlyph('ov-glyph-lg')}</div>
@@ -79,7 +102,6 @@ export function examSetup(setup, now) {
         ` : ''}
         ${step === 1 ? `
         <h1>Which sets are you studying?</h1>
-        <p class="ov-setup-lede">All sets are selected. Keep them or choose your own.</p>
         ${
           hasSets
             ? `<div class="ov-card">${chapterRows}</div>`
@@ -92,12 +114,7 @@ export function examSetup(setup, now) {
         ` : ''}
         ${step === 2 ? `
         <h1>Any sets you feel less ready for?</h1>
-        <p class="ov-setup-lede">We’ll give them more time. You can leave this blank.</p>
-        ${
-          hasSets
-            ? `<div class="ov-chip-row ov-shaky-options">${shakyChips}</div>`
-            : ''
-        }
+        ${hasSets ? `<div class="ov-shaky-grid">${shakyCards}</div>` : ''}
         ` : ''}
       </section>
 

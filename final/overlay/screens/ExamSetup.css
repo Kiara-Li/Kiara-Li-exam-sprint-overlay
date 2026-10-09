@@ -137,12 +137,6 @@
 .ov-screen.ov-setup-screen { display: flex; flex-direction: column; min-height: calc(100svh - var(--devbar-height)); }
 .ov-setup-screen .ov-modal-header { grid-template-columns: 1fr auto 1fr; flex-shrink: 0; }
 .ov-setup-screen .ov-modal-header > button { justify-self: start; }
-.ov-step-count { text-align: center; color: var(--color-text-muted); font: var(--type-label); }
-.ov-setup-steps { display: flex; flex-shrink: 0; gap: 10px; padding: 8px 24px 0; }
-.ov-setup-steps > span { display: grid; place-items: center; flex: 1; height: 28px; border-radius: 14px; background: var(--color-surface-soft); color: var(--color-text-muted); }
-.ov-setup-steps i { font: var(--type-label); font-size: 12px; font-style: normal; }
-.ov-setup-steps .is-current { color: white; background: var(--color-primary); box-shadow: 0 3px 10px #4255ff20; }
-.ov-setup-steps .is-complete { color: var(--color-primary); background: var(--color-surface-blue); }
 .ov-setup-screen .ov-setup-content { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: clamp(28px, 5svh, 56px) 24px clamp(32px, 6svh, 64px); animation: ov-step-in .28s ease-out; }
 .ov-setup-screen .ov-setup-mark { margin-bottom: 24px; }
 .ov-setup-screen .ov-setup-lede { margin: 16px 0 32px; }
@@ -153,10 +147,62 @@
 .ov-setup-content .ov-check-row { gap: 16px; grid-template-columns: 40px minmax(0, 1fr) 32px; padding: 20px 16px; }
 .ov-setup-content .set-copy { min-width: 0; }
 .ov-setup-content .set-copy strong { white-space: normal; }
-.ov-shaky-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 32px; }
-.ov-shaky-options .ov-chip { min-height: 88px; border-radius: 20px; }
 .ov-step-2 { padding-top: 24px; }
 .ov-step-0 .ov-setup-lede { margin-bottom: 56px; }
+/* Header: back chevron, a short thin progress bar, nothing else. */
+.ov-setup-header .ov-setup-back { justify-self: start; margin-left: -12px; }
+.ov-setup-progress {
+  position: relative; width: 132px; height: 6px; overflow: hidden;
+  border-radius: var(--radius-pill); background: var(--color-surface-blue);
+}
+.ov-setup-progress span {
+  position: absolute; inset: 0 auto 0 0; width: var(--setup-to);
+  border-radius: inherit; background: var(--color-primary);
+  animation: ov-setup-fill 420ms cubic-bezier(.22, .8, .2, 1) both;
+}
+@keyframes ov-setup-fill { from { width: var(--setup-from); } }
+
+/* Step titles sit closer to their content now the subtitles are gone. */
+.ov-step-1 h1, .ov-step-2 h1 { margin-bottom: 32px; }
+
+/* "Less ready" picks: big cards, filled when chosen. */
+.ov-shaky-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ov-shaky-card {
+  display: grid; align-content: space-between; gap: 18px; min-height: 156px;
+  padding: 18px 18px 20px; border: 1px solid var(--color-border);
+  border-radius: 24px; background: var(--color-white); color: var(--color-text);
+  box-shadow: 0 6px 18px rgba(45, 50, 70, .06); text-align: left; cursor: pointer;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease,
+    box-shadow 240ms ease, transform 240ms cubic-bezier(.22, .8, .2, 1);
+}
+.ov-shaky-card:active { transform: scale(.97); }
+.ov-shaky-top { display: flex; align-items: center; justify-content: space-between; }
+.ov-shaky-number {
+  display: grid; place-items: center; width: 44px; height: 44px;
+  border-radius: 14px; background: var(--color-surface-blue); color: var(--color-primary);
+  font-size: var(--font-size-xl); font-weight: var(--font-weight-black);
+  transition: background 200ms ease, color 200ms ease;
+}
+.ov-shaky-check {
+  display: grid; place-items: center; width: 26px; height: 26px;
+  border: 2px solid var(--color-border-strong); border-radius: 50%;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+.ov-shaky-check .ov-glyph-sm { width: 16px; height: 16px; color: var(--color-primary); }
+.ov-shaky-card strong { display: block; font-size: var(--font-size-xl); line-height: 1.15; }
+.ov-shaky-card small {
+  display: -webkit-box; margin-top: 4px; overflow: hidden;
+  color: var(--color-text-muted); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+}
+.ov-shaky-card.is-selected {
+  border-color: var(--color-primary); background: var(--color-primary); color: var(--color-white);
+  box-shadow: 0 12px 26px rgba(66, 85, 255, .28); transform: translateY(-2px);
+}
+.ov-shaky-card.is-selected small { color: rgba(255, 255, 255, .78); }
+.ov-shaky-card.is-selected .ov-shaky-number { background: rgba(255, 255, 255, .18); color: var(--color-white); }
+.ov-shaky-card.is-selected .ov-shaky-check { border-color: var(--color-white); background: var(--color-white); }
+
 @keyframes ov-step-in { from { opacity: 0; transform: translateY(10px); } }
 @media (max-height: 780px) {
   .ov-setup-screen .ov-setup-content { padding-top: 20px; padding-bottom: 24px; }
@@ -165,4 +211,7 @@
   .ov-setup-screen .ov-countdown { margin: 12px 0; }
   .ov-step-0 .ov-setup-lede { margin-bottom: 36px; }
 }
-@media (prefers-reduced-motion: reduce) { .ov-setup-content { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ov-setup-content, .ov-setup-progress span { animation: none; }
+  .ov-shaky-card { transition: none; }
+}
