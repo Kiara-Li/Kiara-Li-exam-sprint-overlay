@@ -3,7 +3,7 @@ import { icon } from '../../base/components/icons.js';
 import { checkGlyph, clockGlyph } from '../components/glyphs.js';
 import { dateTimePicker } from '../components/DateTimePicker.js';
 import { formatDuration } from '../state/clock.js';
-import { CHAPTER_TERM_COUNT, chapterWeight, recommendStudy } from '../state/sprintPlan.js';
+import { CHAPTER_TERM_COUNT, recommendStudy } from '../state/sprintPlan.js';
 import { chapterColor } from '../components/PlanTimeline.js';
 import { actionButton } from '../../system/components.js';
 
@@ -109,7 +109,7 @@ export function examSetup(setup, now) {
         <h1>Any sets you feel less ready for?</h1>
         ${hasSets ? `<div class="ov-shaky-grid">${shakyCards}</div>` : ''}
         ` : ''}
-        ${step === 3 ? studyTimeStep(setup, now) : ''}
+        ${step === 3 ? studyTimeStep(setup, now, { entering: fromStep !== step }) : ''}
       </section>
 
       <div class="sticky-action ov-setup-action">
@@ -127,52 +127,81 @@ export function chosenStudyMinutes(setup, now) {
   return { ...advice, chosen, tight: chosen < advice.estimate };
 }
 
-// Ring geometry in SVG user units, matching the plan donut.
-const VIEW = 100;
-const CENTRE = VIEW / 2;
-const RADIUS = 38;
-const THICKNESS = 12;
-const GAP = 1.4;
-
-/** The picked chapters, split the way the plan will split them. */
-function studyRing(setup) {
-  const circumference = 2 * Math.PI * RADIUS;
-  const slices = setup.selected.map((setIndex) => ({ setIndex, weight: chapterWeight(setup.shaky.includes(setIndex)) }));
-  const total = slices.reduce((sum, slice) => sum + slice.weight, 0) || 1;
-  let offset = 0;
-  return slices
-    .map((slice) => {
-      const fraction = slice.weight / total;
-      const length = Math.max(0, circumference * fraction - GAP);
-      const arc = `<circle class="ov-study-arc" cx="${CENTRE}" cy="${CENTRE}" r="${RADIUS}" stroke="${chapterColor(slice.setIndex)}" stroke-width="${THICKNESS}" stroke-dasharray="${length} ${circumference - length}" stroke-dashoffset="${-offset}" />`;
-      offset += circumference * fraction;
-      return arc;
-    })
-    .join('');
+/**
+ * The bar's range. It is the time you have, but a 28-hour exam window would
+ * leave a 90-minute plan as a sliver, so the bar shows a workable range and
+ * marks the rest of the time with a hatched end.
+ */
+export function studyScale(advice, chosen) {
+  const workable = Math.max(240, Math.ceil((advice.recommended * 3) / 15) * 15);
+  let scale = Math.min(advice.max, workable);
+  if (chosen > scale) scale = Math.min(advice.max, Math.ceil((chosen * 1.5) / 15) * 15);
+  return { scale: Math.max(1, scale), more: advice.max > scale };
 }
 
-function studyTimeStep(setup, now) {
-  const { chosen, min, max, tight } = chosenStudyMinutes(setup, now);
-  const custom = setup.studyMinutes != null && setup.studyMinutes !== chosenStudyMinutes({ ...setup, studyMinutes: null }, now).chosen;
+/** "28 hr" a day away, "1 hr 50 min" when it is close. */
+function examInLabel(minutes) {
+  return minutes >= 180 ? `${Math.floor(minutes / 60)} hr` : formatDuration(minutes);
+}
+
+function studyTimeStep(setup, now, { entering = false } = {}) {
+  const study = chosenStudyMinutes(setup, now);
+  const { chosen, min, max, tight, untilExam } = study;
+  const custom = setup.studyMinutes != null && setup.studyMinutes !== study.recommended;
+  const { scale, more } = studyScale(study, chosen);
+  const fill = Math.min(100, (chosen / scale) * 100);
+  const hours = Math.floor(chosen / 60);
+  const minutes = chosen % 60;
+
   return `
     <h1>How long can you study?</h1>
-    <div class="ov-study">
-      <div class="ov-study-ring">
-        <svg viewBox="0 0 ${VIEW} ${VIEW}" aria-hidden="true">
-          <circle class="ov-study-track" cx="${CENTRE}" cy="${CENTRE}" r="${RADIUS}" stroke-width="${THICKNESS}" />
-          <g class="ov-study-arcs">${studyRing(setup)}</g>
-        </svg>
-        <div class="ov-study-centre">
-          <strong class="ov-study-time" aria-live="polite">${formatDuration(chosen)}</strong>
-          ${custom
-            ? '<button type="button" class="ov-study-reset" data-ov="study-recommended">Back to recommended</button>'
-            : '<span class="ov-study-tag">Recommended</span>'}
+    <div class="ov-study-card${entering ? ' is-entering' : ''}">
+      <div class="ov-study-clock">
+        <label class="ov-study-unit">
+          <input type="number" inputmode="numeric" min="0" max="99" value="${hours}" data-study-input="hours" aria-label="Hours">
+          <span>hr</span>
+        </label>
+        <label class="ov-study-unit">
+          <input type="number" inputmode="numeric" min="0" max="59" value="${String(minutes).padStart(2, '0')}" data-study-input="minutes" aria-label="Minutes">
+          <span>min</span>
+        </label>
+      </div>
+      <div class="ov-study-meta">
+        ${custom
+          ? '<button type="button" class="ov-study-reset" data-ov="study-recommended">Back to recommended</button>'
+          : '<span class="ov-study-tag">Recommended</span>'}
+      </div>
+      <div class="ov-study-track${more ? ' has-more' : ''}" data-study-track data-scale="${scale}" data-min="${min}" data-max="${Math.min(max, scale)}" style="--study-fill:${fill}%">
+        <div class="ov-study-usable">
+          <span class="ov-study-fill">
+            <span class="ov-study-thumb" role="slider" tabindex="0" aria-label="Study time" aria-valuemin="${min}" aria-valuemax="${Math.min(max, scale)}" aria-valuenow="${chosen}" aria-valuetext="${formatDuration(chosen)}"></span>
+          </span>
         </div>
+        ${more ? '<span class="ov-study-more" aria-hidden="true"></span>' : ''}
       </div>
-      <div class="ov-study-steppers">
-        <button type="button" class="ov-study-step" data-ov="study-step" data-delta="-15" aria-label="15 minutes less" ${chosen <= min ? 'disabled' : ''}>−</button>
-        <button type="button" class="ov-study-step" data-ov="study-step" data-delta="15" aria-label="15 minutes more" ${chosen >= max ? 'disabled' : ''}>+</button>
-      </div>
-      ${tight ? '<p class="ov-study-tight">Tight. Less-ready sets go first.</p>' : ''}
-    </div>`;
+      <p class="ov-study-scale">Exam in ${examInLabel(untilExam)}</p>
+    </div>
+    ${tight ? '<p class="ov-study-tight">Tight. Less-ready sets go first.</p>' : ''}`;
+}
+
+/** On arrival the digits count up while the blue slides out to the plan. */
+export function playStudyIntro(root) {
+  const card = root?.querySelector('.ov-study-card.is-entering');
+  if (!card || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const hoursInput = card.querySelector('[data-study-input="hours"]');
+  const minutesInput = card.querySelector('[data-study-input="minutes"]');
+  const total = Number(hoursInput.value) * 60 + Number(minutesInput.value);
+  const start = performance.now() + 250;
+  const length = 1000;
+  const step = (now) => {
+    const t = Math.min(1, Math.max(0, (now - start) / length));
+    const eased = 1 - Math.pow(1 - t, 3);
+    const value = Math.round((total * eased) / 5) * 5;
+    const shown = t >= 1 ? total : Math.min(total, value);
+    hoursInput.value = String(Math.floor(shown / 60));
+    minutesInput.value = String(shown % 60).padStart(2, '0');
+    if (t < 1) requestAnimationFrame(step);
+    else card.classList.remove('is-entering');
+  };
+  requestAnimationFrame(step);
 }

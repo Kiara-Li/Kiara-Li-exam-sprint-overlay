@@ -271,7 +271,7 @@ html[data-sprint-active='true'] [data-swipe-stage].is-parking {
 }
 
 .ov-coach .ov-glyph-sm {
-  flex: var(--space-0) var(--space-0) var(--icon-size-sm);
+  flex: none;
   color: var(--color-primary);
 }
 

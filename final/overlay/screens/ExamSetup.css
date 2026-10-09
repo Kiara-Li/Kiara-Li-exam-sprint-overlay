@@ -203,63 +203,83 @@
 
 /* How long can you study? ------------------------------------------------- */
 
-.ov-study {
-  display: grid;
-  justify-items: center;
-  gap: var(--space-6);
+.ov-study-card {
   margin-top: var(--space-8);
+  padding: var(--study-card-pad);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--card-radius);
+  background: var(--color-white);
+  box-shadow: var(--shadow-card);
 }
 
-.ov-study-ring {
-  position: relative;
-  width: var(--study-ring-size);
-  max-width: var(--size-full);
-  aspect-ratio: 1;
+/* The time box: hours and minutes you can tap and type over. */
+.ov-study-clock {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  width: fit-content;
+  margin: var(--space-0) auto;
+  padding: var(--space-3) var(--space-6);
+  border: var(--border-width) solid var(--color-transparent);
+  border-radius: var(--radius-lg);
+  background: var(--study-clock-bg);
+  transition: border-color var(--sprint-quick), background var(--sprint-quick);
 }
 
-.ov-study-ring svg {
-  display: block;
-  width: var(--size-full);
-  height: var(--size-full);
-  overflow: visible;
+.ov-study-clock:focus-within {
+  border-color: var(--color-primary);
+  background: var(--color-white);
 }
 
-.ov-study-track {
-  fill: var(--color-transparent);
-  stroke: var(--study-ring-track);
+.ov-study-unit {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  cursor: text;
 }
 
-.ov-study-arcs {
-  transform: rotate(calc(var(--rotate-quarter) * -1));
-  transform-origin: center;
-}
-
-.ov-study-arc {
-  fill: var(--color-transparent);
-}
-
-.ov-study-centre {
-  position: absolute;
-  inset: var(--space-0);
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: var(--space-2);
-  text-align: center;
-}
-
-.ov-study-time {
-  font-size: var(--study-time-size);
+.ov-study-unit input {
+  width: var(--study-digit-width);
+  padding: var(--space-0);
+  border: var(--space-0);
+  background: var(--color-transparent);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--study-digit-size);
   font-weight: var(--font-weight-black);
   letter-spacing: var(--letter-spacing-tight);
   line-height: var(--line-height-tight);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.ov-study-unit input:focus {
+  outline: none;
+}
+
+.ov-study-unit input::-webkit-inner-spin-button,
+.ov-study-unit input::-webkit-outer-spin-button {
+  margin: var(--space-0);
+  -webkit-appearance: none;
+}
+
+.ov-study-unit span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-study-meta {
+  display: flex;
+  justify-content: center;
+  margin: var(--space-3) var(--space-0) var(--space-6);
 }
 
 .ov-study-tag,
 .ov-study-reset {
-  padding: var(--space-half) var(--space-2);
+  padding: var(--space-half) var(--space-3);
   border-radius: var(--radius-pill);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
@@ -278,37 +298,108 @@
   text-underline-offset: var(--space-half);
 }
 
-.ov-study-steppers {
+/* The bar: grey is the time you have, blue is the time you'll study. */
+.ov-study-track {
   display: flex;
-  gap: var(--study-step-gap);
-}
-
-.ov-study-step {
-  display: grid;
-  width: var(--study-step-size);
-  height: var(--study-step-size);
-  place-items: center;
-  color: var(--color-primary);
-  background: var(--color-surface-blue);
+  height: var(--study-track-height);
   border-radius: var(--radius-pill);
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-tight);
+  background: var(--study-track-bg);
+  touch-action: none;
   cursor: pointer;
+  user-select: none;
 }
 
-.ov-study-step:disabled {
-  color: var(--color-text-soft);
-  background: var(--color-surface-soft);
-  cursor: default;
+.ov-study-usable {
+  position: relative;
+  flex: 1;
+}
+
+.ov-study-fill {
+  position: absolute;
+  inset: var(--space-0) auto var(--space-0) var(--space-0);
+  width: max(var(--study-track-height), var(--study-fill));
+  border-radius: var(--radius-pill);
+  background: var(--study-fill-bg);
+  transition: width var(--transition-medium) var(--transition-curve);
+}
+
+.ov-study-track.is-dragging .ov-study-fill {
+  transition: none;
+}
+
+.ov-study-card.is-entering .ov-study-fill {
+  animation: ov-study-grow var(--study-grow) var(--sprint-stagger) both;
+}
+
+@keyframes ov-study-grow {
+  from {
+    width: var(--study-track-height);
+  }
+}
+
+.ov-study-thumb {
+  position: absolute;
+  top: var(--size-half);
+  right: var(--space-1);
+  display: grid;
+  width: var(--study-thumb-size);
+  height: var(--study-thumb-size);
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--study-thumb-bg);
+  cursor: grab;
+  transform: translateY(var(--translate-center));
+  transition: transform var(--sprint-quick);
+}
+
+/* Grip: two short white lines. */
+.ov-study-thumb::before {
+  width: var(--space-2);
+  height: var(--space-3);
+  border-right: var(--border-width) solid var(--color-white);
+  border-left: var(--border-width) solid var(--color-white);
+  content: '';
+}
+
+.ov-study-thumb:focus-visible {
+  outline: var(--border-width-strong) solid var(--color-primary-light);
+  outline-offset: var(--space-half);
+}
+
+.ov-study-track.is-dragging .ov-study-thumb {
+  cursor: grabbing;
+  transform: translateY(var(--translate-center)) scale(1.12);
+}
+
+/* Time you have beyond the bar's range. */
+.ov-study-more {
+  /* flex-grow and flex-shrink take plain numbers, not a length token. */
+  flex: none;
+  width: var(--study-more-width);
+  border-left: var(--border-width) solid var(--color-white);
+  border-radius: var(--space-0) var(--radius-pill) var(--radius-pill) var(--space-0);
+  background: var(--study-hatch), var(--color-page-muted);
+}
+
+.ov-study-scale {
+  margin: var(--space-2) var(--space-0) var(--space-0);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-align: right;
 }
 
 .ov-study-tight {
-  margin: var(--space-0);
+  margin: var(--space-4) var(--space-0) var(--space-0);
   color: var(--study-tight-text);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ov-study-card.is-entering .ov-study-fill { animation: none; }
+  .ov-study-fill { transition: none; }
 }
 
 @keyframes ov-step-in { from { opacity: 0; transform: translateY(10px); } }

@@ -24,21 +24,31 @@ function examIn(plan) {
 export function planDonut(plan) {
   const total = totalAllotted(plan) || 1;
   const circumference = 2 * Math.PI * RADIUS;
-  // One slice per chapter, no final review. Colour and number come from the
+  // One slice per chapter, then final review. Colour and number come from the
   // chapter itself, so they match the badges on the "less ready" step even
   // when an earlier chapter was left out.
-  const slices = plan.chapters
-    .filter((chapter) => chapter.status !== 'skipped')
-    .map((chapter) => ({
-      key: String(chapter.order),
-      number: chapter.setIndex + 1,
-      name: chapter.short,
-      detail: chapter.title.split('·').slice(1).join('·').trim(),
-      minutes: chapter.allotted,
-      color: chapterColor(chapter.setIndex),
-      shaky: chapter.shaky,
-    }))
-    .filter((slice) => slice.minutes > 0);
+  const slices = [
+    ...plan.chapters
+      .filter((chapter) => chapter.status !== 'skipped')
+      .map((chapter) => ({
+        key: String(chapter.order),
+        number: chapter.setIndex + 1,
+        name: chapter.short,
+        detail: chapter.title.split('·').slice(1).join('·').trim(),
+        minutes: chapter.allotted,
+        color: chapterColor(chapter.setIndex),
+        shaky: chapter.shaky,
+      })),
+    {
+      key: 'final',
+      number: 'FR',
+      name: 'Final review',
+      detail: 'Everything you missed or saved for later',
+      minutes: plan.finalReview.allotted,
+      color: 'var(--sprint-final)',
+      shaky: false,
+    },
+  ].filter((slice) => slice.minutes > 0);
 
   let offset = 0;
   const arcs = slices

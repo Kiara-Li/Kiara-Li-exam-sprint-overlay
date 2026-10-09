@@ -1,4 +1,3 @@
-import { formatDuration } from '../state/clock.js';
 import { course } from '../../base/data.js';
 import { saveGlyph } from './glyphs.js';
 
@@ -72,7 +71,7 @@ export function adjustSheet(plan) {
     name: 'adjust',
     title: 'Adjust times',
     body: `<div class="ov-adjust">${rows}
-      <div class="ov-adjust-row is-final"><span class="ov-adjust-name">Study time</span><b data-adjust-total>${formatDuration(plan.studyMinutes)}</b></div>
+      <div class="ov-adjust-row is-final"><span class="ov-adjust-name">Final review</span><b data-adjust-final>${plan.finalReview.allotted} min</b></div>
     </div>`,
     footer: '<button class="primary-button ov-full" data-ov="dismiss-sheet">Done</button>',
   });

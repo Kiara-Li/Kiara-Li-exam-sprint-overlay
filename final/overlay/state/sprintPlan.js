@@ -2,9 +2,7 @@
 // Nothing here touches the DOM.
 
 export const CHAPTER_TERM_COUNT = 8;
-// No final review: every planned minute goes to a chapter. The model keeps
-// plan.finalReview at 0 so code that reads it keeps working.
-export const FINAL_REVIEW_SHARE = 0;
+export const FINAL_REVIEW_SHARE = 0.15;
 export const SHAKY_WEIGHT = 1.3;
 // Flashcards and practice together, per card.
 export const MINUTES_PER_CARD = 2.5;
@@ -87,7 +85,8 @@ export function termScope(set) {
 }
 
 function allocate(plan) {
-  // Built from the study time the user chose, not from the time until the exam.
+  // Built from the study time the user chose, not from the time until the
+  // exam. Final review keeps its usual share of it.
   const available = Math.max(0, plan.studyMinutes);
   const reserved = Math.round(available * FINAL_REVIEW_SHARE);
   const pool = Math.max(0, available - reserved);
@@ -95,20 +94,14 @@ function allocate(plan) {
   const weights = plan.chapters.map((chapter) => chapterWeight(chapter.shaky));
   const totalWeight = weights.reduce((sum, weight) => sum + weight, 0) || 1;
 
-  // Whole minutes by largest remainder, so the chapters add up to the study
-  // time exactly. The leftover used to go to final review.
-  const exact = plan.chapters.map((_, index) => (pool * weights[index]) / totalWeight);
-  const minutes = exact.map((value) => Math.max(1, Math.floor(value)));
-  let left = pool - minutes.reduce((sum, value) => sum + value, 0);
-  exact
-    .map((value, index) => ({ index, rest: value - Math.floor(value) }))
-    .sort((a, b) => b.rest - a.rest)
-    .forEach(({ index }) => {
-      if (left > 0) { minutes[index] += 1; left -= 1; }
-    });
-  plan.chapters.forEach((chapter, index) => { chapter.allotted = minutes[index]; });
+  let handed = 0;
+  plan.chapters.forEach((chapter, index) => {
+    const minutes = Math.max(1, Math.floor((pool * weights[index]) / totalWeight));
+    chapter.allotted = minutes;
+    handed += minutes;
+  });
 
-  plan.finalReview.allotted = Math.max(0, reserved);
+  plan.finalReview.allotted = Math.max(0, available - handed);
   plan.tight = plan.chapters.some((chapter) => chapter.allotted < TIGHT_CHAPTER_MINUTES);
   if (plan.tight) {
     plan.chapters.forEach((chapter) => {
@@ -188,14 +181,17 @@ export function addTime(plan, index, minutes, source) {
 }
 
 export function adjustChapter(plan, index, delta) {
-  // With no final review to borrow from, changing a chapter changes the total
-  // study time. It can grow up to the time until the exam, never past it.
   const chapter = plan.chapters[index];
-  const others = plan.chapters.reduce((sum, entry, i) => (i === index ? sum : sum + entry.allotted), 0);
-  const ceiling = Math.max(1, (plan.untilExam ?? Infinity) - others);
-  chapter.allotted = Math.max(1, Math.min(ceiling, chapter.allotted + delta));
-  plan.studyMinutes = others + chapter.allotted;
-  log(plan, 'adjust', { chapter: chapter.short, delta, allotted: chapter.allotted, studyMinutes: plan.studyMinutes });
+  if (delta > 0) {
+    const taken = Math.min(delta, plan.finalReview.allotted);
+    plan.finalReview.allotted -= taken;
+    chapter.allotted += taken;
+  } else {
+    const given = Math.min(-delta, Math.max(0, chapter.allotted - 1));
+    chapter.allotted -= given;
+    plan.finalReview.allotted += given;
+  }
+  log(plan, 'adjust', { chapter: chapter.short, delta, allotted: chapter.allotted });
 }
 
 /** projected = used / progressFraction */

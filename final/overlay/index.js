@@ -21,7 +21,7 @@ import {
   severeSheet,
   stuckAlert,
 } from './components/SprintAlert.js';
-import { chosenStudyMinutes, defaultDraft, examSetup } from './screens/ExamSetup.js';
+import { chosenStudyMinutes, defaultDraft, examSetup, playStudyIntro } from './screens/ExamSetup.js';
 import {
   shiftMonth,
   withDay,
@@ -263,6 +263,7 @@ function render() {
   const needsShell = Boolean(screen);
   const hadChapterDone = Boolean(screenLayer.querySelector('.ov-chapter-done'));
   screenLayer.innerHTML = needsShell ? `<div class="phone-shell">${screen}</div>` : '';
+  if (screenChanged && ov.phase === 'setup' && ov.setup.step === 3) playStudyIntro(screenLayer);
   screenLayer.classList.toggle('is-visible', needsShell);
   if (screenChanged) screenLayer.scrollTop = 0;
   if (ov.phase === 'chapter-done' && !hadChapterDone) {
@@ -594,12 +595,6 @@ function openSetup() {
 }
 
 function makePlan() {
-  if (ov.forcedPlanError) {
-    ov.forcedPlanError = false;
-    setPhase('plan-error');
-    render();
-    return;
-  }
   const now = clock.now();
   const study = chosenStudyMinutes(ov.setup, now);
   logEvent('study-time', {
@@ -608,22 +603,32 @@ function makePlan() {
     untilExam: study.untilExam,
     tight: study.tight,
   });
-  ov.plan = Plan.createPlan({
-    examAt: ov.setup.examAt,
-    startedAt: now,
-    sets: course.sets,
-    selected: ov.setup.selected,
-    shaky: ov.setup.shaky,
-    studyMinutes: study.chosen,
-  });
-  logEvent('plan-built', {
-    studyMinutes: ov.plan.studyMinutes,
-    chapters: ov.plan.chapters.map((chapter) => ({ title: chapter.short, allotted: chapter.allotted, shaky: chapter.shaky })),
-    tight: ov.plan.tight,
-  });
-  // No building animation between setup and the plan.
-  setPhase('plan');
+  setPhase('building');
   render();
+  window.setTimeout(() => {
+    if (ov.forcedPlanError) {
+      ov.forcedPlanError = false;
+      setPhase('plan-error');
+      render();
+      return;
+    }
+    ov.plan = Plan.createPlan({
+      examAt: ov.setup.examAt,
+      startedAt: clock.now(),
+      sets: course.sets,
+      selected: ov.setup.selected,
+      shaky: ov.setup.shaky,
+      studyMinutes: study.chosen,
+    });
+    logEvent('plan-built', {
+      studyMinutes: ov.plan.studyMinutes,
+      chapters: ov.plan.chapters.map((chapter) => ({ title: chapter.short, allotted: chapter.allotted, shaky: chapter.shaky })),
+      finalReview: ov.plan.finalReview.allotted,
+      tight: ov.plan.tight,
+    });
+    setPhase('plan');
+    render();
+  }, 1200);
 }
 
 function startSprint() {
@@ -969,16 +974,16 @@ function focusSlice(key, source) {
 
 /**
  * The adjust sheet stays mounted while open, so values are written back in
- * place. Changing a chapter changes the total study time, so the total row is
- * refreshed with it.
+ * place. Every field is refreshed, not just the edited one, because moving
+ * time always changes Final review too.
  */
 function syncAdjustSheet() {
   ov.plan.chapters.forEach((chapter) => {
     const input = root.querySelector(`[data-adjust-input="${chapter.order}"]`);
     if (input && document.activeElement !== input) input.value = String(chapter.allotted);
   });
-  const total = root.querySelector('[data-adjust-total]');
-  if (total) total.textContent = formatDuration(ov.plan.studyMinutes);
+  const finalValue = root.querySelector('[data-adjust-final]');
+  if (finalValue) finalValue.textContent = `${ov.plan.finalReview.allotted} min`;
 }
 
 /** A typed number is a request; the plan decides what it can actually give. */
@@ -991,7 +996,7 @@ function commitAdjustInput(input) {
     Plan.adjustChapter(ov.plan, index, Math.max(1, wanted) - chapter.allotted);
     logEvent('adjust-typed', { chapter: chapter.short, wanted, allotted: chapter.allotted });
   }
-  // Show what really happened, e.g. capped by the time until the exam.
+  // Show what really happened, e.g. capped by what Final review had left.
   input.value = String(chapter.allotted);
   syncAdjustSheet();
 }
@@ -1118,11 +1123,6 @@ function onOverlayClick(event) {
       render();
     },
     'setup-back': () => { ov.setup.step = Math.max(0, (ov.setup.step || 0) - 1); render(); },
-    'study-step': () => {
-      const { chosen, min, max } = chosenStudyMinutes(ov.setup, clock.now());
-      ov.setup.studyMinutes = Math.max(min, Math.min(max, chosen + Number(target.dataset.delta)));
-      render();
-    },
     'study-recommended': () => {
       ov.setup.studyMinutes = null;
       render();
@@ -1271,6 +1271,93 @@ function commitDraft(next) {
   }
   logEvent('exam-time-picked', { at: new Date(next).toISOString(), error: ov.setup.error });
   render();
+}
+
+
+/* --------------------------------------------------------- study time step */
+
+let studyDrag = null;
+
+function studyBounds(track) {
+  return { scale: Number(track.dataset.scale), min: Number(track.dataset.min), max: Number(track.dataset.max) };
+}
+
+/** Moves the bar and the digits live while dragging, without a re-render. */
+function previewStudy(track, minutes) {
+  const { scale } = studyBounds(track);
+  track.style.setProperty('--study-fill', `${Math.min(100, (minutes / scale) * 100)}%`);
+  const card = track.closest('.ov-study-card');
+  card.querySelector('[data-study-input="hours"]').value = String(Math.floor(minutes / 60));
+  card.querySelector('[data-study-input="minutes"]').value = String(minutes % 60).padStart(2, '0');
+}
+
+function minutesAt(track, clientX) {
+  const { scale, min, max } = studyBounds(track);
+  const rect = track.querySelector('.ov-study-usable').getBoundingClientRect();
+  const fraction = Math.max(0, Math.min(1, (clientX - rect.left) / Math.max(1, rect.width)));
+  const snapped = Math.round((fraction * scale) / 15) * 15;
+  return Math.max(min, Math.min(max, snapped));
+}
+
+function commitStudy(minutes, via) {
+  ov.setup.studyMinutes = minutes;
+  logEvent('study-time-change', { minutes, via });
+  render();
+}
+
+function attachStudyControls() {
+  root.addEventListener('pointerdown', (event) => {
+    const track = event.target.closest('[data-study-track]');
+    if (!track) return;
+    event.preventDefault();
+    try {
+      track.setPointerCapture?.(event.pointerId);
+    } catch {
+      /* Capture is a nicety; the drag still tracks without it. */
+    }
+    track.classList.add('is-dragging');
+    studyDrag = { track, pointerId: event.pointerId, minutes: minutesAt(track, event.clientX) };
+    previewStudy(track, studyDrag.minutes);
+  });
+  root.addEventListener('pointermove', (event) => {
+    if (!studyDrag || event.pointerId !== studyDrag.pointerId) return;
+    studyDrag.minutes = minutesAt(studyDrag.track, event.clientX);
+    previewStudy(studyDrag.track, studyDrag.minutes);
+  });
+  const end = (event) => {
+    if (!studyDrag || event.pointerId !== studyDrag.pointerId) return;
+    const { minutes } = studyDrag;
+    studyDrag = null;
+    commitStudy(minutes, 'drag');
+  };
+  root.addEventListener('pointerup', end);
+  root.addEventListener('pointercancel', end);
+
+  // Typing in the time box: hours and minutes are read together.
+  root.addEventListener('change', (event) => {
+    const input = event.target.closest('[data-study-input]');
+    if (!input) return;
+    const card = input.closest('.ov-study-card');
+    const hours = Math.max(0, Math.round(Number(card.querySelector('[data-study-input="hours"]').value) || 0));
+    const mins = Math.max(0, Math.round(Number(card.querySelector('[data-study-input="minutes"]').value) || 0));
+    const { min, max } = chosenStudyMinutes(ov.setup, clock.now());
+    commitStudy(Math.max(min, Math.min(max, hours * 60 + mins)), 'typed');
+  });
+  root.addEventListener('keydown', (event) => {
+    if (event.target.closest('[data-study-input]') && event.key === 'Enter') event.target.blur();
+    const thumb = event.target.closest('.ov-study-thumb');
+    if (!thumb) return;
+    const delta = { ArrowRight: 15, ArrowUp: 15, ArrowLeft: -15, ArrowDown: -15 }[event.key];
+    if (!delta) return;
+    event.preventDefault();
+    const { min, max } = studyBounds(thumb.closest('[data-study-track]'));
+    const { chosen } = chosenStudyMinutes(ov.setup, clock.now());
+    commitStudy(Math.max(min, Math.min(max, chosen + delta)), 'keys');
+    root.querySelector('.ov-study-thumb')?.focus();
+  });
+  root.addEventListener('focusin', (event) => {
+    event.target.closest('[data-study-input]')?.select();
+  });
 }
 
 /* ---------------------------------------------------------------- gestures */
@@ -1835,6 +1922,7 @@ function boot() {
     card.querySelector('[data-quiz-minutes]').textContent = `${chapter.allotted - minutes} min`;
   });
   root.addEventListener('pointerover', onOverlayHover);
+  attachStudyControls();
   root.addEventListener('change', (event) => {
     const input = event.target.closest('[data-adjust-input]');
     if (input) commitAdjustInput(input);

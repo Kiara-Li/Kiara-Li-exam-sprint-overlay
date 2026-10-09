@@ -91,15 +91,27 @@
   --sprint-opaque: 1;
   --sprint-ready-opacity: 0.55;
 
-  /* Study time step */
-  --study-ring-size: calc(var(--space-48) + var(--space-16));
-  --study-ring-track: var(--color-page-muted);
-  --study-time-size: var(--font-size-xl);
-  --study-step-size: var(--space-14);
-  --study-step-gap: var(--space-8);
+  /* Study time step: a time box above a bar of the time you have */
+  --study-card-pad: var(--space-6);
+  --study-clock-bg: var(--color-page-muted);
+  --study-digit-size: var(--font-size-4xl);
+  --study-digit-width: 2.2ch;
+  --study-track-height: var(--space-9);
+  --study-track-bg: var(--color-border);
+  --study-fill-bg: var(--color-primary);
+  --study-thumb-size: var(--space-7);
+  --study-thumb-bg: var(--color-primary-dark);
+  --study-more-width: var(--space-12);
+  --study-hatch-ink: color-mix(in srgb, var(--color-text-soft) 55%, var(--color-transparent));
+  --study-hatch: repeating-linear-gradient(
+    135deg,
+    var(--study-hatch-ink) 0 var(--space-half),
+    var(--color-transparent) var(--space-half) var(--space-2)
+  );
   --study-tag-bg: var(--color-surface-blue);
   --study-tag-text: var(--color-primary);
   --study-tight-text: var(--color-warning-dark);
+  --study-grow: 1000ms cubic-bezier(.22, .8, .2, 1);
 
   /* Layering */
   --z-overlay-root: calc(var(--z-sticky) + 1);

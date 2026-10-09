@@ -55,7 +55,7 @@
 }
 
 .ov-island-dot {
-  flex: var(--space-0) var(--space-0) var(--island-dot);
+  flex: none;
   width: var(--island-dot);
   height: var(--island-dot);
   background: var(--dot-color);
