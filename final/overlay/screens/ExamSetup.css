@@ -301,6 +301,7 @@
 /* The bar: grey is the time you have, blue is the time you'll study. */
 .ov-study-track {
   display: flex;
+  margin-top: var(--space-8);
   height: var(--study-track-height);
   border-radius: var(--radius-pill);
   background: var(--study-track-bg);
@@ -340,10 +341,14 @@
 .ov-study-thumb {
   position: absolute;
   top: var(--size-half);
-  right: var(--space-1);
+  right: calc(var(--time-thumb-size) / -2);
   display: grid;
-  width: var(--study-thumb-size);
-  height: var(--study-thumb-size);
+  width: var(--time-thumb-size);
+  height: var(--time-thumb-size);
+  box-sizing: border-box;
+  border: var(--time-thumb-border) solid var(--color-white);
+  box-shadow: var(--time-thumb-shadow);
+  z-index: 1;
   place-items: center;
   border-radius: var(--radius-pill);
   background: var(--study-thumb-bg);
@@ -354,11 +359,7 @@
 
 /* Grip: two short white lines. */
 .ov-study-thumb::before {
-  width: var(--space-2);
-  height: var(--space-3);
-  border-right: var(--border-width) solid var(--color-white);
-  border-left: var(--border-width) solid var(--color-white);
-  content: '';
+  content: none;
 }
 
 .ov-study-thumb:focus-visible {
@@ -388,6 +389,18 @@
   font-weight: var(--font-weight-medium);
   text-align: right;
 }
+
+.ov-study-ruler { position: relative; min-height: 76px; margin-top: var(--space-3); }
+.ov-study-recommendation-range { position: absolute; inset: 0; }
+.ov-study-ruler.has-more .ov-study-recommendation-range { right: var(--study-more-width); }
+.ov-study-recommendation-tick { position: absolute; top: -6px; left: var(--recommended-position); width: 2px; height: 10px; background: var(--pace-goal); border-radius: var(--radius-pill); }
+.ov-study-recommendation { position: absolute; top: 12px; left: clamp(50px, var(--recommended-position), calc(100% - 50px)); transform: translateX(-50%); padding: 0; width: 100px; color: var(--color-text-muted); background: transparent; text-align: center; font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); cursor: pointer; }
+.ov-study-recommendation.is-selected, .ov-study-recommendation:hover { color: var(--color-primary); }
+.ov-study-recommendation:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; border-radius: 4px; }
+.ov-study-ruler .ov-study-scale { position: absolute; right: 0; top: 12px; margin: 0; font-size: var(--font-size-xs); }
+.ov-study-ruler .ov-study-scale::before { content: ''; position: absolute; right: 0; top: -18px; width: 2px; height: 10px; background: var(--color-border-strong); }
+.ov-study-ruler.is-near-end { min-height: 100px; }
+.ov-study-ruler.is-near-end .ov-study-recommendation { top: 40px; }
 
 .ov-study-tight {
   margin: var(--space-4) var(--space-0) var(--space-0);

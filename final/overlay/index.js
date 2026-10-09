@@ -105,7 +105,7 @@ function injectStyles() {
   if (document.querySelector('link[data-overlay-styles]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = './overlay/overlay.css';
+  link.href = './overlay/overlay.css?v=button-spacing-2';
   link.dataset.overlayStyles = 'true';
   document.head.appendChild(link);
 }
@@ -494,7 +494,7 @@ function enhancePaceScreen() {
     const wrong = learn.answer !== null && learn.answer !== current?.correct;
     if (wrong) {
       question.classList.add('sprint-question-card');
-      question.insertAdjacentHTML('afterend', sortStrip(['again', 'later'], { hint: !ov.pace.hintsSeen.learn, details: ov.pace.sortCount.learn < 3 }));
+      question.insertAdjacentHTML('afterend', sortStrip(['again', 'later'], { hint: !ov.pace.hintsSeen.learn, details: false }));
       paceControls(screen, stage, ['again', 'later'], question);
     }
   }

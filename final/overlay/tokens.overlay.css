@@ -100,7 +100,10 @@
   --study-track-bg: var(--color-border);
   --study-fill-bg: var(--color-primary);
   --study-thumb-size: var(--space-7);
-  --study-thumb-bg: var(--color-primary-dark);
+  --study-thumb-bg: var(--pace-goal);
+  --time-thumb-size: var(--space-8);
+  --time-thumb-border: var(--space-1);
+  --time-thumb-shadow: 0 2px 10px color-mix(in srgb, var(--pace-goal) 30%, transparent);
   --study-more-width: var(--space-12);
   --study-hatch-ink: color-mix(in srgb, var(--color-text-soft) 55%, var(--color-transparent));
   --study-hatch: repeating-linear-gradient(

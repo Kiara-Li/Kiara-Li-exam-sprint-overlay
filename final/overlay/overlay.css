@@ -3,7 +3,7 @@
 @import './components/DateTimePicker.css';
 @import './components/PlanDonut.css';
 @import './components/PlanTimeline.css';
-@import './components/ParkedSheet.css';
+@import './components/ParkedSheet.css?v=button-spacing-2';
 @import './components/SprintAlert.css';
 @import './components/PaceStudy.css';
 @import './screens/ExamSetup.css';

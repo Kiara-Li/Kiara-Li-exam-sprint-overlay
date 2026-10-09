@@ -128,7 +128,14 @@
 }
 
 .ov-sheet-footer {
+  display: grid;
+  gap: var(--space-5);
   margin-top: var(--space-5);
+}
+
+.ov-sheet-footer > button {
+  width: var(--size-full);
+  margin: 0;
 }
 
 .ov-adjust {

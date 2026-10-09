@@ -150,6 +150,7 @@ function studyTimeStep(setup, now, { entering = false } = {}) {
   const custom = setup.studyMinutes != null && setup.studyMinutes !== study.recommended;
   const { scale, more } = studyScale(study, chosen);
   const fill = Math.min(100, (chosen / scale) * 100);
+  const recommendationPosition = Math.min(100, study.recommended / scale * 100);
   const hours = Math.floor(chosen / 60);
   const minutes = chosen % 60;
 
@@ -166,11 +167,6 @@ function studyTimeStep(setup, now, { entering = false } = {}) {
           <span>min</span>
         </label>
       </div>
-      <div class="ov-study-meta">
-        ${custom
-          ? '<button type="button" class="ov-study-reset" data-ov="study-recommended">Back to recommended</button>'
-          : '<span class="ov-study-tag">Recommended</span>'}
-      </div>
       <div class="ov-study-track${more ? ' has-more' : ''}" data-study-track data-scale="${scale}" data-min="${min}" data-max="${Math.min(max, scale)}" style="--study-fill:${fill}%">
         <div class="ov-study-usable">
           <span class="ov-study-fill">
@@ -179,7 +175,13 @@ function studyTimeStep(setup, now, { entering = false } = {}) {
         </div>
         ${more ? '<span class="ov-study-more" aria-hidden="true"></span>' : ''}
       </div>
-      <p class="ov-study-scale">Exam in ${examInLabel(untilExam)}</p>
+      <div class="ov-study-ruler${more ? ' has-more' : ''}${recommendationPosition > 60 ? ' is-near-end' : ''}">
+        <div class="ov-study-recommendation-range" style="--recommended-position:${recommendationPosition}%">
+          <span class="ov-study-recommendation-tick" aria-hidden="true"></span>
+          <button type="button" class="ov-study-recommendation${custom ? '' : ' is-selected'}" data-ov="study-recommended" aria-label="Use recommended study time: ${formatDuration(study.recommended)}" aria-pressed="${!custom}">Recommended</button>
+        </div>
+        <p class="ov-study-scale">Exam in ${examInLabel(untilExam)}</p>
+      </div>
     </div>
     ${tight ? '<p class="ov-study-tight">Tight. Less-ready sets go first.</p>' : ''}`;
 }
