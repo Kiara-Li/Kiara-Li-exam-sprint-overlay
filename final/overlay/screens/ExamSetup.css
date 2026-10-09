@@ -57,15 +57,6 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-.ov-quick-row {
-  justify-content: center;
-  margin-bottom: var(--space-2);
-}
-
-.ov-quick-row .ov-chip {
-  font-size: var(--font-size-md);
-}
-
 /* Sets ----------------------------------------------------------------- */
 
 .ov-section-title {
@@ -142,16 +133,11 @@
 .ov-setup-screen .ov-setup-lede { margin: 16px 0 32px; }
 .ov-setup-screen .ov-setup-action { position: static; flex-shrink: 0; padding: 16px 24px 28px; box-shadow: none; }
 .ov-setup-screen .ov-countdown { margin-top: 20px; margin-bottom: 20px; }
-.ov-setup-content .ov-quick-row { display: grid; grid-template-columns: 1fr 1fr 1.4fr; width: 100%; gap: 8px; }
-.ov-setup-content .ov-quick-row .ov-chip { width: 100%; min-width: 0; padding-inline: 6px; font-size: 13px; }
 .ov-setup-content .ov-check-row { gap: 16px; grid-template-columns: 40px minmax(0, 1fr) 32px; padding: 20px 16px; }
 .ov-setup-content .set-copy { min-width: 0; }
 .ov-setup-content .set-copy strong { white-space: normal; }
 .ov-step-2 { padding-top: 24px; }
 .ov-step-0 h1 { margin-bottom: 56px; }
-/* Before a time is picked there is no countdown between the fields and the
-   shortcuts, so the shortcuts keep the same breathing room on their own. */
-.ov-step-0 .ov-when + .ov-quick-row { margin-top: 20px; }
 /* Header: back chevron, a short thin progress bar, nothing else. */
 .ov-setup-header .ov-setup-back { justify-self: start; margin-left: -12px; }
 .ov-setup-progress {
@@ -203,8 +189,127 @@
   box-shadow: 0 12px 26px rgba(66, 85, 255, .28); transform: translateY(-2px);
 }
 .ov-shaky-card.is-selected small { color: rgba(255, 255, 255, .78); }
-.ov-shaky-card.is-selected .ov-shaky-number { background: rgba(255, 255, 255, .18); color: var(--color-white); }
+/* Each badge wears its chapter's colour, the same as that chapter's wedge on
+   the next step and in the plan. A white ring keeps it visible on a chosen
+   card, which is primary blue like Chapter 1's colour. */
+.ov-shaky-card .ov-shaky-number {
+  background: var(--chapter-color);
+  color: var(--color-white);
+}
+.ov-shaky-card.is-selected .ov-shaky-number {
+  box-shadow: var(--space-0) var(--space-0) var(--space-0) var(--border-width) var(--color-white);
+}
 .ov-shaky-card.is-selected .ov-shaky-check { border-color: var(--color-white); background: var(--color-white); }
+
+/* How long can you study? ------------------------------------------------- */
+
+.ov-study {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-6);
+  margin-top: var(--space-8);
+}
+
+.ov-study-ring {
+  position: relative;
+  width: var(--study-ring-size);
+  max-width: var(--size-full);
+  aspect-ratio: 1;
+}
+
+.ov-study-ring svg {
+  display: block;
+  width: var(--size-full);
+  height: var(--size-full);
+  overflow: visible;
+}
+
+.ov-study-track {
+  fill: var(--color-transparent);
+  stroke: var(--study-ring-track);
+}
+
+.ov-study-arcs {
+  transform: rotate(calc(var(--rotate-quarter) * -1));
+  transform-origin: center;
+}
+
+.ov-study-arc {
+  fill: var(--color-transparent);
+}
+
+.ov-study-centre {
+  position: absolute;
+  inset: var(--space-0);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.ov-study-time {
+  font-size: var(--study-time-size);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ov-study-tag,
+.ov-study-reset {
+  padding: var(--space-half) var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-study-tag {
+  color: var(--study-tag-text);
+  background: var(--study-tag-bg);
+}
+
+.ov-study-reset {
+  color: var(--color-primary);
+  background: var(--color-transparent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: var(--space-half);
+}
+
+.ov-study-steppers {
+  display: flex;
+  gap: var(--study-step-gap);
+}
+
+.ov-study-step {
+  display: grid;
+  width: var(--study-step-size);
+  height: var(--study-step-size);
+  place-items: center;
+  color: var(--color-primary);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  cursor: pointer;
+}
+
+.ov-study-step:disabled {
+  color: var(--color-text-soft);
+  background: var(--color-surface-soft);
+  cursor: default;
+}
+
+.ov-study-tight {
+  margin: var(--space-0);
+  color: var(--study-tight-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
 
 @keyframes ov-step-in { from { opacity: 0; transform: translateY(10px); } }
 @media (max-height: 780px) {

@@ -6,7 +6,8 @@ export function chapterColor(order) {
 
 /**
  * One segment per chapter, width proportional to its budget, with a lighter
- * sub-band for the Flashcards portion. Final review closes the bar.
+ * sub-band for the Flashcards portion. A final review segment only appears
+ * if a plan still carries one; new plans do not.
  */
 export function planTimeline(plan, { mini = false, activeIndex = -1, playhead = null } = {}) {
   const total = totalAllotted(plan) || 1;
@@ -18,7 +19,7 @@ export function planTimeline(plan, { mini = false, activeIndex = -1, playhead = 
       const active = chapter.order === activeIndex ? ' is-active' : '';
       const done = chapter.status === 'done' ? ' is-done' : '';
       return `
-        <span class="ov-timeline-seg${active}${done}" style="--seg-share:${share}%;--seg-color:${chapterColor(chapter.order)}" title="${chapter.short}">
+        <span class="ov-timeline-seg${active}${done}" style="--seg-share:${share}%;--seg-color:${chapterColor(chapter.setIndex)}" title="${chapter.short}">
           ${band ? `<i class="ov-timeline-band" style="--band-share:${band}%"></i>` : ''}
         </span>`;
     })
@@ -30,7 +31,7 @@ export function planTimeline(plan, { mini = false, activeIndex = -1, playhead = 
   return `
     <div class="ov-timeline${mini ? ' is-mini' : ''}" role="img" aria-label="Plan timeline">
       ${segments}
-      <span class="ov-timeline-seg is-final" style="--seg-share:${finalShare}%;--seg-color:var(--sprint-final)"></span>
+      ${plan.finalReview.allotted > 0 ? `<span class="ov-timeline-seg is-final" style="--seg-share:${finalShare}%;--seg-color:var(--sprint-final)"></span>` : ''}
       ${head}
     </div>`;
 }

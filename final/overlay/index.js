@@ -21,7 +21,7 @@ import {
   severeSheet,
   stuckAlert,
 } from './components/SprintAlert.js';
-import { defaultDraft, examSetup, resolveChip } from './screens/ExamSetup.js';
+import { chosenStudyMinutes, defaultDraft, examSetup } from './screens/ExamSetup.js';
 import {
   shiftMonth,
   withDay,
@@ -74,7 +74,6 @@ const ov = {
     draftAt: null,
     monthAnchor: null,
     picker: null,
-    chipKey: null,
     selected: [],
     shaky: [],
     error: null,
@@ -577,15 +576,17 @@ function resumeCorrectAnswer() {
 function openSetup() {
   ov.sheet = null;
   ov.spotlightDone = true;
+  const prefilled = defaultDraft(clock.now());
   ov.setup = {
     step: 0,
-    examAt: null,
-    draftAt: defaultDraft(clock.now()),
-    monthAnchor: defaultDraft(clock.now()),
+    // The pre-filled time is the chosen time until the user changes it.
+    examAt: prefilled,
+    draftAt: prefilled,
+    monthAnchor: prefilled,
     picker: null,
-    chipKey: null,
     selected: course.sets.map((_, index) => index),
     shaky: [],
+    studyMinutes: null,
     error: null,
   };
   setPhase('setup');
@@ -593,30 +594,36 @@ function openSetup() {
 }
 
 function makePlan() {
-  setPhase('building');
-  render();
-  window.setTimeout(() => {
-    if (ov.forcedPlanError) {
-      ov.forcedPlanError = false;
-      setPhase('plan-error');
-      render();
-      return;
-    }
-    ov.plan = Plan.createPlan({
-      examAt: ov.setup.examAt,
-      startedAt: clock.now(),
-      sets: course.sets,
-      selected: ov.setup.selected,
-      shaky: ov.setup.shaky,
-    });
-    logEvent('plan-built', {
-      chapters: ov.plan.chapters.map((chapter) => ({ title: chapter.short, allotted: chapter.allotted, shaky: chapter.shaky })),
-      finalReview: ov.plan.finalReview.allotted,
-      tight: ov.plan.tight,
-    });
-    setPhase('plan');
+  if (ov.forcedPlanError) {
+    ov.forcedPlanError = false;
+    setPhase('plan-error');
     render();
-  }, 1200);
+    return;
+  }
+  const now = clock.now();
+  const study = chosenStudyMinutes(ov.setup, now);
+  logEvent('study-time', {
+    recommended: study.recommended,
+    chosen: study.chosen,
+    untilExam: study.untilExam,
+    tight: study.tight,
+  });
+  ov.plan = Plan.createPlan({
+    examAt: ov.setup.examAt,
+    startedAt: now,
+    sets: course.sets,
+    selected: ov.setup.selected,
+    shaky: ov.setup.shaky,
+    studyMinutes: study.chosen,
+  });
+  logEvent('plan-built', {
+    studyMinutes: ov.plan.studyMinutes,
+    chapters: ov.plan.chapters.map((chapter) => ({ title: chapter.short, allotted: chapter.allotted, shaky: chapter.shaky })),
+    tight: ov.plan.tight,
+  });
+  // No building animation between setup and the plan.
+  setPhase('plan');
+  render();
 }
 
 function startSprint() {
@@ -962,16 +969,16 @@ function focusSlice(key, source) {
 
 /**
  * The adjust sheet stays mounted while open, so values are written back in
- * place. Every field is refreshed, not just the edited one, because moving
- * time always changes Final review too.
+ * place. Changing a chapter changes the total study time, so the total row is
+ * refreshed with it.
  */
 function syncAdjustSheet() {
   ov.plan.chapters.forEach((chapter) => {
     const input = root.querySelector(`[data-adjust-input="${chapter.order}"]`);
     if (input && document.activeElement !== input) input.value = String(chapter.allotted);
   });
-  const finalValue = root.querySelector('[data-adjust-final]');
-  if (finalValue) finalValue.textContent = `${ov.plan.finalReview.allotted} min`;
+  const total = root.querySelector('[data-adjust-total]');
+  if (total) total.textContent = formatDuration(ov.plan.studyMinutes);
 }
 
 /** A typed number is a request; the plan decides what it can actually give. */
@@ -984,7 +991,7 @@ function commitAdjustInput(input) {
     Plan.adjustChapter(ov.plan, index, Math.max(1, wanted) - chapter.allotted);
     logEvent('adjust-typed', { chapter: chapter.short, wanted, allotted: chapter.allotted });
   }
-  // Show what really happened, e.g. capped by what Final review had left.
+  // Show what really happened, e.g. capped by the time until the exam.
   input.value = String(chapter.allotted);
   syncAdjustSheet();
 }
@@ -1072,17 +1079,6 @@ function onOverlayClick(event) {
       window.__base.reset();
       render();
     },
-    'exam-chip': () => {
-      const key = target.dataset.key;
-      ov.setup.chipKey = key;
-      ov.setup.error = null;
-      ov.setup.picker = null;
-      ov.setup.examAt = resolveChip(key, clock.now());
-      ov.setup.draftAt = ov.setup.examAt;
-      ov.setup.monthAnchor = ov.setup.examAt;
-      logEvent('exam-chip', { key });
-      render();
-    },
     'open-picker': () => {
       const which = target.dataset.picker;
       ov.setup.picker = ov.setup.picker === which ? null : which;
@@ -1117,11 +1113,20 @@ function onOverlayClick(event) {
     },
     'setup-next': () => {
       if (!ov.setup.examAt || ov.setup.examAt <= clock.now() || !ov.setup.selected.length) return;
-      ov.setup.step = Math.min(2, (ov.setup.step || 0) + 1);
+      ov.setup.step = Math.min(3, (ov.setup.step || 0) + 1);
       ov.setup.picker = null;
       render();
     },
     'setup-back': () => { ov.setup.step = Math.max(0, (ov.setup.step || 0) - 1); render(); },
+    'study-step': () => {
+      const { chosen, min, max } = chosenStudyMinutes(ov.setup, clock.now());
+      ov.setup.studyMinutes = Math.max(min, Math.min(max, chosen + Number(target.dataset.delta)));
+      render();
+    },
+    'study-recommended': () => {
+      ov.setup.studyMinutes = null;
+      render();
+    },
     'make-plan': () => makePlan(),
     'retry-plan': () => makePlan(),
     'back-to-setup': () => {
@@ -1257,7 +1262,6 @@ function currentDraft() {
 function commitDraft(next) {
   ov.setup.draftAt = next;
   ov.setup.monthAnchor = next;
-  ov.setup.chipKey = null;
   if (next <= clock.now()) {
     ov.setup.error = 'That time has already passed.';
     ov.setup.examAt = null;
@@ -1464,7 +1468,6 @@ function ensurePlan() {
     draftAt: examAt,
     monthAnchor: examAt,
     picker: null,
-    chipKey: 'hour6',
     selected: course.sets.map((_, index) => index),
     shaky: [],
     error: null,

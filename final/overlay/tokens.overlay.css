@@ -91,6 +91,16 @@
   --sprint-opaque: 1;
   --sprint-ready-opacity: 0.55;
 
+  /* Study time step */
+  --study-ring-size: calc(var(--space-48) + var(--space-16));
+  --study-ring-track: var(--color-page-muted);
+  --study-time-size: var(--font-size-xl);
+  --study-step-size: var(--space-14);
+  --study-step-gap: var(--space-8);
+  --study-tag-bg: var(--color-surface-blue);
+  --study-tag-text: var(--color-primary);
+  --study-tight-text: var(--color-warning-dark);
+
   /* Layering */
   --z-overlay-root: calc(var(--z-sticky) + 1);
   --z-overlay-screen: calc(var(--z-sticky) + 2);

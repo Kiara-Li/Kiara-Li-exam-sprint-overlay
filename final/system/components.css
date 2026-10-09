@@ -112,7 +112,6 @@
 }
 .ov-chip:disabled { color: var(--text-muted); cursor: not-allowed; }
 .ov-chip-row { gap: var(--space-related); }
-.ov-quick-row .ov-chip { font-size: var(--type-label-size); }
 
 /* The same field in setup and the component gallery. */
 .ov-when-field {

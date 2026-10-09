@@ -60,11 +60,6 @@ export function planReady(plan) {
         <h2 class="ov-section-title">How each set breaks down</h2>
         <div class="mode-list ov-plan-list">
           ${stages}
-          <div class="mode-row decorative-mode ov-plan-row is-final">
-            <span class="mode-icon">${icon('test')}</span>
-            <span class="ov-plan-name">Final review<small>Everything you missed or saved for later</small></span>
-            <span class="ov-plan-time">${plan.finalReview.allotted} min</span>
-          </div>
         </div>
       </section>
       <div class="sticky-action ov-plan-actions">

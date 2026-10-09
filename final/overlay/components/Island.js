@@ -25,7 +25,7 @@ function currentUnit(ov) {
   if (!chapter) return { name: '', color: 'var(--sprint-final)', remaining: 0, parked: 0, step: 1 };
   return {
     name: chapter.short,
-    color: chapterColor(chapter.order),
+    color: chapterColor(chapter.setIndex),
     remaining: remainingMs(chapter),
     parked: chapter.parked.length,
     step: chapter.order + 1,

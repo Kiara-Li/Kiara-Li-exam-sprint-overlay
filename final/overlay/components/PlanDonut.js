@@ -1,4 +1,4 @@
-import { formatCompact, formatDuration } from '../state/clock.js';
+import { formatDuration } from '../state/clock.js';
 import { totalAllotted } from '../state/sprintPlan.js';
 import { chapterColor } from './PlanTimeline.js';
 
@@ -10,6 +10,13 @@ const RADIUS = 38;
 const THICKNESS = 12;
 const GAP = 1.4;
 
+/** "28 hr" for a day away, "1 hr 50 min" when it is close enough to matter. */
+function examIn(plan) {
+  const minutes = Math.max(0, Math.round((plan.examAt - plan.startedAt) / 60000));
+  // Whole hours, rounded down: 28 hr 34 min reads as "28 hr", per the spec.
+  return minutes >= 180 ? `${Math.floor(minutes / 60)} hr` : formatDuration(minutes);
+}
+
 /**
  * One ring, one arc per chapter, hover or tap an arc to read its budget.
  * Easier to compare at a glance than a thin horizontal bar.
@@ -17,26 +24,21 @@ const GAP = 1.4;
 export function planDonut(plan) {
   const total = totalAllotted(plan) || 1;
   const circumference = 2 * Math.PI * RADIUS;
-  const slices = [
-    ...plan.chapters
-      .filter((chapter) => chapter.status !== 'skipped')
-      .map((chapter) => ({
-        key: String(chapter.order),
-        name: chapter.short,
-        detail: chapter.title.split('·').slice(1).join('·').trim(),
-        minutes: chapter.allotted,
-        color: chapterColor(chapter.order),
-        shaky: chapter.shaky,
-      })),
-    {
-      key: 'final',
-      name: 'Final review',
-      detail: 'Everything you missed or saved for later',
-      minutes: plan.finalReview.allotted,
-      color: 'var(--sprint-final)',
-      shaky: false,
-    },
-  ].filter((slice) => slice.minutes > 0);
+  // One slice per chapter, no final review. Colour and number come from the
+  // chapter itself, so they match the badges on the "less ready" step even
+  // when an earlier chapter was left out.
+  const slices = plan.chapters
+    .filter((chapter) => chapter.status !== 'skipped')
+    .map((chapter) => ({
+      key: String(chapter.order),
+      number: chapter.setIndex + 1,
+      name: chapter.short,
+      detail: chapter.title.split('·').slice(1).join('·').trim(),
+      minutes: chapter.allotted,
+      color: chapterColor(chapter.setIndex),
+      shaky: chapter.shaky,
+    }))
+    .filter((slice) => slice.minutes > 0);
 
   let offset = 0;
   const arcs = slices
@@ -68,7 +70,7 @@ export function planDonut(plan) {
       const radians = angle * 2 * Math.PI - Math.PI / 2;
       const x = CENTRE + Math.cos(radians) * RADIUS;
       const y = CENTRE + Math.sin(radians) * RADIUS;
-      const short = slice.key === 'final' ? 'FR' : slice.key === '' ? '' : `${Number(slice.key) + 1}`;
+      const short = String(slice.number);
       if (fraction < 0.06) return '';
       return `<text class="ov-donut-label" data-slice="${slice.key}" x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle">${short}</text>`;
     })
@@ -85,14 +87,18 @@ export function planDonut(plan) {
     )
     .join('');
 
+  // Large: the study time. It has to fit inside the ring's 64-unit hole.
+  const studyLabel = formatDuration(total);
+  const studySize = Math.min(15, 62 / (studyLabel.length * .56)).toFixed(2);
+
   return `
     <figure class="ov-donut" data-donut>
       <svg viewBox="0 0 ${VIEW} ${VIEW}" role="img" aria-label="Time split across the plan">
         <circle class="ov-donut-track" cx="${CENTRE}" cy="${CENTRE}" r="${RADIUS}" stroke-width="${THICKNESS}" />
         <g class="ov-donut-arcs">${arcs}</g>
         <g class="ov-donut-labels">${labels}</g>
-        <text class="ov-donut-total" style="font-size:${Math.min(15, 76 / Math.max(1, formatCompact(total).length))}px" x="${CENTRE}" y="${CENTRE - 1}" text-anchor="middle">${formatCompact(total)}</text>
-        <text class="ov-donut-total-note" x="${CENTRE}" y="${CENTRE + 10}" text-anchor="middle">until the exam</text>
+        <text class="ov-donut-total" style="font-size:${studySize}px" x="${CENTRE}" y="${CENTRE - 1}" text-anchor="middle">${studyLabel}</text>
+        <text class="ov-donut-total-note" x="${CENTRE}" y="${CENTRE + 10}" text-anchor="middle">Exam in ${examIn(plan)}</text>
       </svg>
       <figcaption class="ov-donut-readouts">${readout}</figcaption>
     </figure>`;
