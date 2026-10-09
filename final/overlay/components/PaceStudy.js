@@ -144,27 +144,45 @@ export function bindSortGesture(node, { allowed, onChoose, onInteract, onPreview
   return { choose, dispose() { abort.abort(); reset(); cancelAnimationFrame(frame); } };
 }
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** The face the user is looking at, as a flat copy that can sit in a flipper. */
+function visibleFace(card) {
+  if (card.classList.contains('flashcard')) {
+    const face = card.querySelector(card.classList.contains('is-flipped') ? '.flashcard-back' : '.flashcard-front');
+    if (face) {
+      const copy = face.cloneNode(true);
+      // Keep the face's own look; only undo its 3D placement in the real card.
+      copy.style.cssText += ';position:absolute;inset:0;margin:0;transform:none;backface-visibility:hidden;-webkit-backface-visibility:hidden;';
+      return copy;
+    }
+  }
+  const copy = card.cloneNode(true);
+  copy.classList.add('sprint-sort-front');
+  return copy;
+}
+
 /**
- * Frames along a quadratic curve from the card to its bar segment. The control
- * point lets the card rise a little ahead of travelling sideways, the same
- * gathering motion as before. Dense sampling plus one global easing keeps
- * both the path and the speed continuous.
+ * Frames for the turned card on its way into the bar. It follows the same
+ * gathering arc as before and shrinks as a card for most of the trip, then in
+ * the last stretch flattens into the segment's own shape, so a solid orange
+ * card becomes the orange segment rather than vanishing near it.
  */
-function arcFrames(dx, dy, endScale, steps = 24) {
+function landFrames(dx, dy, sx, sy, steps = 28) {
   const cx = dx * .26, cy = dy * .5;
-  const turn = dx < 0 ? -1 : 1;
+  const flattenFrom = .72;
   const frames = [];
   for (let i = 0; i <= steps; i += 1) {
     const t = i / steps;
     const x = 2 * (1 - t) * t * cx + t * t * dx;
     const y = 2 * (1 - t) * t * cy + t * t * dy;
-    // Size eases down continuously; nothing is saved for the last frames.
-    const scale = endScale + (1 - endScale) * Math.pow(1 - t, 1.25);
-    const rotate = turn * 3 * Math.sin(Math.PI * t);
-    // Fully visible for most of the trip, then dissolves into the segment.
-    const opacity = t < .58 ? 1 : 1 - Math.pow((t - .58) / .42, 1.6);
+    const asCard = sx + (1 - sx) * Math.pow(1 - Math.min(1, t / flattenFrom), 1.35);
+    const f = t <= flattenFrom ? 0 : (t - flattenFrom) / (1 - flattenFrom);
+    const flatten = 1 - Math.pow(1 - f, 2);
+    const scaleY = asCard + (sy - asCard) * flatten;
+    const opacity = t < .9 ? 1 : 1 - (t - .9) / .1;
     frames.push({
-      transform: `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${scale.toFixed(4)}) rotate(${rotate.toFixed(2)}deg)`,
+      transform: `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${asCard.toFixed(4)},${scaleY.toFixed(4)})`,
       opacity: Math.max(0, opacity),
       offset: t,
     });
@@ -172,44 +190,81 @@ function arcFrames(dx, dy, endScale, steps = 24) {
   return frames;
 }
 
-/** Visually place the card at its next position on the pace bar. */
-export async function flyIntoPace(card, bar, index, total, level, { onTravel = () => {} } = {}) {
+/**
+ * Visually place the card at its next position on the pace bar. The card
+ * turns over to a face in its sort colour, then tucks into the bar, so its
+ * colour and the segment's are the same thing arriving.
+ */
+export async function flyIntoPace(card, bar, index, total, level, { flip = true, onTravel = () => {} } = {}) {
   if (!card || !bar || level === 'done') return;
   const from = card.getBoundingClientRect();
   const to = bar.querySelectorAll('.sprint-pace-segment')[index]?.getBoundingClientRect() || bar.getBoundingClientRect();
   const targetX = to.left + to.width / 2;
   const targetY = to.top + to.height / 2;
-  const clone = card.cloneNode(true);
-  clone.className = 'sprint-flying-card';
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const clone = document.createElement('div');
+  clone.className = 'sprint-flying-card is-flipping';
   clone.setAttribute('aria-hidden', 'true');
   clone.inert = true;
   clone.style.left = `${from.left}px`;
   clone.style.top = `${from.top}px`;
   clone.style.width = `${from.width}px`;
   clone.style.height = `${from.height}px`;
-  clone.style.border = `2px solid var(--sort-${level})`;
-  clone.style.background = 'var(--color-white)';
-  clone.style.borderRadius = 'var(--card-radius)';
+
+  const flipper = document.createElement('div');
+  flipper.className = 'sprint-sort-flipper';
+  const front = visibleFace(card);
+  const back = document.createElement('div');
+  back.className = 'sprint-sort-back';
+  back.style.background = `var(--pace-${level})`;
+  back.style.color = level === 'later' ? 'var(--color-white)' : 'var(--text-primary)';
+  back.textContent = LEVELS.find((item) => item.key === level)?.label || '';
+  flipper.append(front, back);
+  clone.append(flipper);
   document.body.appendChild(clone);
   card.style.opacity = '0';
+
   const dx = targetX - (from.left + from.width / 2);
   const dy = targetY - (from.top + from.height / 2);
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Shrink toward the segment's width, not its 6px height: matching the height
-  // collapsed the card to a sliver in the last few frames, which read as a snap.
-  const endScale = Math.max(.08, Math.min(.3, to.width / from.width));
+  const sx = Math.max(.04, to.width / from.width);
+  const sy = Math.max(.008, to.height / from.height);
+
   try {
-    // The same gathering arc as before, drawn as one smooth quadratic curve
-    // instead of two straight legs. The old three-keyframe version changed
-    // direction and speed abruptly at its middle frame.
-    await clone.animate(reduced ? [{ opacity: 0 }, { opacity: 0 }] : arcFrames(dx, dy, endScale), {
-      duration: reduced ? 1 : 680,
-      // Soft start, quick middle, long settle: a curved speed rather than a
-      // constant one, so the card is thrown and then eases home.
+    if (reduced) {
+      await onTravel();
+      return;
+    }
+    // 1. Turn over, towards the side it was sorted to.
+    const turn = level === 'again' ? 180 : -180;
+    const turning = flip
+      ? flipper.animate([
+          { transform: 'rotateY(0deg)' },
+          { transform: `rotateY(${turn}deg)` },
+        ], { duration: 400, easing: 'cubic-bezier(.45, .05, .35, 1)', fill: 'forwards' }).finished
+      : Promise.resolve();
+
+    // 2. Start rising before the turn has quite finished, so the two read as
+    //    one follow-through instead of two separate steps.
+    await wait(flip ? 280 : 0);
+    const radius = parseFloat(getComputedStyle(back).borderTopLeftRadius) || 24;
+    const travel = 640;
+    const landing = clone.animate(landFrames(dx, dy, sx, sy), {
+      duration: travel,
       easing: 'cubic-bezier(.45, .05, .2, 1)',
       fill: 'forwards',
     }).finished;
-    await onTravel();
+    // Keep the corners round as it flattens: the radius is scaled with the
+    // card, so it has to grow to stay a capsule at the segment's size.
+    back.animate([
+      { borderRadius: `${radius}px` },
+      { borderRadius: `${radius}px`, offset: .72 },
+      { borderRadius: `${(to.height / 2) / sx}px / ${(to.height / 2) / sy}px` },
+    ], { duration: travel, easing: 'cubic-bezier(.45, .05, .2, 1)', fill: 'forwards' });
+
+    // 3. Colour the segment as the card arrives, so it lands into its own colour.
+    await wait(travel * .62);
+    await Promise.all([Promise.resolve(onTravel()), landing, turning]);
   } finally {
     clone.remove();
     card.style.opacity = '';

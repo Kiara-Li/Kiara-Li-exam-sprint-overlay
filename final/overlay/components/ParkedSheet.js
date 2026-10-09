@@ -56,9 +56,12 @@ export function adjustSheet(plan) {
         <div class="ov-adjust-row">
           <span class="ov-adjust-name">${chapter.short}${chapter.shaky ? '<em class="ov-tag">Shaky</em>' : ''}</span>
           <span class="ov-stepper">
-            <button data-ov="adjust" data-chapter="${chapter.order}" data-delta="-5" aria-label="Five minutes less">−5</button>
-            <b data-adjust-minutes="${chapter.order}">${chapter.allotted} min</b>
-            <button data-ov="adjust" data-chapter="${chapter.order}" data-delta="5" aria-label="Five minutes more">+5</button>
+            <button data-ov="adjust" data-chapter="${chapter.order}" data-delta="-30" aria-label="Thirty minutes less">−30</button>
+            <label class="ov-adjust-field">
+              <input type="number" inputmode="numeric" min="1" step="1" value="${chapter.allotted}" data-adjust-input="${chapter.order}" aria-label="${chapter.short} minutes">
+              <span>min</span>
+            </label>
+            <button data-ov="adjust" data-chapter="${chapter.order}" data-delta="30" aria-label="Thirty minutes more">+30</button>
           </span>
         </div>`,
     )

@@ -10,6 +10,7 @@
 @import './screens/PlanReady.css';
 @import './screens/ChapterDone.css';
 @import './screens/SprintDone.css';
+@import './screens/FlashDone.css';
 @import './debug/DebugPanel.css';
 @import './debug/ModeBar.css';
 @import './layout.css';

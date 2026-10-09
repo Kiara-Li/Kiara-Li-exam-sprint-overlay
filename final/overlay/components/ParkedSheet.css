@@ -179,3 +179,62 @@
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
+
+/* The minutes read as a number but are a field: a soft pill that shows it can
+   be tapped, and a primary ring once it is being edited. */
+.ov-adjust-field {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  min-width: 92px;
+  padding: 8px 12px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: var(--color-surface-soft);
+  cursor: text;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.ov-adjust-field:focus-within {
+  border-color: var(--color-primary);
+  background: var(--color-white);
+}
+
+.ov-adjust-field input {
+  width: 3.2ch;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.ov-adjust-field input:focus {
+  outline: none;
+}
+
+.ov-adjust-field input::-webkit-inner-spin-button,
+.ov-adjust-field input::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.ov-adjust-field span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Wider buttons for the two-digit step. */
+.ov-stepper button {
+  width: auto;
+  min-width: var(--space-12);
+  padding: 0 var(--space-2);
+}

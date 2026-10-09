@@ -32,6 +32,7 @@ import {
 import { planBuilding, planError, planReady, paceIntro } from './screens/PlanReady.js';
 import { chapterDone, playReallocation } from './screens/ChapterDone.js';
 import { sprintDone } from './screens/SprintDone.js';
+import { flashDone, playFlashDone } from './screens/FlashDone.js';
 import { debugPanel } from './debug/DebugPanel.js';
 import { modeBar } from './debug/ModeBar.js';
 
@@ -460,10 +461,9 @@ function enhancePaceScreen() {
   if (stage === 'transition' && route === 'flash-complete') {
     const count = ov.pace.needsPractice.size;
     const got = Math.max(0, Plan.termScope(course.sets[0]).length - count);
-    screen.querySelector('.flash-complete-content').innerHTML = `
-      <h1>Flashcards done.</h1>
-      <div class="completion-stats"><div><strong>Got it</strong><b>${got}</b></div><div><strong>Coming back in practice</strong><b>${count}</b></div></div>
-      <button class="up-next" data-ov="go-learn"><span></span><span><small>Up next</small><strong>Practice: Chapter 1</strong></span><span class="up-next-arrow">›</span></button>`;
+    const content = screen.querySelector('.flash-complete-content');
+    content.innerHTML = flashDone({ got, practice: count, chapter: 'Chapter 1' });
+    playFlashDone(content);
     return;
   }
   if (!studying) return;
@@ -960,6 +960,35 @@ function focusSlice(key, source) {
 
 /* ------------------------------------------------------------------ events */
 
+/**
+ * The adjust sheet stays mounted while open, so values are written back in
+ * place. Every field is refreshed, not just the edited one, because moving
+ * time always changes Final review too.
+ */
+function syncAdjustSheet() {
+  ov.plan.chapters.forEach((chapter) => {
+    const input = root.querySelector(`[data-adjust-input="${chapter.order}"]`);
+    if (input && document.activeElement !== input) input.value = String(chapter.allotted);
+  });
+  const finalValue = root.querySelector('[data-adjust-final]');
+  if (finalValue) finalValue.textContent = `${ov.plan.finalReview.allotted} min`;
+}
+
+/** A typed number is a request; the plan decides what it can actually give. */
+function commitAdjustInput(input) {
+  const index = Number(input.dataset.adjustInput);
+  const chapter = ov.plan?.chapters[index];
+  if (!chapter) return;
+  const wanted = Math.round(Number(input.value));
+  if (Number.isFinite(wanted) && wanted !== chapter.allotted) {
+    Plan.adjustChapter(ov.plan, index, Math.max(1, wanted) - chapter.allotted);
+    logEvent('adjust-typed', { chapter: chapter.short, wanted, allotted: chapter.allotted });
+  }
+  // Show what really happened, e.g. capped by what Final review had left.
+  input.value = String(chapter.allotted);
+  syncAdjustSheet();
+}
+
 function onOverlayClick(event) {
   if (Date.now() < suppressClickUntil) {
     event.preventDefault();
@@ -1117,12 +1146,7 @@ function onOverlayClick(event) {
     },
     adjust: () => {
       Plan.adjustChapter(ov.plan, Number(target.dataset.chapter), Number(target.dataset.delta));
-      ov.plan.chapters.forEach(chapter => {
-        const value = root.querySelector(`[data-adjust-minutes="${chapter.order}"]`);
-        if (value) value.textContent = `${chapter.allotted} min`;
-      });
-      const finalValue = root.querySelector('[data-adjust-final]');
-      if (finalValue) finalValue.textContent = `${ov.plan.finalReview.allotted} min`;
+      syncAdjustSheet();
     },
     'island-toggle': () => {
       if (ov.island.state === 'alert') return;
@@ -1808,6 +1832,18 @@ function boot() {
     card.querySelector('[data-quiz-minutes]').textContent = `${chapter.allotted - minutes} min`;
   });
   root.addEventListener('pointerover', onOverlayHover);
+  root.addEventListener('change', (event) => {
+    const input = event.target.closest('[data-adjust-input]');
+    if (input) commitAdjustInput(input);
+  });
+  root.addEventListener('keydown', (event) => {
+    const input = event.target.closest('[data-adjust-input]');
+    if (input && event.key === 'Enter') input.blur();
+  });
+  // Select the whole number on focus, so typing replaces it.
+  root.addEventListener('focusin', (event) => {
+    event.target.closest('[data-adjust-input]')?.select();
+  });
   attachParkGestures();
   attachDebugTap();
   if (ov.mode === 'sprint') {

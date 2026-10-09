@@ -223,14 +223,18 @@ html[data-pace-study='true'] .quiz-screen .sprint-sort-controls { padding-top: 2
   overflow: hidden; box-shadow: var(--shadow-card);
   transform-origin: 50% 50%; will-change: transform, opacity; backface-visibility: hidden;
 }
-.sprint-flying-card.is-flipping { perspective: 1100px; overflow: visible; border: 0 !important; background: transparent !important; }
+.sprint-flying-card.is-flipping {
+  perspective: 1100px; overflow: visible; border: 0 !important;
+  background: transparent !important; box-shadow: none;
+}
 .sprint-sort-flipper { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
 .sprint-sort-front, .sprint-sort-back {
   position: absolute !important; inset: 0; width: 100%; height: 100%;
   margin: 0 !important; border-radius: var(--card-radius); backface-visibility: hidden;
   -webkit-backface-visibility: hidden; overflow: hidden; box-sizing: border-box;
 }
-.sprint-sort-front { padding: var(--space-control); background: var(--color-white); border: 1px solid var(--color-border-strong); animation: none !important; }
+.sprint-sort-front { padding: var(--space-control); background: var(--color-white); border: 1px solid var(--color-border-strong); animation: none !important; transform: none !important; }
+.sprint-sort-flipper > * { box-shadow: var(--shadow-card); }
 .sprint-sort-back { display: grid; place-items: center; transform: rotateY(180deg); font: var(--type-heading); font-weight: 700; }
 .sprint-plan-example { padding: 4px 0 18px; }
 .sprint-plan-example .sprint-pace-track { width: 100%; margin-bottom: 25px; }

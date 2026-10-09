@@ -54,10 +54,11 @@ export function mountSortingDemo(host) {
     const current = queue[position];
     const destination = sortDestination(position, queue.length, level);
     const track = host.querySelector('.sprint-pace-track');
-    await Promise.allSettled([
-      flyIntoPace(card, track, destination, queue.length, level),
-      level === 'done' ? Promise.resolve() : animateSegmentMove(track, position, destination, level),
-    ]);
+    // Same sequence as the study screen: turn over, travel, and colour the
+    // segment as the card arrives.
+    await flyIntoPace(card, track, destination, queue.length, level, {
+      onTravel: () => animateSegmentMove(track, position, destination, level),
+    }).catch(() => {});
     if (level === 'done') position += 1;
     else {
       queue.splice(position, 1);
@@ -72,6 +73,13 @@ export function mountSortingDemo(host) {
     sorting = false;
     host.querySelector('.sort-live').textContent = `${level === 'again' ? "Don't know" : level === 'later' ? 'Kind of' : 'Got it'} · ${via}`;
     render();
+    // Same settle-in as the study screen, so the gallery shows the real motion.
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      card.animate([
+        { opacity: 0, transform: 'translate3d(0, 12px, 0) scale(.97)' },
+        { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' },
+      ], { duration: 380, easing: 'cubic-bezier(.2, .9, .3, 1.06)' });
+    }
   }
 
   const binding = bindSortGesture(card, {
