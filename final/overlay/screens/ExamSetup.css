@@ -156,11 +156,13 @@
 .ov-shaky-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 32px; }
 .ov-shaky-options .ov-chip { min-height: 88px; border-radius: 20px; }
 .ov-step-2 { padding-top: 24px; }
+.ov-step-0 .ov-setup-lede { margin-bottom: 56px; }
 @keyframes ov-step-in { from { opacity: 0; transform: translateY(10px); } }
 @media (max-height: 780px) {
   .ov-setup-screen .ov-setup-content { padding-top: 20px; padding-bottom: 24px; }
   .ov-setup-screen .ov-setup-mark { margin-bottom: 16px; }
   .ov-setup-screen .ov-setup-lede { margin: 12px 0 20px; }
   .ov-setup-screen .ov-countdown { margin: 12px 0; }
+  .ov-step-0 .ov-setup-lede { margin-bottom: 36px; }
 }
 @media (prefers-reduced-motion: reduce) { .ov-setup-content { animation: none; } }

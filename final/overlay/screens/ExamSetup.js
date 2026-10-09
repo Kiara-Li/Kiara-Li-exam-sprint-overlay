@@ -65,7 +65,7 @@ export function examSetup(setup, now) {
         <span class="header-spacer"></span>
       </header>
 
-      <nav class="ov-setup-steps" aria-label="Exam setup progress">${['Exam time', 'Study sets', 'Extra practice'].map((label, index) => `<span class="${index === step ? 'is-current' : index < step ? 'is-complete' : ''}" aria-label="Step ${index + 1}: ${label}" ${index === step ? 'aria-current="step"' : ''}><i>${index < step ? '✓' : index + 1}</i></span>`).join('')}</nav>
+      <nav class="ov-setup-steps" aria-label="Exam setup progress">${['Exam time', 'Study sets', 'Extra practice'].map((label, index) => `<span class="${index === step ? 'is-current' : index < step ? 'is-complete' : ''}" aria-label="Step ${index + 1}: ${label}" ${index === step ? 'aria-current="step"' : ''}><i>${index < step ? '✓' : ''}</i></span>`).join('')}</nav>
       <section class="ov-setup-content ov-step-${step}">
         ${step === 0 ? `
         <div class="ov-setup-mark">${clockGlyph('ov-glyph-lg')}</div>
