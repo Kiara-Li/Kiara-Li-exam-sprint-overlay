@@ -45,17 +45,21 @@ html[data-pace-study='true'] .flashcard-screen .app-header-title { visibility: h
   70%, 100% { opacity: 0; transform: scale(2.4); }
 }
 
-/* You: a small diamond hung just under the track, gliding as you go. */
+/* You: a rounded caret pointing up at your spot on the track. A diamond read
+   as a generic chart marker; Quizlet's shapes are soft and friendly. */
 .sprint-pace-you {
-  top: calc(100% + 8px);
-  left: clamp(5px, var(--pace-you, 0%), calc(100% - 5px));
-  width: 8px; height: 8px; border-radius: 2px;
-  background: var(--text-primary); box-shadow: 0 0 0 1.5px var(--color-white);
-  transform: translate(-50%, -50%) rotate(45deg);
-  transition: left 420ms cubic-bezier(.22, .8, .2, 1);
+  top: calc(100% + 7px);
+  left: clamp(6px, var(--pace-you, 0%), calc(100% - 6px));
+  width: 12px; height: 8px; border-radius: 0;
+  background: var(--text-primary);
+  clip-path: path('M4.6 1.1Q6 -.6 7.4 1.1L11.5 6.2Q12.6 8 10.4 8H1.6Q-.6 8 .5 6.2Z');
+  filter: drop-shadow(0 1px 1px rgba(40, 45, 62, .18));
+  transform: translate(-50%, -50%);
+  /* A small hop past the new spot and back, rather than a flat slide. */
+  transition: left 480ms cubic-bezier(.34, 1.4, .64, 1);
 }
 .sprint-pace-pop {
-  top: calc(100% + 8px); left: clamp(5px, var(--pace-you, 0%), calc(100% - 5px));
+  top: calc(100% + 7px); left: clamp(6px, var(--pace-you, 0%), calc(100% - 6px));
   width: 10px; height: 10px; border: 1.5px solid var(--pace-goal);
   transform: translate(-50%, -50%) scale(.2); opacity: 0;
 }
@@ -71,7 +75,7 @@ html[data-pace-study='true'] .flashcard-screen .app-header-title { visibility: h
   0%, 100% { transform: translate(-50%, -50%) scale(1); }
   45% { transform: translate(calc(-50% + var(--catch-dx, 0px)), calc(-50% + var(--catch-dy, 0px))) scale(.75); }
 }
-@keyframes sprint-you-catch { 45% { transform: translate(-50%, -50%) rotate(45deg) scale(1.35); } }
+@keyframes sprint-you-catch { 45% { transform: translate(-50%, -62%) scale(1.3); } }
 @keyframes sprint-pace-pop {
   40% { opacity: .7; transform: translate(-50%, -50%) scale(.6); }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(3.2); }
@@ -217,6 +221,7 @@ html[data-pace-study='true'] .quiz-screen .sprint-sort-controls { padding-top: 2
 .sprint-flying-card {
   position: fixed; z-index: 1000; margin: 0; pointer-events: none;
   overflow: hidden; box-shadow: var(--shadow-card);
+  transform-origin: 50% 50%; will-change: transform, opacity; backface-visibility: hidden;
 }
 .sprint-flying-card.is-flipping { perspective: 1100px; overflow: visible; border: 0 !important; background: transparent !important; }
 .sprint-sort-flipper { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }

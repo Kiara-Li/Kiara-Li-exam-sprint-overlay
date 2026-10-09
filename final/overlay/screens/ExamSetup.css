@@ -148,7 +148,10 @@
 .ov-setup-content .set-copy { min-width: 0; }
 .ov-setup-content .set-copy strong { white-space: normal; }
 .ov-step-2 { padding-top: 24px; }
-.ov-step-0 .ov-setup-lede { margin-bottom: 56px; }
+.ov-step-0 h1 { margin-bottom: 56px; }
+/* Before a time is picked there is no countdown between the fields and the
+   shortcuts, so the shortcuts keep the same breathing room on their own. */
+.ov-step-0 .ov-when + .ov-quick-row { margin-top: 20px; }
 /* Header: back chevron, a short thin progress bar, nothing else. */
 .ov-setup-header .ov-setup-back { justify-self: start; margin-left: -12px; }
 .ov-setup-progress {
@@ -209,7 +212,7 @@
   .ov-setup-screen .ov-setup-mark { margin-bottom: 16px; }
   .ov-setup-screen .ov-setup-lede { margin: 12px 0 20px; }
   .ov-setup-screen .ov-countdown { margin: 12px 0; }
-  .ov-step-0 .ov-setup-lede { margin-bottom: 36px; }
+  .ov-step-0 h1 { margin-bottom: 36px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ov-setup-content, .ov-setup-progress span { animation: none; }

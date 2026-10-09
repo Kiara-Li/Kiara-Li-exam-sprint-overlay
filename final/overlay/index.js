@@ -540,9 +540,14 @@ async function sortPaceItem(level, via, card, { bypassPrompt = false, auto = fal
   else logEvent('sort', { stage, termIndex, level, via });
   if (stage === 'flashcards') window.__base.sortFlashcard(level);
   else window.__base.sortLearnQuestion(level);
-  if (level !== 'done' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // The next card settles in from just below, for every sort. "Got it" used
+    // to swap cards in a single frame.
     const nextCard = document.querySelector(stage === 'flashcards' ? '#app .flashcard' : '#app [data-question-card]');
-    nextCard?.animate([{ opacity: .3 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
+    nextCard?.animate([
+      { opacity: 0, transform: 'translate3d(0, 12px, 0) scale(.97)' },
+      { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' },
+    ], { duration: 380, easing: 'cubic-bezier(.2, .9, .3, 1.06)' });
   }
   updatePaceMarker();
   checkPaceMessage();

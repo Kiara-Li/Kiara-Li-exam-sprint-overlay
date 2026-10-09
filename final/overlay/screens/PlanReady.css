@@ -154,18 +154,35 @@
 .ov-intro-content p { color: var(--color-text-muted); line-height: 1.6; font-size: 17px; }
 .ov-preparing { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px; color: var(--color-primary); }
 .ov-preparing > span { width: 16px; height: 16px; border: 2px solid #dedfff; border-top-color: var(--color-primary); border-radius: 50%; animation: ov-preparing-spin 1s linear infinite; }
-.ov-pace-demo { position: relative; margin: 58px 12px 34px; height: 28px; }
+.ov-pace-demo { position: relative; margin: 58px 12px 40px; height: 10px; }
 .ov-demo-track { display: flex; gap: 4px; height: 100%; }
-.ov-demo-track > span { flex: 1; background: var(--color-border-strong); border-radius: 5px; animation-duration: 8s; animation-iteration-count: infinite; }
-.ov-demo-ball { position: absolute; top: -7px; left: 0; width: 42px; height: 42px; border-radius: 50%; border: 4px solid white; background: radial-gradient(circle at 32% 25%, white, #79dbf4 42%, #29b5df 85%); box-shadow: 0 0 0 4px #a7e9f966, 0 4px 16px #38bddd55; transform: translateX(-50%); animation: ov-demo-goal 8s linear infinite; }
-.ov-demo-you { position: absolute; top: 36px; left: 0; width: 14px; height: 14px; border-radius: 4px; background: var(--color-text); transform: translateX(-50%) rotate(45deg); animation: ov-demo-progress 8s steps(1, end) infinite; }
+.ov-demo-track > span { flex: 1; background: var(--color-border); border-radius: 999px; animation-duration: 8s; animation-iteration-count: infinite; }
+.ov-demo-ball {
+  position: absolute; top: 50%; left: 0; width: 24px; height: 24px; border-radius: 50%;
+  border: 4px solid var(--color-white); background: var(--pace-goal);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--pace-goal) 55%, transparent);
+  transform: translate(-50%, -50%); animation: ov-demo-goal 8s linear infinite;
+}
+.ov-demo-ball::after {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid var(--pace-goal); opacity: 0;
+  animation: sprint-target-ping 2.6s cubic-bezier(.2, .6, .3, 1) infinite;
+}
+.ov-demo-you {
+  position: absolute; top: calc(100% + 14px); left: 0; width: 18px; height: 12px;
+  background: var(--color-text);
+  clip-path: path('M6.9 1.6Q9 -.9 11.1 1.6L17.2 9.3Q18.9 12 15.6 12H2.4Q-.9 12 .8 9.3Z');
+  filter: drop-shadow(0 1px 1px rgba(40, 45, 62, .18));
+  transform: translate(-50%, -50%);
+  animation: ov-demo-progress 8s infinite;
+}
 .ov-demo-labels { display: flex; justify-content: center; gap: 28px; margin: 8px 0 28px; font-size: 14px; }
 .ov-demo-labels > span { display: flex; align-items: center; gap: 10px; }
-.ov-ball-key { width: 14px; height: 14px; border-radius: 50%; background: #57cdeb; }
-.ov-you-key { width: 11px; height: 11px; border-radius: 3px; background: var(--color-text); transform: rotate(45deg); }
+.ov-ball-key { width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--color-white); background: var(--pace-goal); box-shadow: 0 1px 3px color-mix(in srgb, var(--pace-goal) 55%, transparent); }
+.ov-you-key { width: 12px; height: 8px; background: var(--color-text); clip-path: path('M4.6 1.1Q6 -.6 7.4 1.1L11.5 6.2Q12.6 8 10.4 8H1.6Q-.6 8 .5 6.2Z'); }
 @keyframes ov-preparing-spin { to { transform: rotate(360deg); } }
 @keyframes ov-demo-goal { 0% { left: 0; } 85%, 100% { left: 90%; } }
-@keyframes ov-demo-progress { 0% { left: 0; } 18% { left: 12.5%; } 30% { left: 25%; } 40% { left: 37.5%; } 50% { left: 50%; } 60% { left: 62.5%; } 70% { left: 75%; } 80% { left: 87.5%; } 90%, 100% { left: 100%; } }
+@keyframes ov-demo-progress { 0% { left: 0; animation-timing-function: linear; } 15.5% { left: 0%; animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); } 18% { left: 12.5%; animation-timing-function: linear; } 27.5% { left: 12.5%; animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); } 30% { left: 25%; animation-timing-function: linear; } 37.5% { left: 25%; animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); } 40% { left: 37.5%; animation-timing-function: linear; } 47.5% { left: 37.5%; animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); } 50% { left: 50%; animation-timing-function: linear; } 57.5% { left: 50%; animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); } 60% { left: 62.5%; animation-timing-function: linear; } 67.5% { left: 62.5%; animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); } 70% { left: 75%; animation-timing-function: linear; } 77.5% { left: 75%; animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); } 80% { left: 87.5%; animation-timing-function: linear; } 87.5% { left: 87.5%; animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); } 90% { left: 100%; animation-timing-function: linear; } 100% { left: 100%; } }
 @media (prefers-reduced-motion: reduce) {
   .ov-preparing > span, .ov-demo-track > span, .ov-demo-ball, .ov-demo-you { animation: none; }
   .ov-demo-ball { left: 60%; } .ov-demo-you { left: 50%; }

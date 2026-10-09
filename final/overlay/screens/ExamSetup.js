@@ -38,7 +38,7 @@ export function examSetup(setup, now) {
     ? `<p class="ov-inline-warning" id="exam-time-error" role="alert">${setup.error}</p>`
     : setup.examAt
       ? `<p class="ov-countdown"><span>That gives you</span><strong>${formatDuration((setup.examAt - now) / 60000)}</strong></p>`
-      : '<p class="ov-inline-note">Pick a date and time to see how long you have.</p>';
+      : '';
 
   const chapterRows = sets
     .map((set, index) => {
@@ -93,7 +93,6 @@ export function examSetup(setup, now) {
         ${step === 0 ? `
         <div class="ov-setup-mark">${clockGlyph('ov-glyph-lg')}</div>
         <h1>When’s your exam?</h1>
-        <p class="ov-setup-lede">We’ll split the time you have left across your sets.</p>
 
         ${dateTimePicker({ draft, open: setup.picker, monthAnchor: setup.monthAnchor, now, invalid: Boolean(setup.error) })}
         ${countdown}

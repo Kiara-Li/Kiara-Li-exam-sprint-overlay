@@ -63,11 +63,12 @@ export async function animateSegmentMove(track, fromIndex, toIndex, level) {
   source.classList.add(level === 'later' ? 'is-later' : 'is-again');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) return;
+  // One smooth pop; the overshoot comes from the curve instead of a hard
+  // middle keyframe.
   await source.animate([
-    { opacity: .35, transform: 'scale(.86)' },
-    { opacity: 1, transform: 'scale(1.06)', offset: .65 },
-    { opacity: 1, transform: 'scale(1)' },
-  ], { duration: 180, easing: 'cubic-bezier(.2,.8,.2,1)' }).finished;
+    { opacity: .4, transform: 'scaleX(.7)' },
+    { opacity: 1, transform: 'scaleX(1)' },
+  ], { duration: 340, easing: 'cubic-bezier(.34, 1.45, .64, 1)' }).finished;
 }
 
 /** A reversible horizontal gesture on the current card or answered question. */
@@ -127,7 +128,8 @@ export function bindSortGesture(node, { allowed, onChoose, onInteract, onPreview
     if (level) choose(level, 'swipe');
     else {
       delete node.dataset.sortPreview;
-      node.animate([{ transform: node.style.transform }, { transform: 'none' }], { duration: 240, easing: 'ease-out' }).finished.finally(() => { node.style.transform = ''; });
+      // Settle back with a slight overshoot rather than stopping dead.
+      node.animate([{ transform: node.style.transform }, { transform: 'translate3d(0,0,0) rotate(0deg)' }], { duration: 420, easing: 'cubic-bezier(.34, 1.35, .64, 1)' }).finished.finally(() => { node.style.transform = ''; });
       onPreview(null);
     }
   });
@@ -140,6 +142,34 @@ export function bindSortGesture(node, { allowed, onChoose, onInteract, onPreview
     suppressClick = false;
   }, { capture: true });
   return { choose, dispose() { abort.abort(); reset(); cancelAnimationFrame(frame); } };
+}
+
+/**
+ * Frames along a quadratic curve from the card to its bar segment. The control
+ * point lets the card rise a little ahead of travelling sideways, the same
+ * gathering motion as before. Dense sampling plus one global easing keeps
+ * both the path and the speed continuous.
+ */
+function arcFrames(dx, dy, endScale, steps = 24) {
+  const cx = dx * .26, cy = dy * .5;
+  const turn = dx < 0 ? -1 : 1;
+  const frames = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const t = i / steps;
+    const x = 2 * (1 - t) * t * cx + t * t * dx;
+    const y = 2 * (1 - t) * t * cy + t * t * dy;
+    // Size eases down continuously; nothing is saved for the last frames.
+    const scale = endScale + (1 - endScale) * Math.pow(1 - t, 1.25);
+    const rotate = turn * 3 * Math.sin(Math.PI * t);
+    // Fully visible for most of the trip, then dissolves into the segment.
+    const opacity = t < .58 ? 1 : 1 - Math.pow((t - .58) / .42, 1.6);
+    frames.push({
+      transform: `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${scale.toFixed(4)}) rotate(${rotate.toFixed(2)}deg)`,
+      opacity: Math.max(0, opacity),
+      offset: t,
+    });
+  }
+  return frames;
 }
 
 /** Visually place the card at its next position on the pace bar. */
@@ -165,15 +195,20 @@ export async function flyIntoPace(card, bar, index, total, level, { onTravel = (
   const dx = targetX - (from.left + from.width / 2);
   const dy = targetY - (from.top + from.height / 2);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const duration = reduced ? 1 : 460;
-  const scale = Math.min(to.width / from.width, to.height / from.height);
+  // Shrink toward the segment's width, not its 6px height: matching the height
+  // collapsed the card to a sliver in the last few frames, which read as a snap.
+  const endScale = Math.max(.08, Math.min(.3, to.width / from.width));
   try {
-    // A single curved gathering motion, without stretching the card into a bar.
-    await clone.animate(reduced ? [{ opacity: 0 }, { opacity: 0 }] : [
-      { transform: 'translate3d(0,0,0) scale(1)', opacity: 1 },
-      { transform: `translate3d(${dx * .35}px,${dy * .46}px,0) scale(.65) rotate(${dx < 0 ? -3 : 3}deg)`, opacity: .85, offset: .45 },
-      { transform: `translate3d(${dx}px,${dy}px,0) scale(${scale})`, opacity: 0 },
-    ], { duration, easing: 'cubic-bezier(.22,.7,.18,1)', fill: 'forwards' }).finished;
+    // The same gathering arc as before, drawn as one smooth quadratic curve
+    // instead of two straight legs. The old three-keyframe version changed
+    // direction and speed abruptly at its middle frame.
+    await clone.animate(reduced ? [{ opacity: 0 }, { opacity: 0 }] : arcFrames(dx, dy, endScale), {
+      duration: reduced ? 1 : 680,
+      // Soft start, quick middle, long settle: a curved speed rather than a
+      // constant one, so the card is thrown and then eases home.
+      easing: 'cubic-bezier(.45, .05, .2, 1)',
+      fill: 'forwards',
+    }).finished;
     await onTravel();
   } finally {
     clone.remove();
