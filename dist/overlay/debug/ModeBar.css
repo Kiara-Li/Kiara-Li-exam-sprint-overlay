@@ -19,6 +19,10 @@
 .ov-bar-modes,
 .ov-bar-actions {
   display: flex;
+  flex-shrink: 0;
+  /* Centre, don't stretch: one wrapped pill used to make the whole group two
+     lines tall and push it out of the 32px bar. */
+  align-items: center;
   gap: var(--space-1);
 }
 
@@ -32,8 +36,13 @@
 }
 
 .ov-bar-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
   text-decoration: none;
-  padding: var(--space-1) var(--space-3);
+  white-space: nowrap;
+  line-height: 1;
+  padding: 0 var(--space-3);
   color: var(--devbar-text);
   background: var(--devbar-pill-bg);
   border-radius: var(--radius-pill);
@@ -48,11 +57,22 @@
   font-weight: var(--font-weight-bold);
 }
 
-@media (max-width: 400px) {
-  .ov-bar { gap: var(--space-1); padding-inline: var(--space-2); }
-  .ov-bar-pill { padding-inline: var(--space-2); }
-}
+.ov-bar-pill[aria-current='page'] { cursor: default; }
+
 @media (max-width: 520px) {
-  .ov-bar { grid-template-columns: auto auto; justify-content: space-between; }
+  /* On a phone every pill stays on one line; if they still do not fit, the
+     bar scrolls sideways instead of spilling off the edge. */
+  .ov-bar { display: flex; justify-content: space-between; overflow-x: auto; scrollbar-width: none; }
+  .ov-bar::-webkit-scrollbar { display: none; }
   .ov-bar-state { display: none; }
+}
+/* Tighter pills on phones so all seven fit without scrolling; the 400px step
+   comes last so it wins over the 520px one. */
+@media (max-width: 520px) {
+  .ov-bar { gap: 4px; padding-inline: 8px; }
+  .ov-bar-modes, .ov-bar-actions { gap: 3px; }
+  .ov-bar-pill { padding: 0 8px; }
+}
+@media (max-width: 400px) {
+  .ov-bar-pill { padding: 0 6px; font-size: 11px; }
 }

@@ -43,6 +43,10 @@
   cursor: pointer;
 }
 
+.ov-dbg-gap {
+  width: var(--space-2);
+}
+
 .ov-dbg-btn.is-on {
   color: var(--color-white);
   background: var(--color-primary);

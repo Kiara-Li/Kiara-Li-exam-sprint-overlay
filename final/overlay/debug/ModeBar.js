@@ -18,7 +18,7 @@ const STAGE_LABEL = {
 function stateLabel(ov) {
   if (ov.mode === 'original') return 'Base reproduction';
   if (ov.phase === 'study') {
-    const stage = { flashcards: 'Flashcards', learn: 'Learn', review: 'Final review' }[ov.stage];
+    const stage = { flashcards: 'Flashcards', transition: 'Flashcards done', learn: 'Quiz', review: 'Final review' }[ov.stage];
     const chapter = ov.plan && ov.stage !== 'review' ? ov.plan.chapters[ov.chapterIndex] : null;
     return chapter ? `${chapter.short} · ${stage}` : stage;
   }

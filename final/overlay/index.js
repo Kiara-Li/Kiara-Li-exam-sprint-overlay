@@ -1236,7 +1236,7 @@ function onOverlayClick(event) {
       clock.setSpeed(Number(target.dataset.value));
       render();
     },
-    'dbg-jump': () => debugJump(target.dataset.target, Number(target.dataset.index)),
+    'dbg-jump': () => debugJump(target.dataset.target),
     'dbg-trigger': () => debugTrigger(target.dataset.value),
     'dbg-reset': () => resetAll(),
     'dbg-export': () => exportLog(),
@@ -1547,16 +1547,19 @@ function attachDebugTap() {
 
 /* ------------------------------------------------------------------- debug */
 
+/** A plan built the way the setup flow builds it, with the recommended time. */
 function ensurePlan() {
   if (ov.plan) return;
-  const examAt = clock.now() + 6 * 60 * 60000;
+  const examAt = defaultDraft(clock.now());
   ov.setup = {
+    step: 3,
     examAt,
     draftAt: examAt,
     monthAnchor: examAt,
     picker: null,
     selected: course.sets.map((_, index) => index),
     shaky: [],
+    studyMinutes: null,
     error: null,
   };
   ov.plan = Plan.createPlan({
@@ -1565,53 +1568,83 @@ function ensurePlan() {
     sets: course.sets,
     selected: ov.setup.selected,
     shaky: ov.setup.shaky,
+    studyMinutes: chosenStudyMinutes(ov.setup, clock.now()).chosen,
   });
 }
 
-function debugJump(targetName, index) {
-  logEvent('debug-jump', { target: targetName, index });
+/** Chapter 1, Flashcards, from the first card and with the pace clock at zero. */
+function debugStartChapterOne() {
+  ensurePlan();
+  ov.sheet = null;
+  startSprint();
+  ov.pace.hintsSeen.pace = true;
+  document.querySelector('#app .sprint-pace-intro')?.remove();
+}
+
+/** Puts the user on a Chapter 1 pace screen if they are not on one already. */
+function debugEnsurePace() {
+  const route = window.__base.state.route;
+  const onPace = chapterOnePace() &&
+    ((ov.stage === 'flashcards' && route === 'flashcards') || (ov.stage === 'learn' && route === 'quiz'));
+  if (!onPace) debugStartChapterOne();
+}
+
+function debugJump(targetName) {
+  logEvent('debug-jump', { target: targetName });
+  window.clearTimeout(correctAdvanceTimer);
+  ov.sheet = null;
   if (targetName === 'setup') {
     openSetup();
     return;
   }
-  ensurePlan();
-  if (targetName === 'plan') {
-    setPhase('plan');
+  if (targetName === 'study-time') {
+    openSetup();
+    ov.setup.step = 3;
     render();
     return;
   }
-  if (targetName === 'chapter') {
-    ov.plan.chapters.forEach((chapter, position) => {
-      chapter.status = position < index ? 'done' : 'upcoming';
+  if (targetName === 'plan' || targetName === 'pace-intro') {
+    ensurePlan();
+    setPhase(targetName);
+    render();
+    return;
+  }
+  if (targetName === 'flashcards') {
+    debugStartChapterOne();
+    return;
+  }
+  if (targetName === 'flash-done') {
+    debugStartChapterOne();
+    // Two cards left to practise, so both counts on the screen have a number.
+    const base = window.__base.state;
+    base.studyQueue.slice(0, 2).forEach((termIndex) => {
+      ov.pace.needsPractice.add(termIndex);
+      ov.pace.statuses.flashcards.set(termIndex, 'again');
     });
-    startChapter(index);
+    base.queuePosition = base.studyQueue.length;
+    base.route = 'flash-complete';
+    ov.stage = 'transition';
+    window.__base.render();
+    render();
+    return;
+  }
+  if (targetName === 'quiz') {
+    debugStartChapterOne();
+    goToLearn();
     return;
   }
   if (targetName === 'done-ahead' || targetName === 'done-over') {
-    const chapter = ov.plan.chapters[Math.min(1, ov.plan.chapters.length - 1)];
-    ov.chapterIndex = chapter.order;
+    // A fresh plan each time, so the minutes moved are the same on every jump.
+    ov.plan = null;
+    ensurePlan();
+    const chapter = ov.plan.chapters[0];
+    const shift = Math.max(2, Math.round(chapter.allotted * 0.25));
+    ov.chapterIndex = 0;
+    ov.stage = 'learn';
     chapter.status = 'active';
-    chapter.used = targetName === 'done-ahead' ? chapter.allotted - 6 : chapter.allotted + 4;
+    chapter.used = targetName === 'done-ahead' ? chapter.allotted - shift : chapter.allotted + shift;
     chapter.answered = chapter.total;
     endChapter();
-    return;
-  }
-  if (targetName === 'final') {
-    ov.plan.chapters.forEach((chapter) => {
-      if (chapter.status === 'skipped') return;
-      chapter.status = 'done';
-      if (!Object.keys(chapter.missed).length) chapter.missed = { 0: 1, 2: 1 };
-    });
-    startFinalReview();
-    return;
-  }
-  if (targetName === 'sprint-done') {
-    ov.plan.chapters.forEach((chapter) => {
-      if (chapter.status !== 'skipped') chapter.status = 'done';
-    });
-    ov.stats.parkedSolved = ov.stats.parkedSolved || 3;
-    setPhase('sprint-done');
-    render();
   }
 }
 
@@ -1619,36 +1652,34 @@ function debugTrigger(kind) {
   logEvent('debug-trigger', { kind });
   if (kind === 'plan-error') {
     ov.forcedPlanError = true;
-    if (ov.phase === 'setup') return;
     openSetup();
+    ov.setup.step = 3;
+    render();
     return;
   }
-  ensurePlan();
-  if (ov.phase !== 'study') {
-    startChapter(Math.min(1, ov.plan.chapters.length - 1));
-    ov.stage = 'learn';
-    const active = activeChapter();
-    window.__base.startLearn(active.setIndex, Plan.termScope(course.sets[active.setIndex]));
+  debugEnsurePace();
+  const stage = ov.stage;
+  const { completed, items, termIndex } = paceQueue();
+  const planned = Math.max(1, Plan.stageMinutes(activeChapter(), stage)) * 60000;
+  const you = completed / Math.max(1, items.length);
+
+  if (kind === 'behind' || kind === 'ahead') {
+    // Move the goal marker, not the user: the pace clock is wound to where the
+    // goal sits a third of the bar ahead of them, or a quarter behind.
+    const goal = kind === 'behind' ? Math.min(1, you + 0.35) : Math.max(0, you - 0.25);
+    const scale = ov.demo ? (stage === 'flashcards' ? 120000 : 180000) / planned : 1;
+    ov.pace.stageAt = clock.now() - goal * planned * scale;
+    ov.pace.lastMessage = '';
+    ov.pace.toast = null;
+    ov.pace.toastUntil = 0;
+    ov.pace.decision = null;
+    updatePaceMarker();
+    return;
   }
-  const chapter = activeChapter();
-  chapter.answered = Math.max(1, Math.round(chapter.total * 0.5));
-  if (kind === 'mild') {
-    chapter.used = chapter.allotted * 0.75;
-    showIslandAlert(
-      mildAlert({
-        chapter,
-        overrun: 8,
-        donors: ov.plan.chapters.filter((entry) => entry.order > chapter.order),
-      }),
-    );
-  }
-  if (kind === 'severe') {
-    const upcoming = ov.plan.chapters.filter((entry) => entry.order > chapter.order);
-    const victim = upcoming[upcoming.length - 1] || chapter;
-    ov.severe = { chapter, overrun: 30, victim, receivers: upcoming.slice(0, -1) };
-    ov.island = { state: 'compact', alert: null, message: '' };
-    ov.sheet = 'severe';
-    render();
+  if (kind === 'stuck') {
+    const card = document.querySelector(stage === 'flashcards' ? '#app .sprint-sort-stage' : '#app .sprint-question-sort');
+    ov.pace.againCounts[stage].set(termIndex, Math.max(1, ov.pace.againCounts[stage].get(termIndex) || 0));
+    sortPaceItem('again', 'button', card);
   }
 }
 
