@@ -18,15 +18,16 @@ export function mountSortingDemo(host) {
       <div class="sort-head"><strong>Flashcards</strong><button type="button" class="sort-restart" data-sort-restart>Restart</button></div>
       <div class="sort-pace"></div>
       <div class="sort-count"></div>
-      <div class="sort-stage"><button type="button" class="sort-card" aria-label="Flip card"><span class="sort-term"></span></button></div>
+      <div class="sort-stage"><button type="button" class="sort-card flashcard" aria-label="Flip card"><span class="sort-face flashcard-front"><span class="sort-term"></span></span><span class="sort-face flashcard-back"><span class="sort-term"></span></span></button></div>
       <div class="sort-controls">${sortStrip(['again', 'later', 'done'], { hint: true })}</div>
       <div class="sort-finish" hidden><strong>Flashcards done.</strong><button type="button" class="primary-button button-compact" data-sort-restart>Try again</button></div>
       <div class="sort-live" role="status"></div>
     </div>
   </div>`;
 
+  const stage = host.querySelector('.sort-stage');
   const card = host.querySelector('.sort-card');
-  const term = host.querySelector('.sort-term');
+  const [front, back] = host.querySelectorAll('.sort-term');
   const count = host.querySelector('.sort-count');
   const buttons = [...host.querySelectorAll('[data-pace-sort]')];
   const dismissHint = () => host.querySelector('.sprint-first-hint')?.remove();
@@ -38,12 +39,12 @@ export function mountSortingDemo(host) {
       completed: position, items: queue, statuses, target: Math.min(1, (performance.now() - stageAt) / 30000),
     });
     count.textContent = `${position} / ${queue.length}`;
-    host.querySelector('.sort-stage').hidden = complete;
+    stage.hidden = complete;
     host.querySelector('.sort-controls').hidden = complete;
     host.querySelector('.sort-finish').hidden = !complete;
     if (!complete) {
-      term.textContent = cards[queue[position]][flipped ? 1 : 0];
-      card.dataset.side = flipped ? 'back' : 'front';
+      front.textContent = cards[queue[position]][0];
+      back.textContent = cards[queue[position]][1];
     }
   }
 
@@ -66,9 +67,9 @@ export function mountSortingDemo(host) {
     }
     statuses.set(current, level);
     sortCount += 1;
-    flipped = false;
-    card.style.transform = '';
-    delete card.dataset.sortPreview;
+    showSide(false, { instant: true });
+    stage.style.transform = '';
+    delete stage.dataset.sortPreview;
     buttons.forEach(button => { button.disabled = false; button.classList.remove('is-active'); });
     sorting = false;
     host.querySelector('.sort-live').textContent = `${level === 'again' ? "Don't know" : level === 'later' ? 'Kind of' : 'Got it'} · ${via}`;
@@ -82,7 +83,19 @@ export function mountSortingDemo(host) {
     }
   }
 
-  const binding = bindSortGesture(card, {
+  // The card stays mounted and only its class changes, as on the study
+  // screen, so the 3D turn plays instead of the text swapping in place.
+  function showSide(next, { instant = false } = {}) {
+    flipped = next;
+    if (instant) card.style.transition = 'none';
+    card.classList.toggle('is-flipped', flipped);
+    if (instant) {
+      void card.offsetWidth;
+      card.style.transition = '';
+    }
+  }
+
+  const binding = bindSortGesture(stage, {
     allowed: ['again', 'done'],
     onChoose: sort,
     onInteract: dismissHint,
@@ -90,8 +103,7 @@ export function mountSortingDemo(host) {
   });
   card.addEventListener('click', () => {
     if (sorting || position >= queue.length) return;
-    flipped = !flipped;
-    render();
+    showSide(!flipped);
   });
   buttons.forEach(button => button.addEventListener('click', () => {
     dismissHint();
@@ -102,7 +114,7 @@ export function mountSortingDemo(host) {
     if (sorting) return;
     queue = cards.map((_, index) => index);
     position = 0;
-    flipped = false;
+    showSide(false, { instant: true });
     statuses.clear();
     sortCount = 0;
     stageAt = performance.now();
