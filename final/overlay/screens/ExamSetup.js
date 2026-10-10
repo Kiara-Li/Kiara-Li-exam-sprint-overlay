@@ -207,3 +207,8 @@ export function playStudyIntro(root) {
   };
   requestAnimationFrame(step);
 }
+
+/** The study-time control on its own, for the design system gallery. */
+export function studyTimeCard(setup, now) {
+  return studyTimeStep(setup, now).replace(/<h1>[\s\S]*?<\/h1>/, '');
+}

@@ -29,18 +29,21 @@ export function planError() {
     </main>`;
 }
 
-export function planReady(plan) {
-  const stages = plan.chapters
-    .filter((chapter) => chapter.status !== 'skipped')
-    .map(
-      (chapter) => {
-        const minutes = Math.round(chapter.allotted * chapter.stages.flashcards);
-        return `<div class="ov-split-card" data-split-card="${chapter.order}">
+/** One chapter's Flashcards / Quiz split, with its slider. */
+export function splitCard(chapter) {
+  const minutes = Math.round(chapter.allotted * chapter.stages.flashcards);
+  return `<div class="ov-split-card" data-split-card="${chapter.order}">
           <div class="ov-split-heading"><strong>${chapter.short}</strong>${chapter.shaky ? '<em class="ov-tag">Shaky</em>' : ''}<span>${chapter.allotted} min</span></div>
           <div class="ov-split-labels"><span>Flashcards <b data-flash-minutes>${minutes} min</b></span><span>Quiz <b data-quiz-minutes>${chapter.allotted - minutes} min</b></span></div>
           <input class="ov-split-slider" type="range" min="0" max="90" step="1" value="${Math.round(chapter.stages.flashcards * 100)}" style="--split:${chapter.stages.flashcards * 100}%" data-stage-split="${chapter.order}" aria-label="${chapter.short}: time for flashcards" aria-valuetext="${minutes} minutes flashcards, ${chapter.allotted - minutes} minutes quiz">
         </div>`;
-      },
+}
+
+export function planReady(plan) {
+  const stages = plan.chapters
+    .filter((chapter) => chapter.status !== 'skipped')
+    .map(
+      (chapter) => splitCard(chapter),
     )
     .join('');
 

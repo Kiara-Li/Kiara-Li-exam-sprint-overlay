@@ -40,11 +40,18 @@
 <h2 class="ds-heading">4. Components</h2>
 <article class="ds-component"><h3 class="ds-subheading">Buttons</h3><div id="button-variants" class="ds-button-grid"></div><div id="button-states" class="ds-state-grid"></div></article>
 <article class="ds-component"><h3 class="ds-subheading">Date &amp; time</h3><div class="ds-field-stage"><div id="date-demo"></div><button class="ds-demo-toggle" id="field-error-toggle" aria-pressed="false">Error state</button></div></article>
-<article class="ds-component"><h3 class="ds-subheading">Answer cards</h3><div id="answers-demo" class="ds-answer-grid"></div></article>
+<article class="ds-component"><h3 class="ds-subheading">Answer cards</h3><div class="quiz-screen ds-passthrough"><div class="question-content ds-passthrough"><div id="answers-demo" class="ds-answer-grid"></div></div></div></article>
+<article class="ds-component"><h3 class="ds-subheading">Sliders</h3><div class="ds-slider-grid">
+<figure><div id="study-demo"></div><figcaption class="ds-meta">Study time<span>Grey is the time you have · blue is the time you'll study</span></figcaption></figure>
+<figure><div id="split-demo"></div><figcaption class="ds-meta">Stage split<span>Flashcards / Quiz within one set</span></figcaption></figure>
+</div></article>
 </section>
 <section id="sorting" class="ds-section">
 <h2 class="ds-heading">5. Card sorting</h2>
+<div class="ds-sorting">
+<div id="sorting-legend" class="ds-legend"></div>
 <div id="sorting-demo"></div>
+</div>
 </section>
 </main><script type="module" src="./system/showcase.js"></script>
 <script type="module" src="./system/sorting-demo.js"></script></body></html>
