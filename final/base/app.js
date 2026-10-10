@@ -84,10 +84,13 @@ app.addEventListener('click', (event) => {
     return;
   }
 
-  if (event.target.closest('[data-flip-card]')) {
+  const flipCard = event.target.closest('[data-flip-card]');
+  if (flipCard) {
     if (suppressFlip) return;
     state.flipped = !state.flipped;
-    render();
+    // Keep the same card mounted so its existing 3D transition can play.
+    // Sorting and the next-card render continue through their own handlers.
+    flipCard.classList.toggle('is-flipped', state.flipped);
     return;
   }
 
