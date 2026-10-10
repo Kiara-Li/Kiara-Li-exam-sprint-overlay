@@ -18,6 +18,10 @@
   --pace-later: var(--color-rating-purple);
   --pace-complete: var(--action-primary);
   --pace-goal: var(--color-cyan);
+  /* How far a study card may stretch to fill a tall window. */
+  --pace-card-min: 280px;
+  --pace-card-max: 640px;
+  --pace-question-max: 680px;
   /* Island */
   --island-bg: var(--text-primary);
   --island-text: var(--color-white);

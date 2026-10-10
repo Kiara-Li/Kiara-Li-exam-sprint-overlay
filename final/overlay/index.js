@@ -425,7 +425,10 @@ function updatePaceMarker() {
 function dismissPaceHint(stage) {
   ov.pace.hintsSeen[stage] = true;
   ov.pace.hintsSeen.pace = true;
-  document.querySelector('#app .sprint-first-hint')?.remove();
+  // Fade it but keep its line: the card fills the screen, so taking the hint
+  // out here would resize the card under the user's finger. The next card is
+  // drawn without it.
+  document.querySelector('#app .sprint-first-hint')?.classList.add('is-dismissed');
   document.querySelector('#app .sprint-pace-intro')?.remove();
 }
 
@@ -496,6 +499,14 @@ function enhancePaceScreen() {
       question.classList.add('sprint-question-card');
       question.insertAdjacentHTML('afterend', sortStrip(['again', 'later'], { hint: !ov.pace.hintsSeen.learn, details: false }));
       paceControls(screen, stage, ['again', 'later'], question);
+    } else {
+      // Hold the strip's place before it is needed, so the answers do not move
+      // when a wrong answer brings it in.
+      question.insertAdjacentHTML('afterend', sortStrip(['again', 'later'], { hint: !ov.pace.hintsSeen.learn, details: false }));
+      const reserved = question.nextElementSibling;
+      reserved.classList.add('is-reserved');
+      reserved.inert = true;
+      reserved.setAttribute('aria-hidden', 'true');
     }
   }
 }

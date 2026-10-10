@@ -128,13 +128,34 @@ html[data-pace-study='true'] .flashcard-screen .app-header-title { visibility: h
   font-weight: var(--font-weight-bold); color: var(--text-primary);
 }
 
+/*
+ * The study screens fill the window: the header and pace bar stay at the top,
+ * the sort strip sits at the bottom, and the card takes what is left. The base
+ * screen is at least 64rem tall, which left the lower half of a phone empty.
+ */
+html[data-pace-study='true'] #app .screen {
+  display: flex; flex-direction: column;
+  min-height: calc(100dvh - var(--devbar-height));
+}
+html[data-pace-study='true'] #app,
+html[data-pace-study='true'] #app .phone-shell { min-height: calc(100dvh - var(--devbar-height)); }
+html[data-pace-study='true'] #app .screen > * { flex: none; }
+html[data-pace-study='true'] #app .screen > .flashcard-stage.sprint-sort-stage {
+  display: flex; flex: 1 1 auto; min-height: var(--pace-card-min); max-height: var(--pace-card-max);
+}
+html[data-pace-study='true'] #app .quiz-screen > .question-content {
+  display: flex; flex: 1 1 auto; flex-direction: column; max-height: var(--pace-question-max);
+}
+/* The prompt keeps the top of the card and the answers sit at the bottom. */
+html[data-pace-study='true'] .quiz-screen .question-content h1 { flex: 1 0 auto; }
+.sprint-sort-controls.is-reserved { visibility: hidden; pointer-events: none; }
+.sprint-first-hint.is-dismissed { opacity: 0; transition: opacity 180ms ease; }
+
 html[data-pace-study='true'] .flashcard-stage.sprint-sort-stage {
   position: relative; margin: 12px var(--space-content) 0; padding: 0;
   transform: none; transition: none; touch-action: pan-y; will-change: transform;
 }
-html[data-pace-study='true'] .sprint-sort-stage .flashcard {
-  min-height: clamp(280px, calc(100dvh - 470px), 430px);
-}
+html[data-pace-study='true'] .sprint-sort-stage .flashcard { flex: 1; min-height: 0; }
 html[data-pace-study='true'] .sprint-sort-stage .flashcard-face { border-radius: var(--card-radius); }
 .sprint-sort-stage::after, .sprint-question-sort::after {
   content: ''; position: absolute; inset: 0; border: 3px solid var(--sort-preview-color);
