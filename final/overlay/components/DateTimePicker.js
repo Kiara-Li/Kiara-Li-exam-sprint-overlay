@@ -65,9 +65,9 @@ function calendarPanel(draft, monthAnchor, now) {
   return `
     <div class="ov-picker-panel" data-panel="date">
       <div class="ov-cal-head">
-        <button class="ov-cal-nav" data-ov="shift-month" data-delta="-1" aria-label="Previous month">‹</button>
+        <button class="ov-cal-nav" data-ov="shift-month" data-delta="-1" aria-label="Previous month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6l-6 6 6 6" /></svg></button>
         <strong>${MONTHS[anchor.getMonth()]} ${anchor.getFullYear()}</strong>
-        <button class="ov-cal-nav" data-ov="shift-month" data-delta="1" aria-label="Next month">›</button>
+        <button class="ov-cal-nav" data-ov="shift-month" data-delta="1" aria-label="Next month"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" /></svg></button>
       </div>
       <div class="ov-cal-grid ov-cal-weekdays">${WEEKDAYS.map((day) => `<span>${day}</span>`).join('')}</div>
       <div class="ov-cal-grid">${cells}</div>

@@ -52,7 +52,7 @@
 
 .ov-cal-head {
   display: grid;
-  grid-template-columns: var(--space-10) 1fr var(--space-10);
+  grid-template-columns: var(--control-min-target) 1fr var(--control-min-target);
   align-items: center;
   margin-bottom: var(--space-3);
 }
@@ -65,15 +65,28 @@
 
 .ov-cal-nav {
   display: grid;
-  width: var(--space-10);
-  height: var(--space-10);
+  box-sizing: border-box;
+  /* A circle the size of the touch target, so it cannot be stretched oval. */
+  width: var(--control-min-target);
+  height: var(--control-min-target);
+  padding: var(--space-0);
   place-items: center;
+  place-self: center;
   color: var(--color-primary);
   background: var(--color-surface-blue);
   border-radius: var(--radius-pill);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
   cursor: pointer;
+}
+
+.ov-cal-nav svg {
+  display: block;
+  width: var(--space-5);
+  height: var(--space-5);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .ov-cal-grid {
