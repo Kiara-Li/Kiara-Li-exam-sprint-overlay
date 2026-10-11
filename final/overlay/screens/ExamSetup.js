@@ -21,6 +21,13 @@ export function defaultDraft(now) {
   return date.getTime();
 }
 
+/** Only when the exam is. It must not read like study time. */
+export function examCountdown(setup, now) {
+  if (setup.error) return `<p class="ov-inline-warning" id="exam-time-error" role="alert">${setup.error}</p>`;
+  if (!setup.examAt) return '';
+  return `<p class="ov-countdown"><span>Your exam is in</span><strong>${formatDuration((setup.examAt - now) / 60000)}</strong></p>`;
+}
+
 export function examSetup(setup, now) {
   const step = setup.step || 0;
   const sets = course.sets;
@@ -28,12 +35,7 @@ export function examSetup(setup, now) {
   const ready = hasSets && setup.examAt !== null && setup.examAt > now && setup.selected.length > 0;
   const draft = setup.examAt ?? setup.draftAt ?? defaultDraft(now);
 
-  // Only when the exam is. It must not read like study time.
-  const countdown = setup.error
-    ? `<p class="ov-inline-warning" id="exam-time-error" role="alert">${setup.error}</p>`
-    : setup.examAt
-      ? `<p class="ov-countdown"><span>Your exam is in</span><strong>${formatDuration((setup.examAt - now) / 60000)}</strong></p>`
-      : '';
+  const countdown = `<div data-exam-countdown>${examCountdown(setup, now)}</div>`;
 
   const chapterRows = sets
     .map((set, index) => {

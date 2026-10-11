@@ -10,7 +10,9 @@ const MONTHS = [
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const WEEKDAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MINUTES = [0, 15, 30, 45];
+const MINUTE_STEP = 5;
+const MINUTES = Array.from({ length: 60 / MINUTE_STEP }, (_, index) => index * MINUTE_STEP);
+const HOURS = Array.from({ length: 12 }, (_, index) => index + 1);
 
 export function formatDateLabel(ms) {
   const date = new Date(ms);
@@ -72,43 +74,34 @@ function calendarPanel(draft, monthAnchor, now) {
     </div>`;
 }
 
+function wheel(name, label, values, current, format = String) {
+  const items = values
+    .map(
+      (value) =>
+        `<button type="button" class="ov-wheel-item${value === current ? ' is-selected' : ''}" data-ov="wheel-pick" data-value="${value}" tabindex="-1">${format(value)}</button>`,
+    )
+    .join('');
+  return `<div class="ov-wheel" data-wheel="${name}" role="listbox" aria-label="${label}" tabindex="0">${items}</div>`;
+}
+
+/**
+ * Three wheels, like the phone's own time picker: flick a column and it
+ * settles on a value, or tap a value to bring it to the middle.
+ */
 function timePanel(draft) {
   const date = new Date(draft);
   const hours = date.getHours();
   const currentHour = hours % 12 === 0 ? 12 : hours % 12;
   const currentMeridiem = hours < 12 ? 'AM' : 'PM';
-  const currentMinute = MINUTES.reduce(
-    (best, value) => (Math.abs(value - date.getMinutes()) < Math.abs(best - date.getMinutes()) ? value : best),
-    MINUTES[0],
-  );
-
-  const hourChips = Array.from({ length: 12 }, (_, index) => index + 1)
-    .map(
-      (hour) =>
-        `<button class="ov-time-chip${hour === currentHour ? ' is-selected' : ''}" aria-pressed="${hour === currentHour}" data-ov="pick-hour" data-hour="${hour}">${hour}</button>`,
-    )
-    .join('');
-
-  const minuteChips = MINUTES.map(
-    (minute) =>
-      `<button class="ov-time-chip${minute === currentMinute ? ' is-selected' : ''}" aria-pressed="${minute === currentMinute}" data-ov="pick-minute" data-minute="${minute}">:${String(minute).padStart(2, '0')}</button>`,
-  ).join('');
-
-  const meridiemChips = ['AM', 'PM']
-    .map(
-      (value) =>
-        `<button class="ov-time-chip${value === currentMeridiem ? ' is-selected' : ''}" aria-pressed="${value === currentMeridiem}" data-ov="pick-meridiem" data-meridiem="${value}">${value}</button>`,
-    )
-    .join('');
+  const currentMinute = (Math.round(date.getMinutes() / MINUTE_STEP) * MINUTE_STEP) % 60;
 
   return `
     <div class="ov-picker-panel" data-panel="time">
-      <p class="ov-picker-label">Hour</p>
-      <div class="ov-time-grid is-hours">${hourChips}</div>
-      <p class="ov-picker-label">Minutes</p>
-      <div class="ov-time-grid">${minuteChips}</div>
-      <p class="ov-picker-label">AM / PM</p>
-      <div class="ov-time-grid">${meridiemChips}</div>
+      <div class="ov-wheels">
+        ${wheel('hour', 'Hour', HOURS, currentHour)}
+        ${wheel('minute', 'Minutes', MINUTES, currentMinute, (value) => String(value).padStart(2, '0'))}
+        ${wheel('meridiem', 'AM or PM', ['AM', 'PM'], currentMeridiem)}
+      </div>
     </div>`;
 }
 
@@ -163,4 +156,87 @@ export function shiftMonth(monthAnchor, delta) {
   date.setDate(1);
   date.setMonth(date.getMonth() + delta);
   return date.getTime();
+}
+
+/* ------------------------------------------------------------ time wheels */
+
+function wheelIndex(wheel) {
+  const row = wheel.firstElementChild?.offsetHeight || 1;
+  return Math.max(0, Math.min(wheel.children.length - 1, Math.round(wheel.scrollTop / row)));
+}
+
+/** Puts each wheel on its selected value, without animating. */
+export function settleWheels(scope) {
+  scope.querySelectorAll('[data-wheel]').forEach((wheel) => {
+    const selected = wheel.querySelector('.is-selected');
+    if (selected) wheel.scrollTop = selected.offsetTop - wheel.firstElementChild.offsetTop;
+  });
+}
+
+/**
+ * Makes every time wheel inside `host` work, now and after re-renders.
+ * `onPick(name, value)` is called once a wheel comes to rest on a value.
+ */
+export function attachTimeWheels(host, onPick) {
+  const timers = new WeakMap();
+  let ignoreClickUntil = 0;
+  const smooth = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+
+  // Scroll does not bubble, so it is caught on the way down. The value under
+  // the band lights up while scrolling and is saved on rest.
+  host.addEventListener('scroll', (event) => {
+    const wheel = event.target;
+    if (!wheel.dataset?.wheel) return;
+    const index = wheelIndex(wheel);
+    [...wheel.children].forEach((item, position) => item.classList.toggle('is-selected', position === index));
+    window.clearTimeout(timers.get(wheel));
+    timers.set(wheel, window.setTimeout(() => {
+      if (wheel.isConnected) onPick(wheel.dataset.wheel, wheel.children[wheelIndex(wheel)].dataset.value);
+    }, 110));
+  }, true);
+
+  // Tap a value to bring it to the middle.
+  host.addEventListener('click', (event) => {
+    const item = event.target.closest?.('[data-ov="wheel-pick"]');
+    if (!item || Date.now() < ignoreClickUntil) return;
+    const wheel = item.closest('[data-wheel]');
+    wheel.scrollTo({ top: item.offsetTop - wheel.firstElementChild.offsetTop, behavior: smooth() });
+  });
+
+  host.addEventListener('keydown', (event) => {
+    const wheel = event.target.closest?.('[data-wheel]');
+    if (!wheel || !['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    event.preventDefault();
+    const row = wheel.firstElementChild.offsetHeight;
+    wheel.scrollTo({ top: (wheelIndex(wheel) + (event.key === 'ArrowDown' ? 1 : -1)) * row });
+  });
+
+  // With a mouse there is no flick, so the wheel can be dragged instead.
+  host.addEventListener('pointerdown', (event) => {
+    const wheel = event.target.closest?.('[data-wheel]');
+    if (!wheel || event.pointerType !== 'mouse' || event.button !== 0) return;
+    const startY = event.clientY;
+    const startTop = wheel.scrollTop;
+    let moved = false;
+    const move = (step) => {
+      const delta = step.clientY - startY;
+      if (!moved && Math.abs(delta) < 4) return;
+      moved = true;
+      wheel.classList.add('is-dragging');
+      wheel.scrollTop = startTop - delta;
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      if (!moved) return;
+      // The click that ends a drag is not a tap on a value.
+      ignoreClickUntil = Date.now() + 120;
+      wheel.classList.remove('is-dragging');
+      wheel.scrollTo({ top: wheelIndex(wheel) * wheel.firstElementChild.offsetHeight, behavior: smooth() });
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  });
 }

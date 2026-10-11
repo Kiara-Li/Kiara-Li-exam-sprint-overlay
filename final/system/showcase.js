@@ -1,6 +1,6 @@
 import { actionButton } from './components.js';
 import { answerButton } from '../base/components/components.js';
-import { dateTimePicker, withDay, withHour, withMinute, withMeridiem, shiftMonth } from '../overlay/components/DateTimePicker.js';
+import { attachTimeWheels, formatTimeLabel, settleWheels, dateTimePicker, withDay, withHour, withMinute, withMeridiem, shiftMonth } from '../overlay/components/DateTimePicker.js';
 import { chosenStudyMinutes, studyTimeCard } from '../overlay/screens/ExamSetup.js';
 import { splitCard } from '../overlay/screens/PlanReady.js';
 import { LEVELS } from '../overlay/components/PaceStudy.js';
@@ -27,6 +27,7 @@ draft.setHours(9, 0, 0, 0);
 const state = { date: draft.getTime(), month: draft.getTime(), picker: null, invalid: false };
 function dates() {
   $('#date-demo').innerHTML = dateTimePicker({ draft: state.date, open: state.picker, monthAnchor: state.month, now, invalid: state.invalid }) + (state.invalid ? '<p class="ov-inline-warning" id="exam-time-error" role="alert">Pick a future date and time.</p>' : '');
+  settleWheels($('#date-demo'));
 }
 dates();
 $('#field-error-toggle').addEventListener('click', () => {
@@ -41,12 +42,18 @@ $('#date-demo').addEventListener('click', (event) => {
   if (action === 'open-picker') state.picker = state.picker === button.dataset.picker ? null : button.dataset.picker;
   if (action === 'shift-month') state.month = shiftMonth(state.month, Number(button.dataset.delta));
   if (action === 'pick-day') { state.date = withDay(state.date, Number(button.dataset.day)); state.picker = null; }
-  if (action === 'pick-hour') state.date = withHour(state.date, Number(button.dataset.hour));
-  if (action === 'pick-minute') state.date = withMinute(state.date, Number(button.dataset.minute));
-  if (action === 'pick-meridiem') state.date = withMeridiem(state.date, button.dataset.meridiem);
+  // The wheels look after themselves; redrawing would rebuild them mid-scroll.
+  if (action === 'wheel-pick') return;
   dates();
+  if (action === 'open-picker') $('#date-demo .ov-picker-panel')?.classList.add('is-entering');
   const focusTarget = action === 'pick-day' ? '[data-picker="date"]' : action === 'open-picker' ? `[data-picker="${button.dataset.picker}"]` : `[data-ov="${action}"]${button.dataset.delta ? `[data-delta="${button.dataset.delta}"]` : '[aria-pressed="true"]'}`;
   $('#date-demo').querySelector(focusTarget)?.focus({ preventScroll: true });
+});
+
+attachTimeWheels($('#date-demo'), (name, value) => {
+  state.date = name === 'hour' ? withHour(state.date, Number(value)) : name === 'minute' ? withMinute(state.date, Number(value)) : withMeridiem(state.date, value);
+  const label = $('#date-demo [data-picker="time"] strong');
+  if (label) label.textContent = formatTimeLabel(state.date);
 });
 
 $('#date-demo').addEventListener('keydown', (event) => {

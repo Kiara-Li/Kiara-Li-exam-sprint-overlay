@@ -41,6 +41,10 @@
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
+}
+
+/* Only when it opens: picking a value must not replay it. */
+.ov-picker-panel.is-entering {
   animation: ov-fade-in var(--sprint-spring) both;
 }
 
@@ -119,44 +123,70 @@
 
 /* Time ----------------------------------------------------------------- */
 
-.ov-picker-label {
-  margin: var(--space-3) var(--space-0) var(--space-2);
-  color: var(--color-text-soft);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--letter-spacing-tight);
-  text-transform: uppercase;
-}
-
-.ov-picker-panel .ov-picker-label:first-child {
-  margin-top: var(--space-0);
-}
-
-.ov-time-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.ov-time-grid.is-hours {
+.ov-wheels {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  height: calc(var(--wheel-row) * 5);
 }
 
-.ov-time-chip {
-  min-width: var(--space-12);
-  padding: var(--space-2) var(--space-3);
-  color: var(--color-text);
-  background: var(--color-surface-soft);
+/* The band the chosen value rests in. */
+.ov-wheels::before {
+  position: absolute;
+  top: calc(var(--wheel-row) * 2);
+  right: var(--space-0);
+  left: var(--space-0);
+  height: var(--wheel-row);
+  background: var(--color-surface-blue);
   border-radius: var(--radius-sm);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
+  content: '';
+  pointer-events: none;
+}
+
+.ov-wheel {
+  position: relative;
+  overflow-y: auto;
+  padding: calc(var(--wheel-row) * 2) var(--space-0);
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(transparent, #000 28%, #000 72%, transparent);
+  mask-image: linear-gradient(transparent, #000 28%, #000 72%, transparent);
+}
+
+.ov-wheel.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
+
+.ov-wheel::-webkit-scrollbar {
+  display: none;
+}
+
+.ov-wheel:focus-visible {
+  outline: var(--border-width) solid var(--color-primary);
+  outline-offset: calc(var(--space-1) * -1);
+  border-radius: var(--radius-sm);
+}
+
+.ov-wheel-item {
+  display: grid;
+  width: var(--size-full);
+  height: var(--wheel-row);
+  place-items: center;
+  padding: var(--space-0);
+  color: var(--color-text-soft);
+  background: var(--color-transparent);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
-  text-align: center;
+  scroll-snap-align: center;
+  transition: color var(--transition-fast) var(--transition-curve);
 }
 
-.ov-time-chip.is-selected {
-  color: var(--color-white);
-  background: var(--color-primary);
+.ov-wheel-item.is-selected {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
 }

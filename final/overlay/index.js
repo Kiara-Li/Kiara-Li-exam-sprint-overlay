@@ -21,8 +21,11 @@ import {
   severeSheet,
   stuckAlert,
 } from './components/SprintAlert.js';
-import { chosenStudyMinutes, defaultDraft, examSetup, playStudyIntro } from './screens/ExamSetup.js';
+import { chosenStudyMinutes, defaultDraft, examCountdown, examSetup, playStudyIntro } from './screens/ExamSetup.js';
 import {
+  attachTimeWheels,
+  formatTimeLabel,
+  settleWheels,
   shiftMonth,
   withDay,
   withHour,
@@ -98,6 +101,7 @@ let celebrateTimer = null;
 let suppressClickUntil = 0;
 let paceBinding = null;
 let correctAdvanceTimer = null;
+let shownPicker = null;
 
 /* ------------------------------------------------------------------ setup */
 
@@ -264,6 +268,12 @@ function render() {
   const hadChapterDone = Boolean(screenLayer.querySelector('.ov-chapter-done'));
   screenLayer.innerHTML = needsShell ? `<div class="phone-shell">${screen}</div>` : '';
   if (screenChanged && ov.phase === 'setup' && ov.setup.step === 3) playStudyIntro(screenLayer);
+  // The picker slides in once, when it opens, and its wheels start on the
+  // current time.
+  const openPicker = ov.mode === 'sprint' && ov.phase === 'setup' ? ov.setup.picker : null;
+  if (openPicker && openPicker !== shownPicker) screenLayer.querySelector('.ov-picker-panel')?.classList.add('is-entering');
+  shownPicker = openPicker;
+  settleWheels(screenLayer);
   screenLayer.classList.toggle('is-visible', needsShell);
   if (screenChanged) screenLayer.scrollTop = 0;
   if (ov.phase === 'chapter-done' && !hadChapterDone) {
@@ -1114,10 +1124,11 @@ function onOverlayClick(event) {
       ov.setup.monthAnchor = shiftMonth(ov.setup.monthAnchor ?? clock.now(), Number(target.dataset.delta));
       render();
     },
-    'pick-day': () => commitDraft(withDay(currentDraft(), Number(target.dataset.day))),
-    'pick-hour': () => commitDraft(withHour(currentDraft(), Number(target.dataset.hour))),
-    'pick-minute': () => commitDraft(withMinute(currentDraft(), Number(target.dataset.minute))),
-    'pick-meridiem': () => commitDraft(withMeridiem(currentDraft(), target.dataset.meridiem)),
+    'pick-day': () => {
+      // A day is one tap, so the calendar has done its job.
+      ov.setup.picker = null;
+      commitDraft(withDay(currentDraft(), Number(target.dataset.day)));
+    },
     'toggle-chapter': () => {
       const index = Number(target.dataset.chapter);
       if (index === 0) return;
@@ -1276,8 +1287,39 @@ function currentDraft() {
   return ov.setup.examAt ?? ov.setup.draftAt ?? defaultDraft(clock.now());
 }
 
+/* ------------------------------------------------------------ time wheels */
+
+function commitWheel(name, value) {
+  if (ov.phase !== 'setup') return;
+  const draft = currentDraft();
+  const next = name === 'hour'
+    ? withHour(draft, Number(value))
+    : name === 'minute'
+      ? withMinute(draft, Number(value))
+      : withMeridiem(draft, value);
+  if (next !== draft) commitDraft(next, { live: true });
+}
+
+/**
+ * Updates the exam-time step in place. Redrawing the screen would rebuild the
+ * wheels under the user's finger.
+ */
+function patchExamTime() {
+  const layer = root.querySelector('[data-layer="screen"]');
+  const field = layer.querySelector('[data-picker="time"]');
+  if (field) field.querySelector('strong').textContent = formatTimeLabel(ov.setup.draftAt);
+  layer.querySelectorAll('.ov-when-field').forEach((node) => {
+    if (ov.setup.error) node.setAttribute('aria-invalid', 'true');
+    else node.removeAttribute('aria-invalid');
+  });
+  const countdown = layer.querySelector('[data-exam-countdown]');
+  if (countdown) countdown.innerHTML = examCountdown(ov.setup, clock.now());
+  const next = layer.querySelector('[data-ov="setup-next"]');
+  if (next) next.disabled = !ov.setup.examAt || ov.setup.examAt <= clock.now() || !ov.setup.selected.length;
+}
+
 /** Every pick recomputes the exam time and the "time you have left" line. */
-function commitDraft(next) {
+function commitDraft(next, { live = false } = {}) {
   ov.setup.draftAt = next;
   ov.setup.monthAnchor = next;
   if (next <= clock.now()) {
@@ -1288,7 +1330,8 @@ function commitDraft(next) {
     ov.setup.examAt = next;
   }
   logEvent('exam-time-picked', { at: new Date(next).toISOString(), error: ov.setup.error });
-  render();
+  if (live) patchExamTime();
+  else render();
 }
 
 
@@ -1971,6 +2014,7 @@ function boot() {
     card.querySelector('[data-quiz-minutes]').textContent = `${chapter.allotted - minutes} min`;
   });
   root.addEventListener('pointerover', onOverlayHover);
+  attachTimeWheels(root, commitWheel);
   attachStudyControls();
   root.addEventListener('change', (event) => {
     const input = event.target.closest('[data-adjust-input]');
