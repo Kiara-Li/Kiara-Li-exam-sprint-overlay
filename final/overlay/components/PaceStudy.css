@@ -146,8 +146,10 @@ html[data-pace-study='true'] #app .screen > .flashcard-stage.sprint-sort-stage {
 html[data-pace-study='true'] #app .quiz-screen > .question-content {
   display: flex; flex: 1 1 auto; flex-direction: column; max-height: var(--pace-question-max);
 }
-/* The prompt keeps the top of the card and the answers sit at the bottom. */
-html[data-pace-study='true'] .quiz-screen .question-content h1 { flex: 1 0 auto; }
+/* Spare height is shared three ways: above the prompt, between the prompt
+   and the answers, and below the answers, so neither end hugs the card edge. */
+html[data-pace-study='true'] .quiz-screen .question-content h1 { margin-block: auto; }
+html[data-pace-study='true'] .quiz-screen .question-content .answer-list { margin-bottom: auto; }
 .sprint-sort-controls.is-reserved { visibility: hidden; pointer-events: none; }
 .sprint-first-hint.is-dismissed { opacity: 0; transition: opacity 180ms ease; }
 
