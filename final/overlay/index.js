@@ -1031,6 +1031,13 @@ function onOverlayClick(event) {
 
   const target = event.target.closest('[data-ov]');
 
+  // Tap anywhere outside the open date or time picker puts it away.
+  if (ov.phase === 'setup' && ov.setup.picker && !event.target.closest('.ov-when')) {
+    ov.setup.picker = null;
+    logEvent('picker-close', { via: 'outside' });
+    if (!target) { render(); return; }
+  }
+
   // Tap anywhere outside an expanded island collapses it.
   if (ov.island.state === 'expanded' && !event.target.closest('.ov-island')) {
     ov.island.state = 'compact';

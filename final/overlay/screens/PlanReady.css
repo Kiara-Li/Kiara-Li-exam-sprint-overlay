@@ -1,5 +1,6 @@
 .ov-plan-content {
-  padding: var(--space-1) var(--space-5) var(--space-32);
+  /* Room for the fixed Start / Adjust times bar, so the last row clears it. */
+  padding: var(--space-1) var(--space-5) var(--space-48);
 }
 
 .ov-plan-content h1 {
