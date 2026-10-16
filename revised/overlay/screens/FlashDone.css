@@ -1,0 +1,255 @@
+/* End of the Flashcards pass: a small burst, the two counts, the next step. */
+
+.flash-complete-content:has(> .ov-fd) {
+  padding: 0 var(--space-content);
+  text-align: center;
+}
+
+.ov-fd {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - var(--devbar-height) - var(--header-height));
+  padding: 0 0 28px;
+}
+
+/* Hero sits in the upper middle; the next step is pinned to the bottom. */
+.ov-fd-hero {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0 32px;
+}
+
+/* Burst ------------------------------------------------------------------ */
+
+.ov-fd-burst {
+  position: relative;
+  display: grid;
+  width: 96px;
+  height: 96px;
+  place-items: center;
+  margin-bottom: 28px;
+}
+
+.ov-fd-badge {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 88px;
+  height: 88px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 32%, transparent);
+  animation: ov-fd-pop 620ms cubic-bezier(.2, .9, .3, 1) both;
+}
+
+.ov-fd-badge svg {
+  width: 46px;
+  height: 46px;
+}
+
+.ov-fd-badge path {
+  stroke: var(--color-white);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 22;
+  stroke-dashoffset: 22;
+  animation: ov-fd-draw 360ms cubic-bezier(.4, 0, .2, 1) 320ms forwards;
+}
+
+/* A soft shockwave behind the badge as it lands. */
+.ov-fd-wave {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+  opacity: 0;
+  animation: ov-fd-wave 760ms cubic-bezier(.2, .6, .3, 1) 180ms both;
+}
+
+.ov-fd-piece {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  background: var(--tint);
+  opacity: 0;
+  animation: ov-fd-fly 980ms cubic-bezier(.15, .7, .3, 1) calc(200ms + var(--wait)) both;
+}
+
+.ov-fd-piece.is-strip {
+  width: 6px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.ov-fd-piece.is-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+@keyframes ov-fd-pop {
+  0% { transform: scale(0); }
+  45% { transform: scale(1.12); }
+  72% { transform: scale(.96); }
+  100% { transform: scale(1); }
+}
+
+@keyframes ov-fd-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes ov-fd-wave {
+  0% { opacity: .9; transform: scale(.8); }
+  100% { opacity: 0; transform: scale(1.9); }
+}
+
+/* Out from the badge, then a little gravity on the way down. */
+@keyframes ov-fd-fly {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(.4) rotate(0deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(var(--spin));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx) * 1.08), calc(-50% + var(--dy) * 1.08 + 22px)) scale(.8) rotate(calc(var(--spin) + 90deg));
+  }
+}
+
+/* Title and counts ------------------------------------------------------- */
+
+.ov-fd .ov-fd-title {
+  margin: 0 0 36px;
+  font-size: var(--font-size-3xl);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.15;
+  animation: ov-fd-rise 460ms cubic-bezier(.2, .9, .3, 1) 260ms both;
+}
+
+.ov-fd-stats {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ov-fd-stat {
+  display: grid;
+  gap: 4px;
+  padding: 22px 12px 20px;
+  border-radius: 22px;
+  animation: ov-fd-rise 460ms cubic-bezier(.2, .9, .3, 1) both;
+}
+
+.ov-fd-stat:nth-child(1) { animation-delay: 380ms; }
+.ov-fd-stat:nth-child(2) { animation-delay: 460ms; }
+
+.ov-fd-stat b {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-black);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-fd-stat span {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-fd-stat.is-got {
+  color: var(--sort-done);
+  background: var(--sort-done-surface);
+}
+
+.ov-fd-stat.is-practice {
+  color: var(--sort-again);
+  background: var(--sort-again-surface);
+}
+
+/* Next step -------------------------------------------------------------- */
+
+.ov-fd-next {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 52px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 16px 16px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  color: var(--color-text);
+  background: var(--color-white);
+  box-shadow: 0 8px 22px rgba(40, 45, 62, .07);
+  text-align: left;
+  cursor: pointer;
+  animation: ov-fd-rise 460ms cubic-bezier(.2, .9, .3, 1) 560ms both;
+  transition: transform 200ms cubic-bezier(.2, .9, .3, 1), box-shadow 200ms ease;
+}
+
+.ov-fd-next:active {
+  transform: scale(.98);
+}
+
+.ov-fd-next-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--color-surface-blue);
+}
+
+.ov-fd-next-icon .icon {
+  width: 30px;
+  height: 30px;
+}
+
+.ov-fd-next-copy small,
+.ov-fd-next-copy strong {
+  display: block;
+}
+
+.ov-fd-next-copy small {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.ov-fd-next-copy strong {
+  overflow: hidden;
+  font-size: var(--font-size-lg);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-fd-next-arrow {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-white);
+  background: var(--color-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+@keyframes ov-fd-rise {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ov-fd-badge, .ov-fd-title, .ov-fd-stat, .ov-fd-next { animation: none; }
+  .ov-fd-badge path { animation: none; stroke-dashoffset: 0; }
+  .ov-fd-wave, .ov-fd-piece { display: none; }
+}

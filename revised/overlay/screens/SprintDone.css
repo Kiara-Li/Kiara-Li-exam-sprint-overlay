@@ -1,0 +1,45 @@
+.ov-sprint-done {
+  position: relative;
+  overflow: hidden;
+}
+
+.ov-sprint-done .ov-stats {
+  margin-top: var(--space-10);
+}
+
+.ov-confetti {
+  position: absolute;
+  top: var(--space-0);
+  right: var(--space-0);
+  left: var(--space-0);
+  height: var(--space-0);
+  pointer-events: none;
+}
+
+.ov-confetti i {
+  position: absolute;
+  top: var(--space-0);
+  left: calc(var(--size-half) + (var(--piece) - 9) * var(--space-5));
+  width: var(--space-2);
+  height: var(--space-3);
+  background: var(--piece-color);
+  border-radius: var(--radius-sm);
+  animation: ov-confetti-fall calc(var(--sprint-celebrate-hold) + var(--piece) * var(--sprint-stagger))
+    var(--transition-curve) calc(var(--piece) * var(--sprint-stagger)) both;
+}
+
+@keyframes ov-confetti-fall {
+  from {
+    opacity: var(--space-0);
+    transform: translateY(calc(var(--space-10) * -1)) rotate(var(--angle-zero));
+  }
+
+  20% {
+    opacity: var(--sprint-opaque);
+  }
+
+  to {
+    opacity: var(--space-0);
+    transform: translateY(var(--screen-min-height)) rotate(var(--card-rotate-half));
+  }
+}

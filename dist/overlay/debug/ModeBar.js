@@ -32,6 +32,7 @@ export function modeBar(ov) {
         <button class="ov-bar-pill${ov.mode === 'sprint' ? ' is-on' : ''}" data-ov="dbg-mode" data-value="sprint">2.1 test</button>
         <a class="ov-bar-pill" href="../final/index.html">Final</a>
         <a class="ov-bar-pill" href="../final/index.html?mode=demo">Demo</a>
+        <a class="ov-bar-pill" href="../revised/index.html">Revised</a>
       </div>
       <span class="ov-bar-state">${stateLabel(ov)}</span>
       <div class="ov-bar-actions">

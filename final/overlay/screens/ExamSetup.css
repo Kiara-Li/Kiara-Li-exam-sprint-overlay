@@ -50,6 +50,9 @@
   font-weight: var(--font-weight-medium);
 }
 
+.ov-countdown span,
+.ov-countdown strong { white-space: nowrap; }
+
 .ov-countdown strong {
   color: var(--color-primary);
   font-size: var(--font-size-2xl);
@@ -426,4 +429,11 @@
 @media (prefers-reduced-motion: reduce) {
   .ov-setup-content, .ov-setup-progress span { animation: none; }
   .ov-shaky-card { transition: none; }
+}
+
+/* On a narrow phone the count steps down a size so the line stays on one row. */
+@media (max-width: 400px) {
+  .ov-countdown { gap: var(--space-1); padding-inline: var(--space-3); }
+  .ov-countdown span { font-size: var(--font-size-sm); }
+  .ov-countdown strong { font-size: var(--font-size-xl); }
 }

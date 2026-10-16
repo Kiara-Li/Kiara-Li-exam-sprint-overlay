@@ -1,0 +1,62 @@
+.ov-spotlight {
+  position: fixed;
+  inset: var(--space-0);
+  top: var(--devbar-height);
+  background: var(--spotlight-scrim);
+  animation: ov-scrim-in var(--transition-medium) var(--transition-curve) both;
+  pointer-events: auto;
+}
+
+.ov-spotlight-hint {
+  position: absolute;
+  right: var(--space-0);
+  bottom: var(--space-28);
+  left: var(--space-0);
+  display: grid;
+  width: min(var(--size-full), var(--screen-width));
+  justify-items: center;
+  gap: var(--space-1);
+  margin: var(--space-0) auto;
+  padding: var(--space-0) var(--space-6);
+  color: var(--color-white);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  animation: ov-fade-in var(--sprint-spring) var(--sprint-stagger) both;
+}
+
+.ov-spotlight-hint span {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-spotlight-hint::after {
+  content: '';
+  width: var(--space-0);
+  height: var(--space-0);
+  margin-top: var(--space-2);
+  border-top: var(--space-3) solid var(--color-white);
+  border-right: var(--space-2) solid var(--color-transparent);
+  border-left: var(--space-2) solid var(--color-transparent);
+}
+
+/* The real button keeps working: it is lifted above the scrim, not cloned. */
+html[data-spotlight='true'] #app .sticky-action {
+  z-index: var(--z-spotlight-target);
+  border-radius: var(--sheet-radius) var(--sheet-radius) var(--radius-none) var(--radius-none);
+}
+
+html[data-spotlight='true'] #app .sticky-action button {
+  animation: ov-spotlight-pulse var(--sprint-celebrate-hold) var(--transition-curve) infinite;
+}
+
+@keyframes ov-spotlight-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+}

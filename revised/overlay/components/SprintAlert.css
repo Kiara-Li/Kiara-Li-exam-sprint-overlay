@@ -1,0 +1,43 @@
+.ov-sheet[data-sheet='severe'] .ov-sheet-title {
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-snug);
+}
+
+.ov-sheet-body {
+  margin: var(--space-4) var(--space-0) var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.ov-sheet[data-sheet='severe'] .ov-sheet-footer {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.ov-review-card {
+  display: grid;
+  min-height: var(--preview-min-height);
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-5);
+  border: var(--border-width-thin) solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.ov-review-card strong {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-review-card p {
+  margin: var(--space-0);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+}

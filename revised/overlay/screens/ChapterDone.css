@@ -1,0 +1,160 @@
+.ov-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-half);
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+}
+
+.ov-stats-two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.ov-stat {
+  display: grid;
+  min-height: var(--space-28);
+  align-content: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-2);
+  background: var(--color-surface-soft);
+}
+
+.ov-stat strong {
+  font-size: var(--font-size-lg);
+}
+
+.ov-stat b {
+  font-size: var(--font-size-2xl);
+}
+
+.ov-stat small {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+}
+
+.ov-stat.is-left {
+  color: var(--color-warning-dark);
+  background: var(--color-surface-pink);
+}
+
+.ov-stat.is-done {
+  color: var(--sprint-saved);
+  background: var(--sprint-saved-surface);
+}
+
+.ov-stat.is-saved {
+  color: var(--sprint-saved);
+  background: var(--sprint-saved-surface);
+}
+
+.ov-stat.is-over {
+  color: var(--sprint-over);
+  background: var(--sprint-over-surface);
+}
+
+/* The reallocation is the headline of this screen, not a third small tile. */
+
+.ov-reallocation {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  margin: var(--space-6) var(--space-0) var(--space-5);
+  padding: var(--space-6) var(--space-5);
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-xl);
+  animation: ov-stat-pop var(--sprint-spring) var(--sprint-stagger) both;
+}
+
+.ov-reallocation.is-saved {
+  color: var(--sprint-saved);
+  background: var(--sprint-saved-surface);
+}
+
+.ov-reallocation.is-over {
+  color: var(--sprint-over);
+  background: var(--sprint-over-surface);
+}
+
+.ov-reallocation-label {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  text-transform: uppercase;
+}
+
+.ov-reallocation-value {
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
+}
+
+.ov-reallocation-note {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+@keyframes ov-stat-pop {
+  from {
+    opacity: var(--space-0);
+    transform: scale(0.88);
+  }
+}
+
+.ov-chapter-done .flash-complete-content h1 {
+  font-size: var(--font-size-4xl);
+}
+
+.ov-up-next {
+  margin-top: var(--space-8);
+  animation: ov-fade-in var(--sprint-spring) calc(var(--sprint-stagger) * 3) both;
+  transition: transform var(--sprint-spring), box-shadow var(--sprint-spring);
+}
+
+.ov-up-next.is-receiving {
+  transform: scale(1.03);
+  box-shadow: var(--shadow-card), var(--space-0) var(--space-0) var(--space-0) var(--border-width) var(--sprint-saved);
+}
+
+.ov-time-change b {
+  display: inline-block;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-time-change b.is-ticked {
+  color: var(--sprint-saved);
+  animation: ov-tick-up var(--sprint-spring) both;
+}
+
+@keyframes ov-tick-up {
+  from {
+    transform: translateY(var(--space-2));
+  }
+
+  60% {
+    transform: translateY(var(--sprint-lift));
+  }
+}
+
+/* The pill that carries the minutes across the screen. */
+
+.ov-fly-token {
+  position: fixed;
+  z-index: var(--z-overlay-bar);
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-white);
+  background: var(--sprint-saved);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-card);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  pointer-events: none;
+}
+
+.ov-fly-token.is-over {
+  background: var(--sprint-over);
+}

@@ -1,0 +1,54 @@
+.ov-timeline {
+  position: relative;
+  display: flex;
+  width: var(--size-full);
+  height: var(--timeline-height);
+  gap: var(--timeline-gap);
+  margin: var(--space-6) var(--space-0);
+}
+
+.ov-timeline.is-mini {
+  height: var(--timeline-mini-height);
+  margin: var(--space-0);
+}
+
+.ov-timeline-seg {
+  position: relative;
+  width: var(--seg-share);
+  min-width: var(--space-1);
+  overflow: hidden;
+  background: var(--seg-color);
+  border-radius: var(--radius-pill);
+}
+
+.ov-timeline-seg.is-done {
+  opacity: var(--sprint-dim);
+}
+
+.ov-timeline-seg.is-active {
+  box-shadow: inset var(--space-0) var(--space-0) var(--space-0) var(--border-width) var(--color-text);
+}
+
+.ov-timeline.is-mini .ov-timeline-seg.is-active {
+  box-shadow: none;
+}
+
+.ov-timeline-band {
+  position: absolute;
+  top: var(--space-0);
+  bottom: var(--space-0);
+  left: var(--space-0);
+  width: var(--band-share);
+  background: var(--sprint-band);
+}
+
+.ov-timeline-playhead {
+  position: absolute;
+  top: calc(var(--space-1) * -1);
+  bottom: calc(var(--space-1) * -1);
+  left: var(--playhead);
+  width: var(--border-width);
+  background: var(--island-text);
+  border-radius: var(--radius-pill);
+  transition: left var(--transition-medium) var(--transition-curve);
+}

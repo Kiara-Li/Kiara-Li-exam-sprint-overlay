@@ -1,0 +1,205 @@
+.ov-when-card {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--space-2);
+}
+
+.ov-when-field {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+}
+
+.ov-when-field.is-open {
+  border-color: var(--color-primary);
+  background: var(--color-surface-blue);
+}
+
+.ov-when-field span {
+  color: var(--color-text-soft);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  text-transform: uppercase;
+}
+
+.ov-when-field strong {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-picker-panel {
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* Only when it opens: picking a value must not replay it. */
+.ov-picker-panel.is-entering {
+  animation: ov-fade-in var(--sprint-spring) both;
+}
+
+/* Calendar ------------------------------------------------------------- */
+
+.ov-cal-head {
+  display: grid;
+  grid-template-columns: var(--control-min-target) 1fr var(--control-min-target);
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.ov-cal-head strong {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
+
+.ov-cal-nav {
+  display: grid;
+  box-sizing: border-box;
+  /* A circle the size of the touch target, so it cannot be stretched oval. */
+  width: var(--control-min-target);
+  height: var(--control-min-target);
+  padding: var(--space-0);
+  place-items: center;
+  place-self: center;
+  color: var(--color-primary);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.ov-cal-nav svg {
+  display: block;
+  width: var(--space-5);
+  height: var(--space-5);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ov-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-half);
+}
+
+.ov-cal-weekdays {
+  margin-bottom: var(--space-1);
+}
+
+.ov-cal-weekdays span {
+  padding: var(--space-1) var(--space-0);
+  color: var(--color-text-soft);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
+
+.ov-cal-cell {
+  display: grid;
+  min-height: var(--space-10);
+  place-items: center;
+  color: var(--color-text);
+  background: var(--color-transparent);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.ov-cal-cell.is-empty {
+  cursor: default;
+}
+
+.ov-cal-cell:disabled {
+  color: var(--color-border-strong);
+  cursor: default;
+}
+
+.ov-cal-cell.is-selected {
+  color: var(--color-white);
+  background: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Time ----------------------------------------------------------------- */
+
+.ov-wheels {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  height: calc(var(--wheel-row) * 5);
+}
+
+/* The band the chosen value rests in. */
+.ov-wheels::before {
+  position: absolute;
+  top: calc(var(--wheel-row) * 2);
+  right: var(--space-0);
+  left: var(--space-0);
+  height: var(--wheel-row);
+  background: var(--color-surface-blue);
+  border-radius: var(--radius-sm);
+  content: '';
+  pointer-events: none;
+}
+
+.ov-wheel {
+  position: relative;
+  overflow-y: auto;
+  padding: calc(var(--wheel-row) * 2) var(--space-0);
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(transparent, #000 28%, #000 72%, transparent);
+  mask-image: linear-gradient(transparent, #000 28%, #000 72%, transparent);
+}
+
+.ov-wheel.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
+
+.ov-wheel::-webkit-scrollbar {
+  display: none;
+}
+
+.ov-wheel:focus-visible {
+  outline: var(--border-width) solid var(--color-primary);
+  outline-offset: calc(var(--space-1) * -1);
+  border-radius: var(--radius-sm);
+}
+
+.ov-wheel-item {
+  display: grid;
+  width: var(--size-full);
+  height: var(--wheel-row);
+  place-items: center;
+  padding: var(--space-0);
+  color: var(--color-text-soft);
+  background: var(--color-transparent);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  scroll-snap-align: center;
+  transition: color var(--transition-fast) var(--transition-curve);
+}
+
+.ov-wheel-item.is-selected {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}

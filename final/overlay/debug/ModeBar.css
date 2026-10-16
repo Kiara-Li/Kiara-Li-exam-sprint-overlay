@@ -73,6 +73,12 @@
   .ov-bar-modes, .ov-bar-actions { gap: 3px; }
   .ov-bar-pill { padding: 0 8px; }
 }
-@media (max-width: 400px) {
-  .ov-bar-pill { padding: 0 6px; font-size: 11px; }
+/* Eight pills since Revised joined; they still fit a 375px phone. */
+@media (max-width: 440px) {
+  .ov-bar { gap: 3px; padding-inline: 6px; }
+  .ov-bar-modes, .ov-bar-actions { gap: 2px; }
+  .ov-bar-pill { padding: 0 5px; font-size: 11px; }
+}
+@media (max-width: 380px) {
+  .ov-bar-pill { padding: 0 4px; font-size: 10.5px; }
 }

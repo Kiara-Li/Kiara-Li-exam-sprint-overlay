@@ -1,0 +1,84 @@
+.ov-bar {
+  position: fixed;
+  z-index: var(--z-overlay-bar);
+  top: var(--space-0);
+  right: var(--space-0);
+  left: var(--space-0);
+  display: grid;
+  height: var(--devbar-height);
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-0) var(--space-3);
+  color: var(--devbar-text);
+  background: var(--devbar-bg);
+  font-size: var(--font-size-xs);
+  pointer-events: auto;
+}
+
+.ov-bar-modes,
+.ov-bar-actions {
+  display: flex;
+  flex-shrink: 0;
+  /* Centre, don't stretch: one wrapped pill used to make the whole group two
+     lines tall and push it out of the 32px bar. */
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.ov-bar-state {
+  overflow: hidden;
+  color: var(--devbar-text-muted);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-bar-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1;
+  padding: 0 var(--space-3);
+  color: var(--devbar-text);
+  background: var(--devbar-pill-bg);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.ov-bar-pill.is-on {
+  color: var(--color-white);
+  background: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.ov-bar-pill[aria-current='page'] { cursor: default; }
+
+@media (max-width: 520px) {
+  /* On a phone every pill stays on one line; if they still do not fit, the
+     bar scrolls sideways instead of spilling off the edge. */
+  .ov-bar { display: flex; justify-content: space-between; overflow-x: auto; scrollbar-width: none; }
+  .ov-bar::-webkit-scrollbar { display: none; }
+  .ov-bar-state { display: none; }
+}
+/* Tighter pills on phones so all seven fit without scrolling; the 400px step
+   comes last so it wins over the 520px one. */
+@media (max-width: 520px) {
+  .ov-bar { gap: 4px; padding-inline: 8px; }
+  .ov-bar-modes, .ov-bar-actions { gap: 3px; }
+  .ov-bar-pill { padding: 0 8px; }
+}
+/* Eight pills since Revised joined; they still fit a 375px phone. */
+@media (max-width: 440px) {
+  .ov-bar { gap: 3px; padding-inline: 6px; }
+  .ov-bar-modes, .ov-bar-actions { gap: 2px; }
+  .ov-bar-pill { padding: 0 5px; font-size: 11px; }
+}
+@media (max-width: 380px) {
+  .ov-bar-pill { padding: 0 4px; font-size: 10.5px; }
+}
