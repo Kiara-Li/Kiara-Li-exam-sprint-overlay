@@ -102,7 +102,7 @@ if (isDemo) {
   // What the learner has already done in these sets, so setup can start from
   // their real progress instead of a blank list. Counts are out of 8 cards.
   const progress = [
-    { mastered: 3, learning: 4, lastStudied: 'yesterday' },
+    { mastered: 3, learning: 4, lastStudied: 'yesterday', known: [1, 4, 6] },
     { mastered: 7, learning: 1, lastStudied: '3 days ago' },
     { mastered: 0, learning: 0, lastStudied: null },
     { mastered: 6, learning: 2, lastStudied: 'last week' },

@@ -26,23 +26,20 @@ export function sortDestination(position, total, level) {
   return position;
 }
 
-export function paceMarkup({ completed, items, statuses, target, toast = '', decision = false, intro = false }) {
+/**
+ * Cards done in this stage. There is no time marker on it any more: time is
+ * checked at set moments and answered by changing how the user studies.
+ */
+export function paceMarkup({ completed, items, statuses, toast = '', decision = false }) {
   const total = items.length;
-  const safeTotal = Math.max(1, total);
-  const targetPercent = Math.max(0, Math.min(100, target * 100));
-  const youPercent = Math.max(0, Math.min(100, completed / safeTotal * 100));
   return `<div class="sprint-pace-shell">
-    <div class="sprint-pace-track" role="progressbar" aria-label="Study pace" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${completed}" style="--pace-target:${targetPercent}%;--pace-you:${youPercent}%">
+    <div class="sprint-pace-track" role="progressbar" aria-label="Cards done" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${completed}">
       ${items.map((item, index) => {
         const termIndex = typeof item === 'number' ? item : item.termIndex;
         const status = statuses.get(termIndex);
         return `<span class="sprint-pace-segment${index < completed ? ' is-complete' : status === 'again' ? ' is-again' : status === 'later' ? ' is-later' : ''}" data-term="${termIndex}" aria-hidden="true"></span>`;
       }).join('')}
-      <span class="sprint-pace-target" aria-hidden="true"></span>
-      <span class="sprint-pace-you" aria-hidden="true"></span>
-      <span class="sprint-pace-pop" aria-hidden="true"></span>
     </div>
-    ${intro ? '<div class="sprint-pace-intro" role="note">The light-blue ball tracks your time goal.</div>' : ''}
     <div class="sprint-pace-toast${toast ? ' is-fading' + (toast.kind === 'good' ? ' is-good' : '') : ''}" role="status">${toast ? toast.text : ''}</div>
     ${decision ? `<div class="sprint-pace-decision" role="group" aria-label="Repeated item">
       <p>This one keeps coming back. Move it later?</p>

@@ -1,6 +1,12 @@
 import { icon } from '../../base/components/icons.js';
 
-export function chapterDone(plan, chapterIndex) {
+import { boltGlyph } from '../components/glyphs.js';
+
+/**
+ * Three endings for Chapter 1: on time, finished in Speed-up, or closed with
+ * the Last pass. Each one ends the set; they differ in what goes to review.
+ */
+export function chapterDone(plan, chapterIndex, ending = 'normal', speedCount = 0) {
   const chapter = plan.chapters[chapterIndex];
   const result = chapter.result || { kind: 'even', amount: 0, target: null };
   const next = plan.chapters.find((entry, index) => index > chapterIndex && entry.status === 'upcoming');
@@ -56,14 +62,23 @@ export function chapterDone(plan, chapterIndex) {
         <span class="header-spacer"></span>
       </header>
       <section class="flash-complete-content">
-        <h1>${chapter.short} done!</h1>
-        <p>${chapter.parked.length ? `${chapter.parked.length} saved for the final review` : 'Nice pace. Keep it going.'}</p>
+        ${ending === 'speed' ? `<span class="ov-mode-tag is-speed">${boltGlyph()}Speed-up</span>` : ending === 'last' ? '<span class="ov-mode-tag is-last">Last pass</span>' : ''}
+        <h1 class="ov-ending-title">${ending === 'speed' ? 'Done the fast way' : ending === 'last' ? 'Time’s up, you’re covered' : `${chapter.short} done!`}</h1>
+        <p>${
+          ending === 'speed'
+            ? `${speedCount} ${speedCount === 1 ? 'card' : 'cards'} done in Speed-up · saved for final review`
+            : ending === 'last'
+              ? `${chapter.parked.length} ${chapter.parked.length === 1 ? 'card' : 'cards'} saved for final review`
+              : chapter.parked.length ? `${chapter.parked.length} saved for the final review` : 'Nice pace. Keep it going.'
+        }</p>
 
         ${headline}
 
         <div class="ov-stats ov-stats-two">
-          <div class="ov-stat is-left"><strong>Terms left</strong><b>0</b></div>
-          <div class="ov-stat is-done"><strong>Completed</strong><b>${chapter.total}</b></div>
+          ${ending === 'normal'
+            ? '<div class="ov-stat is-left"><strong>Terms left</strong><b>0</b></div>'
+            : `<div class="ov-stat is-left"><strong>For final review</strong><b>${chapter.parked.length}</b></div>`}
+          <div class="ov-stat is-done"><strong>Completed</strong><b>${ending === 'last' ? Math.max(0, chapter.total - chapter.parked.length) : chapter.total}</b></div>
         </div>
         ${upNext}
         <button class="primary-button ov-full" data-ov="finish-sprint">Done</button>

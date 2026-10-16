@@ -19,6 +19,14 @@
   --pace-complete: var(--action-primary);
   --pace-goal: var(--color-cyan);
   --wheel-row: 40px;
+  /* Study modes. Speed-up borrows the cyan the time marker used; the Last
+     pass is ink, so neither reads as a sorting colour or as an alarm. */
+  --mode-speed: var(--pace-goal);
+  --mode-speed-ink: var(--color-primary);
+  --mode-speed-surface: var(--color-surface-cyan);
+  --mode-last: var(--color-text);
+  --mode-last-surface: var(--color-surface-soft);
+  --mode-band: 3px;
   /* Setup: exam-day tiles and the per-set level switch. */
   --day-tile-height: 68px;
   --level-bar-height: 6px;

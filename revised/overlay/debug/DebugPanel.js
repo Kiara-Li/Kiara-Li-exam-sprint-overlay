@@ -11,13 +11,16 @@ const JUMPS = [
   ['flashcards', 'Flashcards'],
   ['flash-done', 'Flashcards done'],
   ['quiz', 'Quiz'],
+  ['last-pass', 'Last pass'],
   ['done-ahead', 'Done · time saved'],
   ['done-over', 'Done · time over'],
+  ['done-speed', 'Done · Speed-up'],
+  ['done-last', 'Done · Last pass'],
 ];
 
 const TRIGGERS = [
-  ['behind', 'Behind pace'],
-  ['ahead', 'Ahead of pace'],
+  ['speed', 'Offer Speed-up'],
+  ['last', 'Offer Last pass'],
   ['stuck', 'Card keeps coming back'],
   ['plan-error', 'Plan build error'],
 ];

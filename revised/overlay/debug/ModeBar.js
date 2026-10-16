@@ -9,7 +9,8 @@ const STAGE_LABEL = {
   building: 'Building plan',
   'plan-error': 'Plan failed',
   plan: 'Plan ready',
-  'pace-intro': 'Your pace',
+  'pace-intro': 'How it adapts',
+  'last-pass': 'Last pass',
   study: 'Studying',
   'chapter-done': 'Chapter done',
   'sprint-done': 'Sprint done',
@@ -20,7 +21,8 @@ function stateLabel(ov) {
   if (ov.phase === 'study') {
     const stage = { flashcards: 'Flashcards', transition: 'Flashcards done', learn: 'Quiz', review: 'Final review' }[ov.stage];
     const chapter = ov.plan && ov.stage !== 'review' ? ov.plan.chapters[ov.chapterIndex] : null;
-    return chapter ? `${chapter.short} · ${stage}` : stage;
+    const mode = ov.pace?.mode === 'speed' && ov.chapterIndex === 0 ? ' · Speed-up' : '';
+    return chapter ? `${chapter.short} · ${stage}${mode}` : stage;
   }
   return STAGE_LABEL[ov.phase] || 'Browsing';
 }

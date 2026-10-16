@@ -11,7 +11,7 @@ import { clock, formatClockTime, formatDuration } from './state/clock.js';
 import * as Plan from './state/sprintPlan.js';
 import { islandContent, islandShell } from './components/Island.js';
 import { adjustSheet, parkedSheet, sheet } from './components/ParkedSheet.js';
-import { saveGlyph } from './components/glyphs.js';
+import { boltGlyph, saveGlyph } from './components/glyphs.js';
 import { paceMarkup, sortStrip, sortDestination, bindSortGesture, flyIntoPace, animateSegmentMove } from './components/PaceStudy.js';
 import {
   addTimeAlert,
@@ -47,6 +47,7 @@ import { planBuilding, planError, planReady, paceIntro } from './screens/PlanRea
 import { chapterDone, playReallocation } from './screens/ChapterDone.js';
 import { sprintDone } from './screens/SprintDone.js';
 import { flashDone, playFlashDone } from './screens/FlashDone.js';
+import { lastPass, modeSheetBody, speedOfferBody } from './screens/LastPass.js';
 import { debugPanel } from './debug/DebugPanel.js';
 import { modeBar } from './debug/ModeBar.js';
 
@@ -67,6 +68,15 @@ function freshPace() {
     toastUntil: 0,
     lastMessage: '',
     sorting: false,
+    // How the set is being studied: 'normal', or 'speed' once the user takes
+    // the Speed-up offer. Each stage is checked at half time and at full time.
+    mode: 'normal',
+    checks: { flashcards: { half: false, end: false }, learn: { half: false, end: false } },
+    lastOffered: false,
+    // Which ending the chapter gets: 'normal', 'speed' or 'last'.
+    ending: 'normal',
+    speedTerms: new Set(),
+    lastTerms: [],
   };
 }
 
@@ -200,6 +210,7 @@ function chapterOnePace() {
 // Phases where the overlay draws a full screen of its own over the base.
 const OVERLAY_SCREENS = new Set([
   'pace-intro',
+  'last-pass',
   'setup',
   'building',
   'plan-error',
@@ -272,7 +283,8 @@ function render() {
     if (ov.phase === 'plan-error') screen = planError();
     if (ov.phase === 'plan') screen = planReady(ov.plan);
     if (ov.phase === 'pace-intro') screen = paceIntro();
-    if (ov.phase === 'chapter-done') screen = chapterDone(ov.plan, ov.chapterIndex);
+    if (ov.phase === 'last-pass') screen = lastPass(course.sets[0], ov.pace.lastTerms);
+    if (ov.phase === 'chapter-done') screen = chapterDone(ov.plan, ov.chapterIndex, activeChapter()?.setIndex === 0 ? ov.pace.ending : 'normal', ov.pace.speedTerms.size);
     if (ov.phase === 'sprint-done') screen = sprintDone(ov.plan, sprintStats());
   }
   const needsShell = Boolean(screen);
@@ -306,6 +318,21 @@ function render() {
   if (ov.mode === 'sprint' && ov.sheet === 'adjust') sheetMarkup = adjustSheet(ov.plan);
   if (ov.mode === 'sprint' && ov.sheet === 'severe' && ov.severe) sheetMarkup = severeSheet(ov.severe);
   if (ov.mode === 'sprint' && ov.sheet === 'review' && ov.reviewTerm) sheetMarkup = reviewSheet();
+  if (ov.mode === 'sprint' && ov.sheet === 'speed-offer') sheetMarkup = sheet({
+    name: 'speed-offer', title: 'Let’s speed up',
+    body: speedOfferBody(ov.stage),
+    footer: '<button class="primary-button ov-full" data-ov="mode-speed">Speed up</button><button class="soft-button ov-full" data-ov="mode-keep">Keep going</button>',
+  });
+  if (ov.mode === 'sprint' && ov.sheet === 'mode') sheetMarkup = sheet({
+    name: 'mode', title: 'Speed-up is on',
+    body: speedOfferBody(ov.stage),
+    footer: '<button class="primary-button ov-full" data-ov="dismiss-sheet">Stay fast</button><button class="soft-button ov-full" data-ov="mode-normal">Back to normal</button>',
+  });
+  if (ov.mode === 'sprint' && ov.sheet === 'last-offer') sheetMarkup = sheet({
+    name: 'last-offer', title: 'Time’s up for this set',
+    body: modeSheetBody('Everything you haven’t got yet goes on one page. Read it through and it’s saved for your final review.'),
+    footer: '<button class="primary-button ov-full" data-ov="last-pass">Show what’s left</button><button class="soft-button ov-full" data-ov="last-keep">Keep going</button>',
+  });
   const keepAdjustSheet = ov.sheet === 'adjust' && sheetLayer.dataset.sheet === 'adjust' && sheetLayer.firstElementChild;
   if (!keepAdjustSheet) sheetLayer.innerHTML = sheetMarkup;
   sheetLayer.dataset.sheet = ov.sheet || '';
@@ -318,6 +345,7 @@ function render() {
 
   document.documentElement.dataset.sprintActive = islandVisible() ? 'true' : 'false';
   document.documentElement.dataset.paceStudy = chapterOnePace() && ['flashcards', 'learn'].includes(ov.stage) ? 'true' : 'false';
+  document.documentElement.dataset.paceMode = chapterOnePace() ? ov.pace.mode : 'normal';
   updateIsland();
 }
 
@@ -372,9 +400,15 @@ function paceQueue() {
     : { completed: state.learn.pos, items: state.learn.questions, termIndex: state.learn.questions[state.learn.pos]?.termIndex };
 }
 
-function paceFraction() {
-  const planned = ov.demo ? (ov.stage === 'flashcards' ? 120000 : 180000) : Math.max(1, Plan.stageMinutes(activeChapter(), ov.stage)) * 60000;
-  return Math.max(0, Math.min(1, (clock.now() - ov.pace.stageAt) / planned));
+/** Planned time for a stage. The Demo runs on short fixed times. */
+function stagePlannedMs(stage) {
+  if (ov.demo) return stage === 'flashcards' ? 120000 : 180000;
+  return Math.max(1, Plan.stageMinutes(activeChapter(), stage)) * 60000;
+}
+
+function chapterPlannedMs() {
+  if (ov.demo) return stagePlannedMs('flashcards') + stagePlannedMs('learn');
+  return Math.max(1, activeChapter().allotted) * 60000;
 }
 
 function liveToast() {
@@ -396,51 +430,143 @@ function showPaceMessage(text, kind = 'warning', persistent = false) {
   }
 }
 
-function checkPaceMessage() {
-  if (!chapterOnePace() || !['flashcards', 'learn'].includes(ov.stage) || ov.pace.decision) return;
+/**
+ * Time is checked at two moments per stage rather than shown all the time:
+ * half way through the stage's time, and when it runs out. Behind at either
+ * one, the user is offered Speed-up. When the whole set's time is gone, the
+ * offer is the Last pass.
+ */
+function checkPaceMode() {
+  if (!chapterOnePace() || !['flashcards', 'learn'].includes(ov.stage)) return;
+  if (ov.sheet || ov.pace.sorting || ov.pace.decision) return;
+  const now = clock.now();
+  if (!ov.pace.lastOffered && now - ov.chapterStartedAt >= chapterPlannedMs()) {
+    ov.pace.lastOffered = true;
+    offerMode('last');
+    return;
+  }
+  if (ov.pace.mode !== 'normal') return;
+  const stage = ov.stage;
+  const elapsed = now - ov.pace.stageAt;
+  const planned = stagePlannedMs(stage);
+  const checks = ov.pace.checks[stage];
+  const point = elapsed >= planned ? 'end' : elapsed >= planned / 2 ? 'half' : null;
+  if (!point || checks[point]) return;
+  checks[point] = true;
+  if (point === 'end') checks.half = true;
   const { completed, items } = paceQueue();
-  const difference = completed / Math.max(1, items.length) - paceFraction();
-  if (difference >= .2) showPaceMessage("You're ahead of pace. Nice.", 'good');
-  else if (difference <= -.2) showPaceMessage("You're a little behind. Sort the hard ones later to keep moving.");
+  // At this rate, how long would the whole stage take?
+  const projected = elapsed / Math.max(0.05, completed / Math.max(1, items.length));
+  logEvent('pace-check', { stage, point, projected: Math.round(projected / 1000), planned: Math.round(planned / 1000) });
+  if (projected > planned * 1.1) offerMode('speed');
 }
 
-function celebratePaceCatch(track) {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const target = track.querySelector('.sprint-pace-target');
-  const you = track.querySelector('.sprint-pace-you');
-  if (!target || !you) return;
-  const distance = you.getBoundingClientRect().left - target.getBoundingClientRect().left;
-  const verticalDistance = you.getBoundingClientRect().top - target.getBoundingClientRect().top;
-  track.style.setProperty('--catch-dx', `${distance}px`);
-  track.style.setProperty('--catch-dy', `${verticalDistance}px`);
-  track.classList.remove('is-caught');
-  void track.offsetWidth;
-  track.classList.add('is-caught');
-  window.setTimeout(() => track.classList.remove('is-caught'), 700);
+function offerMode(kind) {
+  ov.sheet = kind === 'speed' ? 'speed-offer' : 'last-offer';
+  logEvent('mode-offer', { kind, stage: ov.stage });
+  render();
 }
 
 function updatePaceMarker() {
   if (!chapterOnePace() || !['flashcards', 'learn'].includes(ov.stage)) return;
-  const track = document.querySelector('#app .sprint-pace-track');
-  if (!track) return;
-  const target = paceFraction();
-  const { completed, items } = paceQueue();
-  const you = completed / Math.max(1, items.length);
-  track.style.setProperty('--pace-target', `${Math.round(target * 10000) / 100}%`);
-  track.style.setProperty('--pace-you', `${Math.round(you * 10000) / 100}%`);
-  if (target - you >= .2) ov.pace.wasBehind[ov.stage] = true;
-  if (ov.pace.wasBehind[ov.stage] && you >= target) {
-    ov.pace.wasBehind[ov.stage] = false;
-    if (Date.now() - ov.pace.lastCatchAt >= 30000) {
-      ov.pace.lastCatchAt = Date.now();
-      celebratePaceCatch(track);
-    }
-  }
   if (!liveToast()) {
     const toast = document.querySelector('#app .sprint-pace-toast');
     if (toast) { toast.textContent = ''; toast.className = 'sprint-pace-toast'; }
   }
-  checkPaceMessage();
+  checkPaceMode();
+}
+
+/* --------------------------------------------------------------- Speed-up */
+
+/** Two answers instead of four: the right one and one other. */
+function twoChoices(question) {
+  if (question.answers.length <= 2) return question;
+  const right = question.answers[question.correct];
+  const other = question.answers.find((_, index) => index !== question.correct);
+  const answers = question.termIndex % 2 ? [other, right] : [right, other];
+  return { ...question, answers, correct: answers.indexOf(right) };
+}
+
+/** What Speed-up changes in the stage the user is on now. */
+function applySpeedToStage() {
+  const base = window.__base.state;
+  if (ov.stage === 'flashcards') {
+    // Cards already mastered in an earlier session are skipped.
+    const known = new Set(course.sets[0].progress?.known || []);
+    const current = base.studyQueue[base.queuePosition];
+    const skip = base.studyQueue.slice(base.queuePosition + 1).filter((term) => known.has(term) && term !== current);
+    skip.forEach((term) => {
+      ov.pace.statuses.flashcards.set(term, 'done');
+      window.__base.removeFlashcard(term);
+    });
+    if (skip.length) showPaceMessage(`Skipped ${skip.length} ${skip.length === 1 ? 'card' : 'cards'} you already know`, 'good');
+    return;
+  }
+  if (ov.stage === 'learn') {
+    const learn = base.learn;
+    const from = learn.answer === null ? learn.pos : learn.pos + 1;
+    // Cards the user got in Flashcards are not asked again.
+    const gotIt = (term) => ov.pace.statuses.flashcards.get(term) === 'done' && !ov.pace.needsPractice.has(term);
+    let rest = learn.questions.slice(from);
+    const kept = rest.filter((question) => !gotIt(question.termIndex));
+    if (kept.length || from > learn.pos) rest = kept;
+    learn.questions = [...learn.questions.slice(0, from), ...rest.map(twoChoices)];
+    if (learn.answer === null && learn.questions[learn.pos]) learn.questions[learn.pos] = twoChoices(learn.questions[learn.pos]);
+    if (learn.pos >= learn.questions.length) {
+      endChapter();
+      return;
+    }
+    window.__base.render();
+  }
+}
+
+function setPaceMode(mode, via) {
+  ov.pace.mode = mode;
+  ov.sheet = null;
+  logEvent('pace-mode', { mode, via, stage: ov.stage });
+  if (mode === 'speed') applySpeedToStage();
+  window.__base.render();
+  render();
+}
+
+/** How long to wait on a right answer before moving on. */
+function correctDelay() {
+  return ov.pace.mode === 'speed' ? 450 : 800;
+}
+
+/* -------------------------------------------------------------- Last pass */
+
+/** Everything in the set the user has not got yet. */
+function termsLeft() {
+  const base = window.__base.state;
+  const left = new Set(ov.pace.needsPractice);
+  if (ov.stage === 'flashcards') base.studyQueue.slice(base.queuePosition).forEach((term) => left.add(term));
+  if (ov.stage === 'learn') {
+    base.learn.questions.slice(base.learn.pos).forEach((question) => left.add(question.termIndex));
+    Object.keys(activeChapter()?.missed || {}).forEach((term) => left.add(Number(term)));
+  }
+  return [...left].sort((a, b) => a - b);
+}
+
+function enterLastPass(via) {
+  window.clearTimeout(correctAdvanceTimer);
+  ov.sheet = null;
+  ov.pace.lastTerms = termsLeft();
+  logEvent('last-pass', { via, cards: ov.pace.lastTerms.length });
+  setPhase('last-pass');
+  render();
+}
+
+function finishLastPass() {
+  const chapter = activeChapter();
+  ov.pace.lastTerms.forEach((term) => {
+    if (!chapter.parked.includes(term)) chapter.parked.push(term);
+  });
+  ov.pace.ending = 'last';
+  // The Last pass only opens once the set's time is used up.
+  chapter.used = Math.max(chapter.used, chapter.allotted);
+  setPhase('study');
+  endChapter();
 }
 
 function dismissPaceHint(stage) {
@@ -498,16 +624,29 @@ function enhancePaceScreen() {
   const header = screen.querySelector('.app-header');
   header.insertAdjacentHTML('afterend', paceMarkup({
     completed, items, statuses: ov.pace.statuses[stage],
-    target: paceFraction(), toast: liveToast(), decision: ov.pace.decision,
-    intro: stage === 'flashcards' && !ov.pace.hintsSeen.pace,
+    toast: liveToast(), decision: ov.pace.decision,
   }));
+  const speed = ov.pace.mode === 'speed';
+  const title = screen.querySelector('.app-header-title');
+  if (speed) {
+    title.innerHTML = `<button type="button" class="sprint-mode-pill" data-ov="mode-sheet" aria-label="Speed-up is on. Change">${boltGlyph()}Speed-up</button>`;
+    title.classList.add('has-mode');
+  }
   if (stage === 'flashcards') {
-    screen.querySelector('.app-header-title').textContent = '';
+    if (!speed) title.textContent = '';
     const card = screen.querySelector('.flashcard-stage');
     card.classList.add('sprint-sort-stage');
     card.insertAdjacentHTML('beforebegin', `<div class="sprint-pace-number">${completed} / ${items.length}</div>`);
     const area = screen.querySelector('.rating-area');
-    area.outerHTML = sortStrip(['again', 'later', 'done'], { hint: !ov.pace.hintsSeen.flashcards, details: ov.pace.sortCount.flashcards < 3 });
+    // Speed-up: both sides at once, and only the two quick answers.
+    area.outerHTML = sortStrip(speed ? ['again', 'done'] : ['again', 'later', 'done'], { hint: !ov.pace.hintsSeen.flashcards, details: !speed && ov.pace.sortCount.flashcards < 3 });
+    if (speed) {
+      const definition = course.sets[0].terms[window.__base.state.cardIndex]?.[1] || '';
+      card.classList.add('is-both-sides');
+      card.querySelector('.flashcard-front strong')?.insertAdjacentHTML('afterend', `<span class="sprint-card-definition">${definition}</span>`);
+      // No flipping: the answer is already showing.
+      card.addEventListener('click', (event) => event.stopPropagation());
+    }
     paceControls(screen, stage, ['again', 'done'], card);
   } else {
     const question = screen.querySelector('[data-question-card]');
@@ -516,7 +655,15 @@ function enhancePaceScreen() {
     const learn = window.__base.state.learn;
     const current = learn.questions[learn.pos];
     const wrong = learn.answer !== null && learn.answer !== current?.correct;
-    if (wrong) {
+    if (wrong && speed) {
+      // Speed-up sends a missed question to the back without asking.
+      question.classList.add('sprint-question-card');
+      question.insertAdjacentHTML('afterend', sortStrip(['again', 'later'], { hint: false, details: false }));
+      const reserved = question.nextElementSibling;
+      reserved.classList.add('is-reserved');
+      reserved.inert = true;
+      reserved.setAttribute('aria-hidden', 'true');
+    } else if (wrong) {
       question.classList.add('sprint-question-card');
       question.insertAdjacentHTML('afterend', sortStrip(['again', 'later'], { hint: !ov.pace.hintsSeen.learn, details: false }));
       paceControls(screen, stage, ['again', 'later'], question);
@@ -545,7 +692,7 @@ async function sortPaceItem(level, via, card, { bypassPrompt = false, auto = fal
     const shell = document.querySelector('#app .sprint-pace-shell');
     if (shell) shell.outerHTML = paceMarkup({
       completed, items, statuses: ov.pace.statuses[stage],
-      target: paceFraction(), toast: liveToast(), decision: true,
+      toast: liveToast(), decision: true,
     });
     return;
   }
@@ -565,6 +712,7 @@ async function sortPaceItem(level, via, card, { bypassPrompt = false, auto = fal
   else ov.pace.againCounts[stage].delete(termIndex);
   if (stage === 'flashcards' && level !== 'done') ov.pace.needsPractice.add(termIndex);
   ov.pace.statuses[stage].set(termIndex, level);
+  if (ov.pace.mode === 'speed') ov.pace.speedTerms.add(termIndex);
   if (!auto) ov.pace.sortCount[stage] += 1;
   ov.pace.decision = null;
   ov.pace.sorting = false;
@@ -582,7 +730,6 @@ async function sortPaceItem(level, via, card, { bypassPrompt = false, auto = fal
     ], { duration: 380, easing: 'cubic-bezier(.2, .9, .3, 1.06)' });
   }
   updatePaceMarker();
-  checkPaceMessage();
 }
 
 /* -------------------------------------------------------------------- flow */
@@ -603,7 +750,7 @@ function resumeCorrectAnswer() {
     if (chapterOnePace() && !ov.sheet && window.__base.state.learn.questions[learn.pos] === question) {
       sortPaceItem('done', 'button', document.querySelector('#app [data-question-card]'), { auto: true, bypassPrompt: true });
     }
-  }, 800);
+  }, correctDelay());
 }
 
 /**
@@ -733,11 +880,19 @@ function goToLearn() {
   }
   window.__base.startLearn(chapter.setIndex, scope);
   logEvent('stage-change', { stage: 'learn' });
+  if (chapter.setIndex === 0 && ov.pace.mode === 'speed') applySpeedToStage();
   render();
 }
 
 function endChapter() {
   const chapter = activeChapter();
+  if (chapter.setIndex === 0 && chapter.status !== 'done') {
+    // Speed-up cards were only seen the short way, so they go to final review.
+    if (ov.pace.ending !== 'last') ov.pace.ending = ov.pace.mode === 'speed' ? 'speed' : 'normal';
+    if (ov.pace.ending === 'speed') ov.pace.speedTerms.forEach((term) => {
+      if (!chapter.parked.includes(term)) chapter.parked.push(term);
+    });
+  }
   // Learn can finish through more than one path; settle the chapter once.
   if (chapter.status === 'done') {
     setPhase('chapter-done');
@@ -1263,6 +1418,21 @@ function onOverlayClick(event) {
     },
     'next-chapter': () => continueAfterChapter(),
     'go-learn': () => goToLearn(),
+    'mode-speed': () => setPaceMode('speed', 'offer'),
+    'mode-keep': () => {
+      logEvent('mode-offer-choice', { choice: 'keep' });
+      ov.sheet = null;
+      render();
+    },
+    'mode-sheet': () => { ov.sheet = 'mode'; render(); },
+    'mode-normal': () => setPaceMode('normal', 'pill'),
+    'last-pass': () => enterLastPass('offer'),
+    'last-keep': () => {
+      logEvent('mode-offer-choice', { choice: 'keep', kind: 'last' });
+      ov.sheet = null;
+      render();
+    },
+    'finish-last-pass': () => finishLastPass(),
     'finish-sprint': () => {
       logEvent('sprint-finished', sprintStats());
       setPhase('idle');
@@ -1718,16 +1888,30 @@ function debugJump(targetName) {
     goToLearn();
     return;
   }
-  if (targetName === 'done-ahead' || targetName === 'done-over') {
+  if (targetName === 'last-pass') {
+    debugStartChapterOne();
+    enterLastPass('debug');
+    return;
+  }
+  if (['done-ahead', 'done-over', 'done-speed', 'done-last'].includes(targetName)) {
     // A fresh plan each time, so the minutes moved are the same on every jump.
     ov.plan = null;
     ensurePlan();
+    ov.pace = freshPace();
+    if (targetName === 'done-speed') {
+      ov.pace.mode = 'speed';
+      [2, 5, 7].forEach((term) => ov.pace.speedTerms.add(term));
+    }
+    if (targetName === 'done-last') {
+      ov.pace.ending = 'last';
+      ov.plan.chapters[0].parked.push(3, 5, 7);
+    }
     const chapter = ov.plan.chapters[0];
     const shift = Math.max(2, Math.round(chapter.allotted * 0.25));
     ov.chapterIndex = 0;
     ov.stage = 'learn';
     chapter.status = 'active';
-    chapter.used = targetName === 'done-ahead' ? chapter.allotted - shift : chapter.allotted + shift;
+    chapter.used = targetName === 'done-over' || targetName === 'done-last' ? chapter.allotted + shift : chapter.allotted - shift;
     chapter.answered = chapter.total;
     endChapter();
   }
@@ -1744,21 +1928,12 @@ function debugTrigger(kind) {
   }
   debugEnsurePace();
   const stage = ov.stage;
-  const { completed, items, termIndex } = paceQueue();
-  const planned = Math.max(1, Plan.stageMinutes(activeChapter(), stage)) * 60000;
-  const you = completed / Math.max(1, items.length);
+  const { termIndex } = paceQueue();
 
-  if (kind === 'behind' || kind === 'ahead') {
-    // Move the goal marker, not the user: the pace clock is wound to where the
-    // goal sits a third of the bar ahead of them, or a quarter behind.
-    const goal = kind === 'behind' ? Math.min(1, you + 0.35) : Math.max(0, you - 0.25);
-    const scale = ov.demo ? (stage === 'flashcards' ? 120000 : 180000) / planned : 1;
-    ov.pace.stageAt = clock.now() - goal * planned * scale;
-    ov.pace.lastMessage = '';
-    ov.pace.toast = null;
-    ov.pace.toastUntil = 0;
+  if (kind === 'speed' || kind === 'last') {
     ov.pace.decision = null;
-    updatePaceMarker();
+    if (kind === 'speed') ov.pace.mode = 'normal';
+    offerMode(kind);
     return;
   }
   if (kind === 'stuck') {
@@ -1921,7 +2096,15 @@ const sprintHooks = {
           const learn = window.__base.state.learn;
           if (!chapterOnePace() || ov.sheet || ov.stage !== 'learn' || learn.questions[learn.pos] !== question || learn.answer !== question.correct) return;
           sortPaceItem('done', 'button', document.querySelector('#app [data-question-card]'), { auto: true, bypassPrompt: true });
-        }, 800);
+        }, correctDelay());
+      } else if (ov.pace.mode === 'speed') {
+        // Long enough to read the right answer, then it goes to the back.
+        window.clearTimeout(correctAdvanceTimer);
+        correctAdvanceTimer = window.setTimeout(() => {
+          const learn = window.__base.state.learn;
+          if (!chapterOnePace() || ov.sheet || ov.stage !== 'learn' || learn.questions[learn.pos] !== question) return;
+          sortPaceItem('later', 'auto', document.querySelector('#app .sprint-question-sort'), { auto: true, bypassPrompt: true });
+        }, 1400);
       }
       return;
     }

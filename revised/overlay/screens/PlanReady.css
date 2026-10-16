@@ -188,3 +188,21 @@
   .ov-preparing > span, .ov-demo-track > span, .ov-demo-ball, .ov-demo-you { animation: none; }
   .ov-demo-ball { left: 60%; } .ov-demo-you { left: 50%; }
 }
+
+/* How it adapts: the three modes, one card each */
+.ov-mode-cards { display: grid; gap: var(--space-3); margin: var(--space-8) 0 var(--space-5); padding: 0; list-style: none; text-align: left; }
+.ov-mode-card {
+  display: grid; grid-template-columns: 6px 1fr; gap: var(--space-4);
+  padding: var(--space-4) var(--space-5) var(--space-4) var(--space-4);
+  border: var(--border-width) solid var(--border-default);
+  border-radius: var(--card-radius);
+  background: var(--surface-default);
+}
+.ov-mode-card-band { border-radius: var(--radius-pill); background: var(--action-primary); }
+.ov-mode-card.is-speed .ov-mode-card-band { background: var(--mode-speed); }
+.ov-mode-card.is-last .ov-mode-card-band { background: var(--mode-last); }
+.ov-mode-card-copy { display: grid; gap: var(--space-1); }
+.ov-mode-card-copy strong { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--font-size-lg); }
+.ov-mode-card-copy strong svg { width: 16px; height: 16px; color: var(--mode-speed-ink); }
+.ov-mode-card-copy > span { color: var(--text-muted); font-size: var(--font-size-md); line-height: var(--line-height-snug); }
+.ov-intro-content .ov-intro-ask { margin: 0; color: var(--text-primary); font-weight: var(--font-weight-medium); font-size: var(--font-size-md); }

@@ -273,3 +273,7 @@ html[data-pace-study='true'] .quiz-screen .sprint-sort-controls { padding-top: 2
   .sprint-pace-target, .sprint-pace-track.is-caught .sprint-pace-target,
   .sprint-pace-track.is-caught .sprint-pace-you, .sprint-pace-track.is-caught .sprint-pace-pop { animation: none; }
 }
+
+/* The flying copy of a card leaves the card's own icons behind. */
+.sprint-flying-card .audio-icon,
+.sprint-flying-card .star-icon { display: none; }

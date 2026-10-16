@@ -13,3 +13,12 @@ Setup is three steps instead of four, and the time questions come first:
 3. **How well do you know each set?** Replaces "Which sets are you studying?" and "Any sets you feel less ready for?". Each set shows its past progress (mastered / still learning / not studied) and one switch: Shaky (more time), Skip (not in this plan), Know it (less time). The default comes from that progress. Chapter 1 cannot be skipped, since it is the set this prototype runs.
 
 The plan, study screens and everything after are unchanged from Final.
+
+## Study modes (replaces the pace ball)
+
+The goal ball and its intro are gone; the bar only counts cards. Time is checked at half way and at the end of each stage's planned time. Behind at either point, a sheet offers **Speed-up**; when the set's whole time is used, it offers the **Last pass**. The user can always choose Keep going.
+
+- **Speed-up** — Flashcards show both sides with only Don't know / Got it, and cards mastered before are skipped. Quiz drops to two choices, sends wrong answers to the back by itself, moves on faster after a right answer, and skips cards already got in Flashcards. A cyan band and a Speed-up pill (tap to go back to normal) mark the mode.
+- **Last pass** — everything not yet got, on one page; "I've read these" ends the set and saves those cards for final review.
+
+Chapter 1 ends one of three ways: on time, "Done the fast way" (Speed-up cards saved for review), or "Time's up, you're covered" (Last pass cards saved for review). The intro before studying now explains the three modes.

@@ -30,3 +30,8 @@ export function checkGlyph(className = 'ov-glyph-sm') {
       </svg>
     </span>`;
 }
+
+/** Speed-up. */
+export function boltGlyph(className = 'ov-glyph-sm') {
+  return `<svg class="${className}" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.5 5 13.5h6l-1 8 8-11h-6l1-8Z" fill="currentColor" /></svg>`;
+}

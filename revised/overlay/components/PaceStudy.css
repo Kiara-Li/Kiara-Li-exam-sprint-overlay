@@ -273,3 +273,73 @@ html[data-pace-study='true'] .quiz-screen .sprint-sort-controls { padding-top: 2
   .sprint-pace-target, .sprint-pace-track.is-caught .sprint-pace-target,
   .sprint-pace-track.is-caught .sprint-pace-you, .sprint-pace-track.is-caught .sprint-pace-pop { animation: none; }
 }
+
+/* Study modes ------------------------------------------------------------- */
+
+/* A thin band across the top says the screen is in Speed-up; the page itself
+   keeps its colours so nothing reads as an alarm. */
+html[data-pace-study='true'][data-pace-mode='speed'] #app .screen { box-shadow: inset 0 var(--mode-band) 0 var(--mode-speed); }
+
+html[data-pace-study='true'] .app-header-title.has-mode { visibility: visible; display: grid; place-items: center; }
+.sprint-mode-pill,
+.ov-mode-tag {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  min-height: 32px; padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-bold);
+}
+.sprint-mode-pill { color: var(--mode-speed-ink); background: var(--mode-speed-surface); cursor: pointer; }
+.sprint-mode-pill svg, .ov-mode-tag svg { width: 16px; height: 16px; }
+.ov-mode-tag.is-speed { color: var(--mode-speed-ink); background: var(--mode-speed-surface); }
+.ov-mode-tag.is-last { color: var(--mode-last); background: var(--mode-last-surface); }
+
+/* Speed-up flashcards: the answer sits under the term, no flip. */
+.sprint-sort-stage.is-both-sides .flashcard-front { align-content: center; gap: var(--space-4); }
+.sprint-card-definition {
+  max-width: 100%;
+  color: var(--text-muted);
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+}
+.sprint-sort-stage.is-both-sides .flashcard { cursor: default; }
+
+/* Offer sheets */
+.ov-mode-changes { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.ov-mode-changes li { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: var(--space-3); font-size: var(--font-size-lg); font-weight: var(--font-weight-medium); }
+.ov-mode-bolt { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: var(--mode-speed-ink); background: var(--mode-speed-surface); }
+.ov-mode-bolt svg { width: 16px; height: 16px; }
+.ov-mode-copy { margin: 0; font-size: var(--font-size-lg); line-height: var(--line-height-relaxed); }
+
+/* Last pass: one page of what is left */
+.ov-screen.ov-last-pass { display: flex; flex-direction: column; min-height: calc(100svh - var(--devbar-height)); box-shadow: inset 0 var(--mode-band) 0 var(--mode-last); }
+.ov-last-pass .app-header-title { display: grid; place-items: center; }
+.ov-last-content { flex: 1; padding: var(--space-2) var(--space-content) var(--space-6); }
+.ov-last-content h1 { margin: 0; font-size: var(--font-size-3xl); letter-spacing: var(--letter-spacing-tight); }
+.ov-last-count { margin: var(--space-2) 0 var(--space-5); color: var(--text-muted); font-weight: var(--font-weight-medium); }
+.ov-last-list { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.ov-last-card {
+  display: grid; gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  border: var(--border-width) solid var(--border-default);
+  border-radius: var(--card-radius);
+  background: var(--surface-default);
+  animation: ov-last-in 360ms cubic-bezier(.2, .9, .3, 1) both;
+}
+.ov-last-card:nth-child(2) { animation-delay: 50ms; }
+.ov-last-card:nth-child(3) { animation-delay: 100ms; }
+.ov-last-card:nth-child(n + 4) { animation-delay: 150ms; }
+.ov-last-card strong { font-size: var(--font-size-xl); }
+.ov-last-card span { color: var(--text-muted); font-size: var(--font-size-md); line-height: var(--line-height-relaxed); }
+.ov-last-action { position: sticky; bottom: 0; }
+@keyframes ov-last-in { from { opacity: 0; transform: translateY(10px); } }
+
+/* Chapter done: the ending's tag sits above the title */
+.ov-chapter-done .ov-mode-tag { margin-bottom: var(--space-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ov-last-card { animation: none; }
+}
+
+/* The flying copy of a card leaves the card's own icons behind. */
+.sprint-flying-card .audio-icon,
+.sprint-flying-card .star-icon { display: none; }

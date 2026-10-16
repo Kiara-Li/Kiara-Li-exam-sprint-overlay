@@ -1,3 +1,5 @@
+import { MODES } from './LastPass.js';
+import { boltGlyph } from '../components/glyphs.js';
 import { icon } from '../../base/components/icons.js';
 import { planDonut } from '../components/PlanDonut.js';
 import { actionButton } from '../../system/components.js';
@@ -78,19 +80,17 @@ export function planReady(plan) {
 }
 
 export function paceIntro() {
-  const completionSteps = [18, 30, 40, 50, 60, 70, 80, 90];
+  const cards = MODES.map(({ key, name, line }) => `
+    <li class="ov-mode-card is-${key}">
+      <span class="ov-mode-card-band" aria-hidden="true"></span>
+      <span class="ov-mode-card-copy"><strong>${key === 'speed' ? boltGlyph() : ''}${name}</strong><span>${line}</span></span>
+    </li>`).join('');
   return `<main class="screen ov-screen ov-pace-intro">
-    <style>${completionSteps.map((at, index) => `@keyframes ov-demo-fill-${index} { 0%, ${at - .1}% { background: var(--color-border-strong); } ${at}%, 99.9% { background: var(--color-primary); } }`).join('')}</style>
     <header class="app-header"><button class="icon-button" data-ov="intro-back" aria-label="Back">${icon('back')}</button><div></div><span></span></header>
     <section class="ov-intro-content">
-      <h1>Catch up with the blue ball.</h1>
-      <div class="ov-pace-demo" role="img" aria-label="The blue ball moves steadily with time. Your dark marker moves one step each time you finish a term.">
-        <div class="ov-demo-track">${completionSteps.map((_, i) => `<span style="animation-name:ov-demo-fill-${i}"></span>`).join('')}</div>
-        <span class="ov-demo-ball"></span><span class="ov-demo-you"></span>
-      </div>
-      <div class="ov-demo-labels"><span><i class="ov-ball-key"></i>Time goal</span><span><i class="ov-you-key"></i>You</span></div>
-      <p>It moves with your planned pace. Finish a card or question to move your marker forward.</p>
-      <p class="ov-intro-note">Keep up with the ball and you’re on pace.</p>
+      <h1>If time runs short, we’ll change how you study.</h1>
+      <ol class="ov-mode-cards">${cards}</ol>
+      <p class="ov-intro-ask">We’ll always ask before switching.</p>
     </section>
     <div class="sticky-action"><button class="primary-button ov-full" data-ov="begin-study">Let’s go</button></div>
   </main>`;
