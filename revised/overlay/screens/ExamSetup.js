@@ -36,6 +36,32 @@ export function examOnDay(now, days, timeFrom) {
   return date.getTime();
 }
 
+const WEEKDAY_TAGS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+function calendarGlyph() {
+  return `<svg class="ov-day-glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14.5" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 3.5v4M15 3.5v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></svg>`;
+}
+
+/**
+ * Tear-off calendar pages: weekday on the tab, the date large, and how far
+ * away it is underneath. "Other" shows the picked date once there is one.
+ */
+export function examDayTiles(now, draft, choice) {
+  const page = (key, at, label) => {
+    const on = choice === key;
+    const date = at === null ? null : new Date(at);
+    return `<button type="button" class="ov-day-tile${on ? ' is-selected' : ''}${date ? '' : ' is-other'}" aria-pressed="${on}" aria-label="${label}${date ? `, ${formatDateLabel(at)}` : ''}" data-ov="pick-exam-day" data-days="${key}">
+      <span class="ov-day-tab">${date ? WEEKDAY_TAGS[date.getDay()] : 'MORE'}</span>
+      <strong class="ov-day-num">${date ? date.getDate() : calendarGlyph()}</strong>
+      <small class="ov-day-label">${label}</small>
+    </button>`;
+  };
+  return [
+    ...EXAM_DAYS.map(({ days, label }) => page(days, examOnDay(now, days, draft), label)),
+    page('other', choice === 'other' ? draft : null, 'Other'),
+  ].join('');
+}
+
 /** Which day tile a date belongs to, or 'other'. */
 export function examDayChoice(now, at) {
   const match = EXAM_DAYS.find(({ days }) => dayKey(examOnDay(now, days, at)) === dayKey(at));
@@ -139,17 +165,7 @@ export function examSetup(setup, now) {
   const levelRows = sets.map((set, index) => levelRow(set, index, setup.levels?.[index] ?? defaultLevel(set))).join('');
 
   const choice = setup.dayChoice ?? examDayChoice(now, draft);
-  const dayTiles = [
-    ...EXAM_DAYS.map(({ days, label }) => ({ key: days, label, note: formatDateLabel(examOnDay(now, days, draft)) })),
-    { key: 'other', label: 'Other', note: choice === 'other' ? formatDateLabel(draft) : 'Pick a date' },
-  ]
-    .map(({ key, label, note }) => {
-      const on = choice === key;
-      return `<button type="button" class="ov-day-tile${on ? ' is-selected' : ''}" aria-pressed="${on}" data-ov="pick-exam-day" data-days="${key}">
-        <strong>${label}</strong><small>${note}</small>
-      </button>`;
-    })
-    .join('');
+  const dayTiles = examDayTiles(now, draft, choice);
 
   // A thin bar, not numbered pills. The fill starts where the last step left
   // it so moving between steps reads as progress rather than a redraw.

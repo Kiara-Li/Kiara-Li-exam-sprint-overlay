@@ -443,41 +443,60 @@
 
 .ov-day-tile {
   display: grid;
-  gap: var(--space-1);
-  align-content: center;
-  min-height: var(--day-tile-height);
-  padding: var(--space-3) var(--space-1);
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  overflow: hidden;
+  padding: var(--space-0) var(--space-0) var(--space-2);
   border: var(--border-width) solid var(--border-default);
   border-radius: var(--field-radius);
   color: var(--text-primary);
   background: var(--surface-default);
-  text-align: center;
   cursor: pointer;
   transition: background var(--motion-feedback), border-color var(--motion-feedback), transform var(--motion-feedback);
 }
 
 .ov-day-tile:active { transform: scale(.97); }
 
-.ov-day-tile strong {
-  font-size: var(--font-size-md);
+/* The page's tab: the weekday, like the top of a tear-off calendar. */
+.ov-day-tab {
+  justify-self: stretch;
+  padding: var(--space-1) 0;
+  color: var(--text-muted);
+  background: var(--surface-grouped);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-snug);
+  letter-spacing: .08em;
+  transition: background var(--motion-feedback), color var(--motion-feedback);
 }
 
-.ov-day-tile small {
+.ov-day-num {
+  display: grid;
+  min-height: var(--day-num-size);
+  place-items: center;
+  padding-top: var(--space-1);
+  font-size: var(--day-num-size);
+  font-weight: var(--font-weight-black);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-day-glyph { width: 28px; height: 28px; color: var(--text-muted); }
+
+.ov-day-label {
   color: var(--text-muted);
-  font: var(--type-label);
   font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   white-space: nowrap;
 }
 
-.ov-day-tile.is-selected {
-  border-color: var(--border-selected);
-  color: var(--action-primary);
-  background: var(--action-subtle);
-}
+.ov-day-tile.is-selected { border-color: var(--border-selected); background: var(--action-subtle); }
+.ov-day-tile.is-selected .ov-day-tab { color: var(--color-white); background: var(--action-primary); }
+.ov-day-tile.is-selected .ov-day-num,
+.ov-day-tile.is-selected .ov-day-label,
+.ov-day-tile.is-selected .ov-day-glyph { color: var(--action-primary); }
 
-.ov-day-tile.is-selected small { color: var(--action-primary); }
+/* The time sits centred under the pages rather than pushed to the left. */
+.ov-time-field.ov-when-field { justify-items: center; text-align: center; }
 
 .ov-time-field {
   width: var(--size-full);
@@ -613,7 +632,7 @@
 
 @media (max-width: 400px) {
   .ov-day-grid { gap: var(--space-1); }
-  .ov-day-tile strong { font-size: var(--font-size-sm); }
+  .ov-day-label { font-size: 11px; }
   .ov-level-row { padding: var(--space-3); }
 }
 

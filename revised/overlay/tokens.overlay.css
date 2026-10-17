@@ -28,7 +28,7 @@
   --mode-last-surface: var(--color-surface-soft);
   --mode-band: 3px;
   /* Setup: exam-day tiles and the per-set level switch. */
-  --day-tile-height: 68px;
+  --day-num-size: 30px;
   --level-bar-height: 6px;
   --level-bar-gap: 3px;
   --level-switch-inset: 4px;

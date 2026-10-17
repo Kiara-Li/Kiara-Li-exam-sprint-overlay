@@ -1,9 +1,8 @@
 import { actionButton } from './components.js';
 import { answerButton } from '../base/components/components.js';
 import { attachTimeWheels, formatTimeLabel, settleWheels, dateTimePicker, withDay, withHour, withMinute, withMeridiem, shiftMonth } from '../overlay/components/DateTimePicker.js';
-import { EXAM_DAYS, chosenStudyMinutes, defaultLevel, examOnDay, levelRow, levelSwitch, studyTimeCard } from '../overlay/screens/ExamSetup.js';
+import { chosenStudyMinutes, defaultLevel, examDayTiles, levelRow, levelSwitch, studyTimeCard } from '../overlay/screens/ExamSetup.js';
 import { course } from '../base/data.js';
-import { formatDateLabel } from '../overlay/components/DateTimePicker.js';
 import { splitCard } from '../overlay/screens/PlanReady.js';
 import { LEVELS } from '../overlay/components/PaceStudy.js';
 
@@ -141,9 +140,7 @@ document.querySelectorAll('[data-color-value]').forEach((element) => {
 // Exam day: the same tiles as the first setup step.
 let examDay = 1;
 const drawDays = () => {
-  const morning = examOnDay(now, 1, draft.getTime());
-  const tiles = [...EXAM_DAYS.map(({ days, label }) => ({ key: days, label, note: formatDateLabel(examOnDay(now, days, morning)) })), { key: 'other', label: 'Other', note: 'Pick a date' }];
-  $('#day-demo').innerHTML = `<div class="ov-day-grid" role="group" aria-label="Exam day">${tiles.map(({ key, label, note }) => `<button type="button" class="ov-day-tile${examDay === key ? ' is-selected' : ''}" aria-pressed="${examDay === key}" data-days="${key}"><strong>${label}</strong><small>${note}</small></button>`).join('')}</div>`;
+  $('#day-demo').innerHTML = `<div class="ov-day-grid" role="group" aria-label="Exam day">${examDayTiles(now, draft.getTime(), examDay)}</div>`;
 };
 drawDays();
 $('#day-demo').addEventListener('click', (event) => {
