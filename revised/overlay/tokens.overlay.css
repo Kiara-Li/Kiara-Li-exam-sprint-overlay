@@ -27,6 +27,9 @@
   --mode-last: var(--color-text);
   --mode-last-surface: var(--color-surface-soft);
   --mode-band: 3px;
+  --notice-icon-size: 28px;
+  --mini-card-width: 68px;
+  --mini-card-height: 88px;
   /* Setup: exam-day tiles and the per-set level switch. */
   --day-num-size: 30px;
   --level-bar-height: 6px;

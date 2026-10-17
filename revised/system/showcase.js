@@ -3,6 +3,8 @@ import { answerButton } from '../base/components/components.js';
 import { attachTimeWheels, formatTimeLabel, settleWheels, dateTimePicker, withDay, withHour, withMinute, withMeridiem, shiftMonth } from '../overlay/components/DateTimePicker.js';
 import { chosenStudyMinutes, defaultLevel, examDayTiles, levelRow, levelSwitch, studyTimeCard } from '../overlay/screens/ExamSetup.js';
 import { course } from '../base/data.js';
+import { noticeToast } from '../overlay/components/Notice.js';
+import { speedOfferBody } from '../overlay/screens/LastPass.js';
 import { splitCard } from '../overlay/screens/PlanReady.js';
 import { LEVELS } from '../overlay/components/PaceStudy.js';
 
@@ -163,3 +165,7 @@ $('#day-demo').addEventListener('click', (event) => {
     row.querySelector('.ov-level-switch').outerHTML = levelSwitch(index, option.dataset.level);
   });
 });
+
+// Notices: the toast and the choice sheet every study message uses.
+$('#notice-toast').innerHTML = `<div class="sprint-pace-toast ds-static">${noticeToast({ text: 'Skipped 3 cards you know', kind: 'speed' })}</div>`;
+$('#notice-sheet').innerHTML = `<section class="ov-sheet ds-static"><span class="ov-sheet-grabber" aria-hidden="true"></span><h2 class="ov-sheet-title">Let’s speed up</h2>${speedOfferBody('flashcards')}<div class="ov-sheet-footer"><button class="primary-button ov-full">Speed up</button><button class="soft-button ov-full">Keep going</button></div></section>`;

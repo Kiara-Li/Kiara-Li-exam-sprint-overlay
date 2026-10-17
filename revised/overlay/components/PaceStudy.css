@@ -84,13 +84,11 @@ html[data-pace-study='true'] .flashcard-screen .app-header-title { visibility: h
   .sprint-pace-target::after { animation: none; }
   .sprint-pace-target, .sprint-pace-you { transition: none; }
 }
+/* Toasts sit on the count row, to the right, so they never cover it. */
 .sprint-pace-toast {
-  position: absolute; z-index: 8; top: 31px; left: 50%; width: max-content;
-  max-width: calc(100% - 2 * var(--space-content)); padding: 11px 17px;
-  border: 1px solid var(--color-border-strong); border-radius: 14px;
-  background: var(--color-white); box-shadow: var(--shadow-card);
-  font: var(--type-label); color: var(--feedback-warning); text-align: center;
-  transform: translateX(-50%); pointer-events: none;
+  position: absolute; z-index: 8; top: 30px; right: var(--space-content);
+  max-width: calc(100% - 2 * var(--space-content) - 64px);
+  pointer-events: none;
 }
 .sprint-pace-intro {
   position: absolute; z-index: 8; top: 28px;
@@ -102,12 +100,11 @@ html[data-pace-study='true'] .flashcard-screen .app-header-title { visibility: h
   pointer-events: none; animation: sprint-decision-in 300ms cubic-bezier(.22,.8,.2,1) both;
 }
 .sprint-pace-toast:empty { display: none; }
-.sprint-pace-toast.is-good { color: var(--feedback-success); }
 .sprint-pace-toast.is-fading { animation: sprint-toast-out 3s ease both; }
 @keyframes sprint-toast-out {
-  0% { opacity: 0; transform: translate(-50%, -8px) scale(.94); }
-  12%, 78% { opacity: 1; transform: translate(-50%, 0) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -8px) scale(.96); }
+  0% { opacity: 0; transform: translateY(-8px) scale(.94); }
+  12%, 78% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-8px) scale(.96); }
 }
 .sprint-pace-decision {
   position: absolute; z-index: 10; top: 38px; left: var(--space-content); right: var(--space-content);
@@ -303,12 +300,6 @@ html[data-pace-study='true'] .app-header-title.has-mode { visibility: visible; d
 }
 .sprint-sort-stage.is-both-sides .flashcard { cursor: default; }
 
-/* Offer sheets */
-.ov-mode-changes { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
-.ov-mode-changes li { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: var(--space-3); font-size: var(--font-size-lg); font-weight: var(--font-weight-medium); }
-.ov-mode-bolt { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: var(--mode-speed-ink); background: var(--mode-speed-surface); }
-.ov-mode-bolt svg { width: 16px; height: 16px; }
-.ov-mode-copy { margin: 0; font-size: var(--font-size-lg); line-height: var(--line-height-relaxed); }
 
 /* Last pass: one page of what is left */
 .ov-screen.ov-last-pass { display: flex; flex-direction: column; min-height: calc(100svh - var(--devbar-height)); box-shadow: inset 0 var(--mode-band) 0 var(--mode-last); }

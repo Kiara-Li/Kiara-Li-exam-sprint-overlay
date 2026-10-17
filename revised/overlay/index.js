@@ -47,7 +47,8 @@ import { planBuilding, planError, planReady, paceIntro } from './screens/PlanRea
 import { chapterDone, playReallocation } from './screens/ChapterDone.js';
 import { sprintDone } from './screens/SprintDone.js';
 import { flashDone, playFlashDone } from './screens/FlashDone.js';
-import { lastPass, modeSheetBody, speedOfferBody } from './screens/LastPass.js';
+import { lastPass, speedOfferBody } from './screens/LastPass.js';
+import { noticeLine, noticeToast } from './components/Notice.js';
 import { debugPanel } from './debug/DebugPanel.js';
 import { modeBar } from './debug/ModeBar.js';
 
@@ -328,9 +329,14 @@ function render() {
     body: speedOfferBody(ov.stage),
     footer: '<button class="primary-button ov-full" data-ov="dismiss-sheet">Stay fast</button><button class="soft-button ov-full" data-ov="mode-normal">Back to normal</button>',
   });
+  if (ov.mode === 'sprint' && ov.sheet === 'stuck') sheetMarkup = sheet({
+    name: 'stuck', title: 'This one keeps coming back',
+    body: noticeLine('Move it to the end of the set?'),
+    footer: '<button class="primary-button ov-full" data-pace-decision="later">Move it later</button><button class="soft-button ov-full" data-pace-decision="again">Keep it close</button>',
+  });
   if (ov.mode === 'sprint' && ov.sheet === 'last-offer') sheetMarkup = sheet({
     name: 'last-offer', title: 'Time’s up for this set',
-    body: modeSheetBody('Everything you haven’t got yet goes on one page. Read it through and it’s saved for your final review.'),
+    body: noticeLine('What’s left goes on one page, then into your final review.'),
     footer: '<button class="primary-button ov-full" data-ov="last-pass">Show what’s left</button><button class="soft-button ov-full" data-ov="last-keep">Keep going</button>',
   });
   const keepAdjustSheet = ov.sheet === 'adjust' && sheetLayer.dataset.sheet === 'adjust' && sheetLayer.firstElementChild;
@@ -424,8 +430,8 @@ function showPaceMessage(text, kind = 'warning', persistent = false) {
     ov.pace.toastUntil = clock.now() + 3000;
     const toast = document.querySelector('#app .sprint-pace-toast');
     if (toast) {
-      toast.textContent = text;
-      toast.className = `sprint-pace-toast is-fading${kind === 'good' ? ' is-good' : ''}`;
+      toast.innerHTML = noticeToast(ov.pace.toast);
+      toast.className = 'sprint-pace-toast is-fading';
     }
   }
 }
@@ -471,7 +477,7 @@ function updatePaceMarker() {
   if (!chapterOnePace() || !['flashcards', 'learn'].includes(ov.stage)) return;
   if (!liveToast()) {
     const toast = document.querySelector('#app .sprint-pace-toast');
-    if (toast) { toast.textContent = ''; toast.className = 'sprint-pace-toast'; }
+    if (toast) { toast.innerHTML = ''; toast.className = 'sprint-pace-toast'; }
   }
   checkPaceMode();
 }
@@ -499,7 +505,7 @@ function applySpeedToStage() {
       ov.pace.statuses.flashcards.set(term, 'done');
       window.__base.removeFlashcard(term);
     });
-    if (skip.length) showPaceMessage(`Skipped ${skip.length} ${skip.length === 1 ? 'card' : 'cards'} you already know`, 'good');
+    if (skip.length) showPaceMessage(`Skipped ${skip.length} ${skip.length === 1 ? 'card' : 'cards'} you know`, 'speed');
     return;
   }
   if (ov.stage === 'learn') {
@@ -624,7 +630,7 @@ function enhancePaceScreen() {
   const header = screen.querySelector('.app-header');
   header.insertAdjacentHTML('afterend', paceMarkup({
     completed, items, statuses: ov.pace.statuses[stage],
-    toast: liveToast(), decision: ov.pace.decision,
+    toast: liveToast(),
   }));
   const speed = ov.pace.mode === 'speed';
   const title = screen.querySelector('.app-header-title');
@@ -688,12 +694,9 @@ async function sortPaceItem(level, via, card, { bypassPrompt = false, auto = fal
   const previousAgain = ov.pace.againCounts[stage].get(termIndex) || 0;
   if (level === 'again' && previousAgain >= 1 && !bypassPrompt) {
     ov.pace.decision = { stage, termIndex };
-    showPaceMessage('This one keeps coming back. Move it later?', 'warning', true);
-    const shell = document.querySelector('#app .sprint-pace-shell');
-    if (shell) shell.outerHTML = paceMarkup({
-      completed, items, statuses: ov.pace.statuses[stage],
-      toast: liveToast(), decision: true,
-    });
+    logEvent('pace-message', { message: 'This one keeps coming back', kind: 'decision' });
+    ov.sheet = 'stuck';
+    render();
     return;
   }
   ov.pace.sorting = true;
@@ -1207,6 +1210,8 @@ function onOverlayClick(event) {
   if (paceChoice && ov.pace.decision) {
     const { stage, termIndex } = ov.pace.decision;
     const level = paceChoice.dataset.paceDecision;
+    ov.sheet = null;
+    render();
     logEvent('stuck-prompt-choice', { stage, termIndex, choice: level === 'later' ? 'Move it later' : 'Keep it close' });
     const card = document.querySelector(stage === 'flashcards' ? '#app .sprint-sort-stage' : '#app .sprint-question-sort');
     sortPaceItem(level, 'button', card, { bypassPrompt: true });
@@ -1274,6 +1279,11 @@ function onOverlayClick(event) {
       enterExam();
     },
     'dismiss-sheet': () => {
+      // Closing the stuck question without choosing keeps the card close.
+      if (ov.sheet === 'stuck' && ov.pace.decision) {
+        document.querySelector('.ov-sheet [data-pace-decision="again"]')?.click();
+        return;
+      }
       const wasLeave = ov.sheet === 'leave';
       if (wasLeave) logEvent('leave-prompt', { choice: 'keep' });
       ov.sheet = null;

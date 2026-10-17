@@ -79,18 +79,29 @@ export function planReady(plan) {
     </main>`;
 }
 
+/** A tiny picture of each mode: a card, a card with both sides, a list. */
+function modePicture(key) {
+  if (key === 'last') return '<span class="ov-mini is-list"><i></i><i></i><i></i></span>';
+  return `<span class="ov-mini is-card">${key === 'speed' ? `<em>${boltGlyph()}</em>` : ''}<i class="is-term"></i>${key === 'speed' ? '<i></i><i class="is-short"></i>' : ''}</span>`;
+}
+
+/**
+ * Before studying: how the set adapts when time runs short. A small picture
+ * and one line, as the plan screen explained the old marker.
+ */
 export function paceIntro() {
-  const cards = MODES.map(({ key, name, line }) => `
-    <li class="ov-mode-card is-${key}">
-      <span class="ov-mode-card-band" aria-hidden="true"></span>
-      <span class="ov-mode-card-copy"><strong>${key === 'speed' ? boltGlyph() : ''}${name}</strong><span>${line}</span></span>
-    </li>`).join('');
+  const steps = MODES.map(({ key, name }, index) => `
+    ${index ? '<span class="ov-mode-arrow" aria-hidden="true">›</span>' : ''}
+    <figure class="ov-mode-step is-${key}" style="--step:${index}">
+      ${modePicture(key)}
+      <figcaption>${name}</figcaption>
+    </figure>`).join('');
   return `<main class="screen ov-screen ov-pace-intro">
     <header class="app-header"><button class="icon-button" data-ov="intro-back" aria-label="Back">${icon('back')}</button><div></div><span></span></header>
     <section class="ov-intro-content">
-      <h1>If time runs short, we’ll change how you study.</h1>
-      <ol class="ov-mode-cards">${cards}</ol>
-      <p class="ov-intro-ask">We’ll always ask before switching.</p>
+      <h1>Short on time?<br>We’ll speed things up.</h1>
+      <div class="ov-mode-steps" role="img" aria-label="Normal, then Speed-up, then Last pass">${steps}</div>
+      <p class="ov-intro-ask">We’ll always ask first.</p>
     </section>
     <div class="sticky-action"><button class="primary-button ov-full" data-ov="begin-study">Let’s go</button></div>
   </main>`;

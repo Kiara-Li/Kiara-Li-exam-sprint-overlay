@@ -1,25 +1,20 @@
-import { boltGlyph } from '../components/glyphs.js';
+import { noticeList } from '../components/Notice.js';
 
 /** The three ways a set can be studied, in the words the screens use. */
 export const MODES = [
-  { key: 'normal', name: 'Normal', line: 'Flip, sort and quiz as usual.' },
-  { key: 'speed', name: 'Speed-up', line: 'Both sides at once, two choices, and cards you know are skipped.' },
-  { key: 'last', name: 'Last pass', line: 'Everything left on one page, saved for your final review.' },
+  { key: 'normal', name: 'Normal' },
+  { key: 'speed', name: 'Speed-up' },
+  { key: 'last', name: 'Last pass' },
 ];
 
 const SPEED_CHANGES = {
-  flashcards: ['Both sides show at once, no flipping', 'Just Don’t know or Got it', 'Cards you already know are skipped'],
-  learn: ['Two choices instead of four', 'Wrong answers go to the back by themselves', 'Cards you got in Flashcards are skipped'],
+  flashcards: ['No flipping', 'Just Don’t know or Got it', 'Skips cards you know'],
+  learn: ['Two choices', 'Misses go to the back', 'Skips cards you got'],
 };
-
-export function modeSheetBody(text) {
-  return `<p class="ov-mode-copy">${text}</p>`;
-}
 
 /** What Speed-up changes, for the stage the user is in. */
 export function speedOfferBody(stage) {
-  const changes = SPEED_CHANGES[stage] || SPEED_CHANGES.flashcards;
-  return `<ul class="ov-mode-changes">${changes.map((change) => `<li><span class="ov-mode-bolt">${boltGlyph()}</span>${change}</li>`).join('')}</ul>`;
+  return noticeList(SPEED_CHANGES[stage] || SPEED_CHANGES.flashcards);
 }
 
 /** Time is up: what is left, on one page, to read once. */

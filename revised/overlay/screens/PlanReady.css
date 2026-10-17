@@ -189,20 +189,52 @@
   .ov-demo-ball { left: 60%; } .ov-demo-you { left: 50%; }
 }
 
-/* How it adapts: the three modes, one card each */
-.ov-mode-cards { display: grid; gap: var(--space-3); margin: var(--space-8) 0 var(--space-5); padding: 0; list-style: none; text-align: left; }
-.ov-mode-card {
-  display: grid; grid-template-columns: 6px 1fr; gap: var(--space-4);
-  padding: var(--space-4) var(--space-5) var(--space-4) var(--space-4);
-  border: var(--border-width) solid var(--border-default);
-  border-radius: var(--card-radius);
-  background: var(--surface-default);
+/* How it adapts: three small pictures in a row ---------------------------- */
+.ov-mode-steps {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: start;
+  gap: var(--space-2);
+  margin: var(--space-10) 0 var(--space-8);
 }
-.ov-mode-card-band { border-radius: var(--radius-pill); background: var(--action-primary); }
-.ov-mode-card.is-speed .ov-mode-card-band { background: var(--mode-speed); }
-.ov-mode-card.is-last .ov-mode-card-band { background: var(--mode-last); }
-.ov-mode-card-copy { display: grid; gap: var(--space-1); }
-.ov-mode-card-copy strong { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--font-size-lg); }
-.ov-mode-card-copy strong svg { width: 16px; height: 16px; color: var(--mode-speed-ink); }
-.ov-mode-card-copy > span { color: var(--text-muted); font-size: var(--font-size-md); line-height: var(--line-height-snug); }
+.ov-mode-step {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  animation: ov-mode-step-in 420ms cubic-bezier(.2, .9, .3, 1.1) both;
+  animation-delay: calc(var(--step) * 140ms + 120ms);
+}
+.ov-mode-step figcaption { font-size: var(--font-size-md); font-weight: var(--font-weight-bold); white-space: nowrap; }
+.ov-mode-arrow { padding-top: 34px; color: var(--color-border-strong); font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); }
+
+.ov-mini {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 6px;
+  width: var(--mini-card-width);
+  height: var(--mini-card-height);
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-default);
+  box-shadow: var(--shadow-card);
+}
+.ov-mini i { display: block; width: 70%; height: 6px; border-radius: var(--radius-pill); background: var(--color-border-strong); }
+.ov-mini i.is-term { width: 56%; height: 9px; background: var(--action-primary); }
+.ov-mini i.is-short { width: 46%; }
+.ov-mode-step.is-speed .ov-mini { box-shadow: inset 0 var(--mode-band) 0 var(--mode-speed), var(--shadow-card); }
+.ov-mini em {
+  position: absolute; top: -10px; right: -10px;
+  display: grid; width: var(--notice-icon-size); height: var(--notice-icon-size); place-items: center;
+  border-radius: 50%; color: var(--mode-speed-ink); background: var(--mode-speed-surface);
+}
+.ov-mini em svg { width: 14px; height: 14px; }
+.ov-mini.is-list { align-content: stretch; gap: 5px; padding: 7px; background: var(--surface-grouped); box-shadow: inset 0 var(--mode-band) 0 var(--mode-last), var(--shadow-card); }
+.ov-mini.is-list i { width: 100%; height: auto; border: var(--border-width) solid var(--border-default); border-radius: 6px; background: var(--surface-default); }
+
 .ov-intro-content .ov-intro-ask { margin: 0; color: var(--text-primary); font-weight: var(--font-weight-medium); font-size: var(--font-size-md); }
+@keyframes ov-mode-step-in { from { opacity: 0; transform: translateY(10px) scale(.94); } }
+@media (prefers-reduced-motion: reduce) { .ov-mode-step { animation: none; } }

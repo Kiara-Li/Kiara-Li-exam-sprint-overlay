@@ -1,3 +1,5 @@
+import { noticeToast } from './Notice.js';
+
 export const LEVELS = [
   { key: 'again', label: "Don't know", next: 'Back in a moment' },
   { key: 'later', label: 'Kind of', next: 'Later in this set' },
@@ -30,7 +32,7 @@ export function sortDestination(position, total, level) {
  * Cards done in this stage. There is no time marker on it any more: time is
  * checked at set moments and answered by changing how the user studies.
  */
-export function paceMarkup({ completed, items, statuses, toast = '', decision = false }) {
+export function paceMarkup({ completed, items, statuses, toast = null }) {
   const total = items.length;
   return `<div class="sprint-pace-shell">
     <div class="sprint-pace-track" role="progressbar" aria-label="Cards done" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${completed}">
@@ -40,11 +42,7 @@ export function paceMarkup({ completed, items, statuses, toast = '', decision = 
         return `<span class="sprint-pace-segment${index < completed ? ' is-complete' : status === 'again' ? ' is-again' : status === 'later' ? ' is-later' : ''}" data-term="${termIndex}" aria-hidden="true"></span>`;
       }).join('')}
     </div>
-    <div class="sprint-pace-toast${toast ? ' is-fading' + (toast.kind === 'good' ? ' is-good' : '') : ''}" role="status">${toast ? toast.text : ''}</div>
-    ${decision ? `<div class="sprint-pace-decision" role="group" aria-label="Repeated item">
-      <p>This one keeps coming back. Move it later?</p>
-      <div><button type="button" data-pace-decision="later">Move it later</button><button type="button" data-pace-decision="again">Keep it close</button></div>
-    </div>` : ''}
+    <div class="sprint-pace-toast${toast ? ' is-fading' : ''}" role="status">${noticeToast(toast)}</div>
   </div>`;
 }
 
