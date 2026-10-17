@@ -42,6 +42,11 @@ body {
 
 .ov-debug-layer {
   z-index: var(--z-overlay-debug);
+  /* Only the panel takes taps; the app beside it stays usable. */
+  pointer-events: none;
+}
+
+.ov-debug-layer .ov-dbg {
   pointer-events: auto;
 }
 
