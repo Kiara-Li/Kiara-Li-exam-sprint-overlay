@@ -248,57 +248,33 @@
 
 /* Notices: the one look for toasts and choice sheets --------------------- */
 
-.ov-notice-icon {
-  display: grid;
-  flex: none;
-  width: var(--notice-icon-size);
-  height: var(--notice-icon-size);
-  place-items: center;
-  border-radius: 50%;
-  color: var(--mode-speed-ink);
-  background: var(--mode-speed-surface);
-  font-size: var(--font-size-sm);
-}
-.ov-notice-icon svg { width: 14px; height: 14px; }
-.ov-notice-icon .ov-glyph-xs { display: grid; place-items: center; }
-.ov-notice-icon .ov-glyph-xs svg { width: 14px; height: 14px; }
-.ov-notice-icon.is-good { color: var(--color-success-dark); background: var(--color-surface-green); }
-.ov-notice-icon.is-warning { color: var(--sort-again); background: var(--sort-again-surface); }
-
+/* Toast: plain text in a white pill. */
 .sprint-pace-toast:not(:empty) {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
+  padding: var(--space-2) var(--space-4);
   border: var(--border-width) solid var(--border-default);
   border-radius: var(--radius-pill);
   color: var(--text-primary);
   background: var(--surface-default);
   box-shadow: var(--shadow-card);
-  font: var(--type-label);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   white-space: nowrap;
 }
 
-.ov-notice-list { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
-.ov-notice-list li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
+/* Sheets read like Quizlet's own end-of-round copy: a bold centred title,
+   one plain line under it, nothing decorating the left edge. */
+.ov-sheet .ov-sheet-title {
+  margin: var(--space-2) 0 var(--space-2);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  text-align: center;
 }
-.ov-notice-line { margin: 0; color: var(--text-primary); font-size: var(--font-size-lg); line-height: var(--line-height-relaxed); }
-
-.ov-notice-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
-.ov-notice-chips li {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
-  border-radius: var(--radius-pill);
-  background: var(--surface-grouped);
+.ov-sheet > p,
+.ov-sheet .ov-sheet-body {
+  margin: 0;
+  color: var(--text-muted);
   font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
-  white-space: nowrap;
+  line-height: var(--line-height-normal);
+  text-align: center;
 }

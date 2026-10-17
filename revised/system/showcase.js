@@ -167,5 +167,5 @@ $('#day-demo').addEventListener('click', (event) => {
 });
 
 // Notices: the toast and the choice sheet every study message uses.
-$('#notice-toast').innerHTML = `<div class="sprint-pace-toast ds-static">${noticeToast({ text: 'Skipped 3 cards you know', kind: 'speed' })}</div>`;
+$('#notice-toast').innerHTML = `<div class="sprint-pace-toast ds-static">${noticeToast({ text: 'Skipping 3 you already know', kind: 'speed' })}</div>`;
 $('#notice-sheet').innerHTML = `<div class="ds-pill-row"><button type="button" class="sprint-mode-pill is-offer">${boltGlyph()}Speed up</button><button type="button" class="sprint-mode-pill is-on">${boltGlyph()}Speed-up</button><button type="button" class="sprint-mode-pill is-last is-offer">Wrap up</button></div>`;
