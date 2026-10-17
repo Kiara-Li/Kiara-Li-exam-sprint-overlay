@@ -512,8 +512,30 @@ function applySpeedToStage() {
   }
 }
 
+/** Drops the Speed-up curtain over the study column, then lets it go. */
+function dropSpeedCurtain() {
+  const shell = document.querySelector('#app .phone-shell');
+  if (!shell || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const rect = shell.getBoundingClientRect();
+  const curtain = document.createElement('div');
+  curtain.className = 'ov-speed-curtain';
+  curtain.setAttribute('aria-hidden', 'true');
+  Object.assign(curtain.style, {
+    left: `${rect.left}px`,
+    width: `${rect.width}px`,
+    top: `${Math.max(0, rect.top)}px`,
+    height: `${window.innerHeight - Math.max(0, rect.top)}px`,
+  });
+  curtain.innerHTML = `<strong>${boltGlyph()}Speed-up</strong>`;
+  document.body.appendChild(curtain);
+  curtain.addEventListener('animationend', (event) => {
+    if (event.target === curtain) curtain.remove();
+  });
+}
+
 function setPaceMode(mode, via) {
   ov.pace.mode = mode;
+  if (mode === 'speed') dropSpeedCurtain();
   if (ov.pace.offer === 'speed') ov.pace.offer = null;
   logEvent('pace-mode', { mode, via, stage: ov.stage });
   const before = ov.pace.lastMessage;

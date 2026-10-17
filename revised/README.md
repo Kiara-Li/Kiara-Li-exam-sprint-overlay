@@ -18,7 +18,7 @@ The plan, study screens and everything after are unchanged from Final.
 
 The goal ball and its intro are gone; the bar only counts cards. Time is checked at half way and at the end of each stage's planned time. Behind at either point, a **Speed up** pill appears in the header; when the set's whole time is used, a **Wrap up** pill appears. Nothing covers the card: the user taps the pill or simply keeps going. A card sent back twice in a row is saved for the end automatically.
 
-- **Speed-up** — Flashcards show both sides with only Don't know / Got it, and cards mastered before are skipped. Quiz drops to two choices, sends wrong answers to the back by itself, moves on faster after a right answer, and skips cards already got in Flashcards. A cyan band and a Speed-up pill (tap to go back to normal) mark the mode.
+- **Speed-up** — Flashcards show both sides with only Don't know / Got it, and cards mastered before are skipped. Quiz drops to two choices, sends wrong answers to the back by itself, moves on faster after a right answer, and skips cards already got in Flashcards. Turning it on drops a cyan curtain over the set; while it is on, every study screen sits on a cyan page with faint streaks drifting past, and a Speed-up pill (tap to go back to normal) sits in the header.
 - **Last pass** — everything not yet got, on one page; "I've read these" ends the set and saves those cards for final review.
 
 Chapter 1 ends one of three ways: on time, "Done the fast way" (Speed-up cards saved for review), or "Time's up, you're covered" (Last pass cards saved for review). The intro before studying now explains the three modes.

@@ -275,7 +275,56 @@ html[data-pace-study='true'] .quiz-screen .sprint-sort-controls { padding-top: 2
 
 /* A thin band across the top says the screen is in Speed-up; the page itself
    keeps its colours so nothing reads as an alarm. */
-html[data-pace-study='true'][data-pace-mode='speed'] #app .screen { box-shadow: inset 0 var(--mode-band) 0 var(--mode-speed); }
+/* Speed-up is a place, not a one-off: while it is on, every study screen in
+   the set sits on the cyan page with streaks drifting past. */
+#app .screen { transition: background-color 500ms ease; }
+html[data-pace-mode='speed'] #app .screen {
+  background-color: var(--mode-speed-page);
+  background-image: repeating-linear-gradient(115deg, transparent 0 34px, var(--mode-speed-streak) 34px 36px, transparent 36px 90px);
+  background-size: 400px 400px;
+  animation: sprint-speed-streaks 7s linear infinite;
+}
+@keyframes sprint-speed-streaks { to { background-position: 400px 0; } }
+html[data-pace-mode='speed'] .sprint-pace-segment:not(.is-complete):not(.is-again):not(.is-later) { background: color-mix(in srgb, var(--color-white) 70%, var(--mode-speed-page)); }
+html[data-pace-mode='speed'] .sprint-mode-pill.is-on { background: var(--surface-default); box-shadow: var(--shadow-card); }
+
+/* The way in: a cyan curtain drops over the set, says Speed-up, and lifts
+   onto the cyan page. */
+.ov-speed-curtain {
+  position: fixed;
+  z-index: var(--z-overlay-sheet);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--color-white);
+  background: var(--mode-speed-curtain);
+  pointer-events: none;
+  animation: sprint-curtain 1100ms cubic-bezier(.7, 0, .2, 1) both;
+}
+.ov-speed-curtain strong {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+  animation: sprint-curtain-word 1100ms cubic-bezier(.2, .9, .3, 1.2) both;
+}
+.ov-speed-curtain svg { width: 34px; height: 34px; }
+@keyframes sprint-curtain {
+  0% { transform: translateY(-100%); }
+  32%, 62% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+@keyframes sprint-curtain-word {
+  0%, 22% { opacity: 0; transform: translateY(-16px) scale(.9); }
+  40%, 62% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(10px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-pace-mode='speed'] #app .screen { animation: none; }
+  .ov-speed-curtain { display: none; }
+}
 
 html[data-pace-study='true'] .app-header-title.has-mode { visibility: visible; display: grid; place-items: center; }
 .sprint-mode-pill,
