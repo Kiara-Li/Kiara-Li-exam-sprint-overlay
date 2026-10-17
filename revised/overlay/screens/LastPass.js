@@ -33,12 +33,12 @@ export function lastPass(set, terms) {
         <span class="header-spacer"></span>
       </header>
       <section class="ov-last-content">
-        <h1>What’s left</h1>
-        <p class="ov-last-count">${terms.length} ${terms.length === 1 ? 'card' : 'cards'} · read each one once</p>
+        <h1>One last look</h1>
+        <p class="ov-last-count">${terms.length} ${terms.length === 1 ? 'card' : 'cards'}</p>
         <ol class="ov-last-list">${rows}</ol>
       </section>
       <div class="sticky-action ov-last-action">
-        <button class="primary-button ov-full" data-ov="finish-last-pass">I’ve read these</button>
+        <button class="primary-button ov-full" data-ov="finish-last-pass">Done</button>
       </div>
     </main>`;
 }

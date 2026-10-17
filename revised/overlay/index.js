@@ -47,7 +47,7 @@ import { planBuilding, planError, planReady, paceIntro } from './screens/PlanRea
 import { chapterDone, playReallocation } from './screens/ChapterDone.js';
 import { sprintDone } from './screens/SprintDone.js';
 import { flashDone, playFlashDone } from './screens/FlashDone.js';
-import { lastPass, speedOfferBody } from './screens/LastPass.js';
+import { lastPass } from './screens/LastPass.js';
 import { noticeToast } from './components/Notice.js';
 import { debugPanel } from './debug/DebugPanel.js';
 import { modeBar } from './debug/ModeBar.js';
@@ -74,6 +74,9 @@ function freshPace() {
     mode: 'normal',
     checks: { flashcards: { half: false, end: false }, learn: { half: false, end: false } },
     lastOffered: false,
+    // An offer waiting in the header: 'speed', 'last' or null. It never blocks
+    // the card; the user taps it or keeps going.
+    offer: null,
     // Which ending the chapter gets: 'normal', 'speed' or 'last'.
     ending: 'normal',
     speedTerms: new Set(),
@@ -319,24 +322,6 @@ function render() {
   if (ov.mode === 'sprint' && ov.sheet === 'adjust') sheetMarkup = adjustSheet(ov.plan);
   if (ov.mode === 'sprint' && ov.sheet === 'severe' && ov.severe) sheetMarkup = severeSheet(ov.severe);
   if (ov.mode === 'sprint' && ov.sheet === 'review' && ov.reviewTerm) sheetMarkup = reviewSheet();
-  if (ov.mode === 'sprint' && ov.sheet === 'speed-offer') sheetMarkup = sheet({
-    name: 'speed-offer', title: 'Speed up?',
-    body: speedOfferBody(ov.stage),
-    footer: '<button class="primary-button ov-full" data-ov="mode-speed">Speed up</button><button class="soft-button ov-full" data-ov="mode-keep">Keep going</button>',
-  });
-  if (ov.mode === 'sprint' && ov.sheet === 'mode') sheetMarkup = sheet({
-    name: 'mode', title: 'Speed-up is on',
-    body: speedOfferBody(ov.stage),
-    footer: '<button class="primary-button ov-full" data-ov="dismiss-sheet">Stay fast</button><button class="soft-button ov-full" data-ov="mode-normal">Back to normal</button>',
-  });
-  if (ov.mode === 'sprint' && ov.sheet === 'stuck') sheetMarkup = sheet({
-    name: 'stuck', title: 'This one keeps coming back',
-    footer: '<button class="primary-button ov-full" data-pace-decision="later">Move it later</button><button class="soft-button ov-full" data-pace-decision="again">Keep it close</button>',
-  });
-  if (ov.mode === 'sprint' && ov.sheet === 'last-offer') sheetMarkup = sheet({
-    name: 'last-offer', title: 'Time’s up for this set',
-    footer: '<button class="primary-button ov-full" data-ov="last-pass">Show what’s left</button><button class="soft-button ov-full" data-ov="last-keep">Keep going</button>',
-  });
   const keepAdjustSheet = ov.sheet === 'adjust' && sheetLayer.dataset.sheet === 'adjust' && sheetLayer.firstElementChild;
   if (!keepAdjustSheet) sheetLayer.innerHTML = sheetMarkup;
   sheetLayer.dataset.sheet = ov.sheet || '';
@@ -449,7 +434,7 @@ function checkPaceMode() {
     offerMode('last');
     return;
   }
-  if (ov.pace.mode !== 'normal') return;
+  if (ov.pace.mode !== 'normal' || ov.pace.offer) return;
   const stage = ov.stage;
   const elapsed = now - ov.pace.stageAt;
   const planned = stagePlannedMs(stage);
@@ -465,9 +450,12 @@ function checkPaceMode() {
   if (projected > planned * 1.1) offerMode('speed');
 }
 
+/** Shows the offer as a pill in the header, so the card is never covered. */
 function offerMode(kind) {
-  ov.sheet = kind === 'speed' ? 'speed-offer' : 'last-offer';
+  if (ov.pace.offer === 'last' && kind === 'speed') return;
+  ov.pace.offer = kind;
   logEvent('mode-offer', { kind, stage: ov.stage });
+  window.__base.render();
   render();
 }
 
@@ -503,7 +491,7 @@ function applySpeedToStage() {
       ov.pace.statuses.flashcards.set(term, 'done');
       window.__base.removeFlashcard(term);
     });
-    if (skip.length) showPaceMessage(`Skipped ${skip.length} ${skip.length === 1 ? 'card' : 'cards'} you know`, 'speed');
+    if (skip.length) showPaceMessage(`Skipping ${skip.length} you already know`, 'speed');
     return;
   }
   if (ov.stage === 'learn') {
@@ -526,9 +514,12 @@ function applySpeedToStage() {
 
 function setPaceMode(mode, via) {
   ov.pace.mode = mode;
-  ov.sheet = null;
+  if (ov.pace.offer === 'speed') ov.pace.offer = null;
   logEvent('pace-mode', { mode, via, stage: ov.stage });
+  const before = ov.pace.lastMessage;
   if (mode === 'speed') applySpeedToStage();
+  // The screen changing is the explanation; the toast only confirms it.
+  if (ov.pace.lastMessage === before) showPaceMessage(mode === 'speed' ? 'Speeding things up!' : 'Back to your usual pace', mode === 'speed' ? 'speed' : 'good');
   window.__base.render();
   render();
 }
@@ -632,12 +623,20 @@ function enhancePaceScreen() {
   }));
   const speed = ov.pace.mode === 'speed';
   const title = screen.querySelector('.app-header-title');
-  if (speed) {
-    title.innerHTML = `<button type="button" class="sprint-mode-pill" data-ov="mode-sheet" aria-label="Speed-up is on. Change">${boltGlyph()}Speed-up</button>`;
+  // The header carries the mode and any offer, so nothing covers the card.
+  const pill = ov.pace.offer === 'last'
+    ? '<button type="button" class="sprint-mode-pill is-last is-offer" data-ov="last-pass">Wrap up</button>'
+    : speed
+      ? `<button type="button" class="sprint-mode-pill is-on" data-ov="mode-normal" aria-label="Speed-up is on. Tap to go back to your usual pace">${boltGlyph()}Speed-up</button>`
+      : ov.pace.offer === 'speed'
+        ? `<button type="button" class="sprint-mode-pill is-offer" data-ov="mode-speed">${boltGlyph()}Speed up</button>`
+        : '';
+  if (pill) {
+    title.innerHTML = pill;
     title.classList.add('has-mode');
   }
   if (stage === 'flashcards') {
-    if (!speed) title.textContent = '';
+    if (!pill) title.textContent = '';
     const card = screen.querySelector('.flashcard-stage');
     card.classList.add('sprint-sort-stage');
     card.insertAdjacentHTML('beforebegin', `<div class="sprint-pace-number">${completed} / ${items.length}</div>`);
@@ -691,11 +690,9 @@ async function sortPaceItem(level, via, card, { bypassPrompt = false, auto = fal
   const { completed, items, termIndex } = paceQueue();
   const previousAgain = ov.pace.againCounts[stage].get(termIndex) || 0;
   if (level === 'again' && previousAgain >= 1 && !bypassPrompt) {
-    ov.pace.decision = { stage, termIndex };
-    logEvent('pace-message', { message: 'This one keeps coming back', kind: 'decision' });
-    ov.sheet = 'stuck';
-    render();
-    return;
+    // Twice in a row: save it for the end instead of asking.
+    level = 'later';
+    showPaceMessage('Saved this one for the end', 'good');
   }
   ov.pace.sorting = true;
   const destination = sortDestination(completed, items.length, level);
@@ -1277,11 +1274,6 @@ function onOverlayClick(event) {
       enterExam();
     },
     'dismiss-sheet': () => {
-      // Closing the stuck question without choosing keeps the card close.
-      if (ov.sheet === 'stuck' && ov.pace.decision) {
-        document.querySelector('.ov-sheet [data-pace-decision="again"]')?.click();
-        return;
-      }
       const wasLeave = ov.sheet === 'leave';
       if (wasLeave) logEvent('leave-prompt', { choice: 'keep' });
       ov.sheet = null;
@@ -1427,19 +1419,8 @@ function onOverlayClick(event) {
     'next-chapter': () => continueAfterChapter(),
     'go-learn': () => goToLearn(),
     'mode-speed': () => setPaceMode('speed', 'offer'),
-    'mode-keep': () => {
-      logEvent('mode-offer-choice', { choice: 'keep' });
-      ov.sheet = null;
-      render();
-    },
-    'mode-sheet': () => { ov.sheet = 'mode'; render(); },
     'mode-normal': () => setPaceMode('normal', 'pill'),
     'last-pass': () => enterLastPass('offer'),
-    'last-keep': () => {
-      logEvent('mode-offer-choice', { choice: 'keep', kind: 'last' });
-      ov.sheet = null;
-      render();
-    },
     'finish-last-pass': () => finishLastPass(),
     'finish-sprint': () => {
       logEvent('sprint-finished', sprintStats());
@@ -1940,7 +1921,7 @@ function debugTrigger(kind) {
 
   if (kind === 'speed' || kind === 'last') {
     ov.pace.decision = null;
-    if (kind === 'speed') ov.pace.mode = 'normal';
+    if (kind === 'speed') { ov.pace.mode = 'normal'; ov.pace.offer = null; }
     offerMode(kind);
     return;
   }

@@ -9,7 +9,7 @@ export const LEVELS = [
 export function sortStrip(levels, { hint = false, details = true } = {}) {
   const right = levels.includes('done') ? 'Got it' : 'Kind of';
   return `<div class="sprint-sort-controls">
-    ${hint ? `<p class="sprint-first-hint">Sort by how well you know it. Swipe left for Don't know, right for ${right}.</p>` : ''}
+    ${hint ? `<p class="sprint-first-hint">Swipe left: Don't know · Swipe right: ${right}</p>` : ''}
     <div class="sprint-sort-strip${levels.length === 2 ? ' is-two' : ''}" role="group" aria-label="Sort this item">
       ${levels.map(key => {
         const level = LEVELS.find(item => item.key === key);

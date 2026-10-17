@@ -99,9 +99,8 @@ export function paceIntro() {
   return `<main class="screen ov-screen ov-pace-intro">
     <header class="app-header"><button class="icon-button" data-ov="intro-back" aria-label="Back">${icon('back')}</button><div></div><span></span></header>
     <section class="ov-intro-content">
-      <h1>Short on time?<br>We’ll speed things up.</h1>
+      <h1>Short on time?<br>We’ve got you.</h1>
       <div class="ov-mode-steps" role="img" aria-label="Normal, then Speed-up, then Last pass">${steps}</div>
-      <p class="ov-intro-ask">We’ll always ask first.</p>
     </section>
     <div class="sticky-action"><button class="primary-button ov-full" data-ov="begin-study">Let’s go</button></div>
   </main>`;

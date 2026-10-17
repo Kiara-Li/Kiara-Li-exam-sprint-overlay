@@ -63,10 +63,10 @@ export function chapterDone(plan, chapterIndex, ending = 'normal', speedCount = 
       </header>
       <section class="flash-complete-content">
         ${ending === 'speed' ? `<span class="ov-mode-tag is-speed">${boltGlyph()}Speed-up</span>` : ending === 'last' ? '<span class="ov-mode-tag is-last">Last pass</span>' : ''}
-        <h1 class="ov-ending-title">${ending === 'speed' ? 'Done the fast way' : ending === 'last' ? 'Time’s up, you’re covered' : `${chapter.short} done!`}</h1>
+        <h1 class="ov-ending-title">${ending === 'speed' ? 'Nice hustle!' : ending === 'last' ? 'You made it through!' : `${chapter.short} done!`}</h1>
         <p>${
           ending === 'speed'
-            ? `${speedCount} ${speedCount === 1 ? 'card' : 'cards'} done in Speed-up · saved for final review`
+            ? `${speedCount} ${speedCount === 1 ? 'card' : 'cards'} saved for final review`
             : ending === 'last'
               ? `${chapter.parked.length} ${chapter.parked.length === 1 ? 'card' : 'cards'} saved for final review`
               : chapter.parked.length ? `${chapter.parked.length} saved for the final review` : 'Nice pace. Keep it going.'
