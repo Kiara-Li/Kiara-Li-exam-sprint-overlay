@@ -19,7 +19,7 @@ export function mountSortingDemo(host) {
       <div class="sort-pace"></div>
       <div class="sort-count"></div>
       <div class="sort-stage"><button type="button" class="sort-card flashcard" aria-label="Flip card"><span class="sort-face flashcard-front"><span class="sort-term"></span></span><span class="sort-face flashcard-back"><span class="sort-term"></span></span></button></div>
-      <div class="sort-controls">${sortStrip(['again', 'later', 'done'], { hint: true })}</div>
+      <div class="sort-controls">${sortStrip(['again', 'later', 'done'], { hint: true, details: false })}</div>
       <div class="sort-finish" hidden><strong>Flashcards done.</strong><button type="button" class="primary-button button-compact" data-sort-restart>Try again</button></div>
       <div class="sort-live" role="status"></div>
     </div>
@@ -72,7 +72,7 @@ export function mountSortingDemo(host) {
     delete stage.dataset.sortPreview;
     buttons.forEach(button => { button.disabled = false; button.classList.remove('is-active'); });
     sorting = false;
-    host.querySelector('.sort-live').textContent = `${level === 'again' ? "Don't know" : level === 'later' ? 'Kind of' : 'Got it'} · ${via}`;
+    host.querySelector('.sort-live').textContent = `${level === 'again' ? "Don't know" : level === 'later' ? 'Later' : 'Know it'} · ${via}`;
     render();
     // Same settle-in as the study screen, so the gallery shows the real motion.
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {

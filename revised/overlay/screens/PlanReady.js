@@ -1,4 +1,3 @@
-import { MODES } from './LastPass.js';
 import { boltGlyph } from '../components/glyphs.js';
 import { icon } from '../../base/components/icons.js';
 import { planDonut } from '../components/PlanDonut.js';
@@ -79,28 +78,23 @@ export function planReady(plan) {
     </main>`;
 }
 
-/** A tiny picture of each mode: a card, a card with both sides, a list. */
-function modePicture(key) {
-  if (key === 'last') return '<span class="ov-mini is-list"><i></i><i></i><i></i></span>';
-  return `<span class="ov-mini is-card">${key === 'speed' ? `<em>${boltGlyph()}</em>` : ''}<i class="is-term"></i>${key === 'speed' ? '<i></i><i class="is-short"></i>' : ''}</span>`;
-}
-
 /**
- * Before studying: how the set adapts when time runs short. A small picture
- * and one line, as the plan screen explained the old marker.
+ * Before studying: one picture, one line, one button, the way Duolingo
+ * introduces a feature. The picture is the Speed-up card itself; the line
+ * says exactly what to tap.
  */
 export function paceIntro() {
-  const steps = MODES.map(({ key, name }, index) => `
-    ${index ? '<span class="ov-mode-arrow" aria-hidden="true">›</span>' : ''}
-    <figure class="ov-mode-step is-${key}" style="--step:${index}">
-      ${modePicture(key)}
-      <figcaption>${name}</figcaption>
-    </figure>`).join('');
   return `<main class="screen ov-screen ov-pace-intro">
     <header class="app-header"><button class="icon-button" data-ov="intro-back" aria-label="Back">${icon('back')}</button><div></div><span></span></header>
     <section class="ov-intro-content">
+      <div class="ov-intro-art" aria-hidden="true">
+        <span class="ov-intro-card is-back"></span>
+        <span class="ov-intro-card is-mid"></span>
+        <span class="ov-intro-card is-front"><i class="is-term"></i><i></i><i class="is-short"></i></span>
+        <span class="ov-intro-bolt">${boltGlyph()}</span>
+      </div>
       <h1>Short on time?<br>We’ve got you.</h1>
-      <div class="ov-mode-steps" role="img" aria-label="Normal, then Speed-up, then Last pass">${steps}</div>
+      <p class="ov-intro-line">If you fall behind, tap <span class="sprint-mode-pill is-on ov-intro-pill">${boltGlyph()}Speed up</span></p>
     </section>
     <div class="sticky-action"><button class="primary-button ov-full" data-ov="begin-study">Let’s go</button></div>
   </main>`;

@@ -642,7 +642,7 @@ function enhancePaceScreen() {
     card.insertAdjacentHTML('beforebegin', `<div class="sprint-pace-number">${completed} / ${items.length}</div>`);
     const area = screen.querySelector('.rating-area');
     // Speed-up: both sides at once, and only the two quick answers.
-    area.outerHTML = sortStrip(speed ? ['again', 'done'] : ['again', 'later', 'done'], { hint: !ov.pace.hintsSeen.flashcards, details: !speed && ov.pace.sortCount.flashcards < 3 });
+    area.outerHTML = sortStrip(speed ? ['again', 'done'] : ['again', 'later', 'done'], { hint: !ov.pace.hintsSeen.flashcards, details: false });
     if (speed) {
       const definition = course.sets[0].terms[window.__base.state.cardIndex]?.[1] || '';
       card.classList.add('is-both-sides');

@@ -193,9 +193,10 @@ export function examSetup(setup, now) {
         <div class="ov-when">
           <div class="ov-day-grid" role="group" aria-label="Exam day">${dayTiles}</div>
           ${setup.picker === 'date' ? calendarPanel(draft, setup.monthAnchor ?? draft, now) : ''}
-          <button type="button" class="ov-when-field ov-time-field${setup.picker === 'time' ? ' is-open' : ''}" aria-expanded="${setup.picker === 'time'}"${setup.error ? ' aria-invalid="true" aria-describedby="exam-time-error"' : ''} data-ov="open-picker" data-picker="time">
-            <span>Time</span>
+          <button type="button" class="ov-when-field ov-time-field${setup.picker === 'time' ? ' is-open' : ''}" aria-expanded="${setup.picker === 'time'}"${setup.error ? ' aria-invalid="true" aria-describedby="exam-time-error"' : ''} data-ov="open-picker" data-picker="time" aria-label="Exam time">
+            <svg class="ov-time-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <strong>${formatTimeLabel(draft)}</strong>
+            <svg class="ov-time-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           ${setup.picker === 'time' ? timePanel(draft) : ''}
         </div>

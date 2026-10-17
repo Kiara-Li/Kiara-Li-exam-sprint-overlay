@@ -41,7 +41,7 @@ export function flashDone({ got, practice, chapter = 'Chapter 1' }) {
         </div>
         <h1 class="ov-fd-title">Flashcards done!</h1>
         <div class="ov-fd-stats">
-          <div class="ov-fd-stat is-got"><b data-count-to="${got}">${got}</b><span>Got it</span></div>
+          <div class="ov-fd-stat is-got"><b data-count-to="${got}">${got}</b><span>Know it</span></div>
           <div class="ov-fd-stat is-practice"><b data-count-to="${practice}">${practice}</b><span>To practice</span></div>
         </div>
       </div>

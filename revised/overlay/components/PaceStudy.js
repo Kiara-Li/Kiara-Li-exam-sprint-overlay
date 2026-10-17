@@ -2,12 +2,14 @@ import { noticeToast } from './Notice.js';
 
 export const LEVELS = [
   { key: 'again', label: "Don't know", next: 'Back in a moment' },
-  { key: 'later', label: 'Kind of', next: 'Later in this set' },
-  { key: 'done', label: 'Got it', next: 'Done for now' },
+  // "Later", not "Skip": the card does come back, and Skip already means
+  // "not in this plan" in setup.
+  { key: 'later', label: 'Later', next: 'Later in this set' },
+  { key: 'done', label: 'Know it', next: 'Done for now' },
 ];
 
 export function sortStrip(levels, { hint = false, details = true } = {}) {
-  const right = levels.includes('done') ? 'Got it' : 'Kind of';
+  const right = levels.includes('done') ? 'Know it' : 'Later';
   return `<div class="sprint-sort-controls">
     ${hint ? `<p class="sprint-first-hint">Swipe left: Don't know · Swipe right: ${right}</p>` : ''}
     <div class="sprint-sort-strip${levels.length === 2 ? ' is-two' : ''}" role="group" aria-label="Sort this item">
