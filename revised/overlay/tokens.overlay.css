@@ -35,7 +35,11 @@
   --intro-card-width: 150px;
   --intro-card-height: 190px;
   /* Setup: exam-day tiles and the per-set level switch. */
-  --day-num-size: 30px;
+  /* The exam-time step uses two sizes under its title: values (the dates,
+     the time, the countdown) and labels (everything that names them). */
+  --setup-value-size: var(--font-size-2xl);
+  --setup-label-size: var(--font-size-sm);
+  --day-num-size: var(--setup-value-size);
   --level-bar-height: 6px;
   --level-bar-gap: 3px;
   --level-switch-inset: 4px;

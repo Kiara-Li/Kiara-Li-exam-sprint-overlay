@@ -654,6 +654,24 @@
 /* On a narrow phone the count steps down a size so the line stays on one row. */
 @media (max-width: 400px) {
   .ov-countdown { gap: var(--space-1); padding-inline: var(--space-3); }
-  .ov-countdown span { font-size: var(--font-size-sm); }
-  .ov-countdown strong { font-size: var(--font-size-xl); }
+  .ov-setup-screen { --setup-value-size: var(--font-size-xl); }
 }
+
+/* Two sizes, two weights: every value is bold at the value size, every label
+   is bold at the label size. */
+.ov-step-0 .ov-day-tab,
+.ov-step-0 .ov-day-label,
+.ov-step-0 .ov-countdown span {
+  font-size: var(--setup-label-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: normal;
+}
+.ov-step-0 .ov-day-num,
+.ov-step-0 .ov-time-field strong,
+.ov-step-0 .ov-countdown strong {
+  font-size: var(--setup-value-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: normal;
+  line-height: 1.1;
+}
+.ov-step-0 .ov-day-glyph { width: var(--setup-value-size); height: var(--setup-value-size); }
