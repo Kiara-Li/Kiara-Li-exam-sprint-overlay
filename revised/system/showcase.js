@@ -168,4 +168,4 @@ $('#day-demo').addEventListener('click', (event) => {
 
 // Notices: the toast and the choice sheet every study message uses.
 $('#notice-toast').innerHTML = `<div class="sprint-pace-toast ds-static">${noticeToast({ text: 'Skipped 3 cards you know', kind: 'speed' })}</div>`;
-$('#notice-sheet').innerHTML = `<section class="ov-sheet ds-static"><span class="ov-sheet-grabber" aria-hidden="true"></span><h2 class="ov-sheet-title">Let’s speed up</h2>${speedOfferBody('flashcards')}<div class="ov-sheet-footer"><button class="primary-button ov-full">Speed up</button><button class="soft-button ov-full">Keep going</button></div></section>`;
+$('#notice-sheet').innerHTML = `<section class="ov-sheet ds-static"><span class="ov-sheet-grabber" aria-hidden="true"></span><h2 class="ov-sheet-title">Speed up?</h2>${speedOfferBody('flashcards')}<div class="ov-sheet-footer"><button class="primary-button ov-full">Speed up</button><button class="soft-button ov-full">Keep going</button></div></section>`;

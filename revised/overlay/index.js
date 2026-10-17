@@ -48,7 +48,7 @@ import { chapterDone, playReallocation } from './screens/ChapterDone.js';
 import { sprintDone } from './screens/SprintDone.js';
 import { flashDone, playFlashDone } from './screens/FlashDone.js';
 import { lastPass, speedOfferBody } from './screens/LastPass.js';
-import { noticeLine, noticeToast } from './components/Notice.js';
+import { noticeToast } from './components/Notice.js';
 import { debugPanel } from './debug/DebugPanel.js';
 import { modeBar } from './debug/ModeBar.js';
 
@@ -320,7 +320,7 @@ function render() {
   if (ov.mode === 'sprint' && ov.sheet === 'severe' && ov.severe) sheetMarkup = severeSheet(ov.severe);
   if (ov.mode === 'sprint' && ov.sheet === 'review' && ov.reviewTerm) sheetMarkup = reviewSheet();
   if (ov.mode === 'sprint' && ov.sheet === 'speed-offer') sheetMarkup = sheet({
-    name: 'speed-offer', title: 'Let’s speed up',
+    name: 'speed-offer', title: 'Speed up?',
     body: speedOfferBody(ov.stage),
     footer: '<button class="primary-button ov-full" data-ov="mode-speed">Speed up</button><button class="soft-button ov-full" data-ov="mode-keep">Keep going</button>',
   });
@@ -331,12 +331,10 @@ function render() {
   });
   if (ov.mode === 'sprint' && ov.sheet === 'stuck') sheetMarkup = sheet({
     name: 'stuck', title: 'This one keeps coming back',
-    body: noticeLine('Move it to the end of the set?'),
     footer: '<button class="primary-button ov-full" data-pace-decision="later">Move it later</button><button class="soft-button ov-full" data-pace-decision="again">Keep it close</button>',
   });
   if (ov.mode === 'sprint' && ov.sheet === 'last-offer') sheetMarkup = sheet({
     name: 'last-offer', title: 'Time’s up for this set',
-    body: noticeLine('What’s left goes on one page, then into your final review.'),
     footer: '<button class="primary-button ov-full" data-ov="last-pass">Show what’s left</button><button class="soft-button ov-full" data-ov="last-keep">Keep going</button>',
   });
   const keepAdjustSheet = ov.sheet === 'adjust' && sheetLayer.dataset.sheet === 'adjust' && sheetLayer.firstElementChild;

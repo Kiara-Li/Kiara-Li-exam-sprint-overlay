@@ -1,4 +1,4 @@
-import { noticeList } from '../components/Notice.js';
+import { noticeChips } from '../components/Notice.js';
 
 /** The three ways a set can be studied, in the words the screens use. */
 export const MODES = [
@@ -8,13 +8,13 @@ export const MODES = [
 ];
 
 const SPEED_CHANGES = {
-  flashcards: ['No flipping', 'Just Don’t know or Got it', 'Skips cards you know'],
-  learn: ['Two choices', 'Misses go to the back', 'Skips cards you got'],
+  flashcards: ['No flipping', '2 buttons', 'Skip known cards'],
+  learn: ['2 choices', 'Misses go last', 'Skip cards you got'],
 };
 
 /** What Speed-up changes, for the stage the user is in. */
 export function speedOfferBody(stage) {
-  return noticeList(SPEED_CHANGES[stage] || SPEED_CHANGES.flashcards);
+  return noticeChips(SPEED_CHANGES[stage] || SPEED_CHANGES.flashcards);
 }
 
 /** Time is up: what is left, on one page, to read once. */

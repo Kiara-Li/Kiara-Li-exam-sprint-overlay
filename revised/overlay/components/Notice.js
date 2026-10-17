@@ -30,3 +30,8 @@ export function noticeList(lines, kind = 'speed') {
 export function noticeLine(text) {
   return `<p class="ov-notice-line">${text}</p>`;
 }
+
+/** The shortest form: a row of chips, two or three words each. */
+export function noticeChips(lines, kind = 'speed') {
+  return `<ul class="ov-notice-chips">${lines.map((line) => `<li>${noticeBadge(kind)}<span>${line}</span></li>`).join('')}</ul>`;
+}
